@@ -1,0 +1,23 @@
+# Ontología - esquema preliminar
+parameters:
+  - id: H2S
+    name: Sulfuro de hidrógeno
+    unit: mg/Nm3
+  - id: O2
+    name: Oxígeno
+    unit: % (o mg/Nm3)
+  - id: PCS
+    name: Poder Calorífico Superior
+    unit: MJ/Nm3
+
+jurisdictions:
+  - ES
+  - EU
+
+schema:
+  - parameter: string
+  - jurisdiction: string
+  - value: string
+  - unit: string
+  - reference_conditions: object
+  - source: object

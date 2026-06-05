@@ -1,0 +1,10 @@
+[tool.poetry]
+name = "gas-quality-comparator"
+version = "0.1.0"
+description = "Comparador normativo gasista ES/EU para O2, H2S y PCS"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"

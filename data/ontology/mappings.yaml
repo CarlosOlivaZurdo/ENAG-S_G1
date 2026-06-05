@@ -1,0 +1,6 @@
+# Mapeos preliminares (placeholder)
+# map: {source_field: ontology_field}
+- source: 'tabla_V1.col1'
+  map_to: 'parameter'
+- source: 'tabla_V1.col2'
+  map_to: 'value'
