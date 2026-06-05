@@ -1,0 +1,715 @@
+# =============================================================================
+# ONTOLOGÍA DE CALIDAD DEL GAS NATURAL — ENAGÁS RETO 5
+# Comparativa normativa ES vs UE — Parámetros: O₂, H₂S, PCS
+# =============================================================================
+#
+# PROPÓSITO
+# Esta ontología es la "fuente de verdad" determinista del sistema.
+# El LLM nunca inventa números: todos los valores numéricos salen de aquí.
+# El LLM sólo interpreta la pregunta y redacta la respuesta final.
+#
+# ARQUITECTURA
+# Pregunta → Orquestador → ¿Comparativa? → Ontología + Normalizador → Flag → LLM redacta
+#                       → ¿Abierta?    → RAG (Vector DB + chunks PDF) → LLM con cita
+#
+# FUENTES VERIFICADAS
+# Los valores numéricos deben confirmarse contra los PDFs originales antes
+# de producción. Los artículos indicados son referencias de localización.
+# =============================================================================
+
+ontologia:
+  version: "1.1.0"
+  fecha_revision: "2025-07"
+  descripcion: >
+    Ontología determinista para comparar parámetros de calidad del gas natural
+    entre la normativa española (RD 919/2006 + NGTS-06) y la europea
+    (Network Code INT — Reglamento UE 2015/703). Cubre exclusivamente O₂, H₂S
+    y PCS. Toda respuesta comparativa se genera a partir de esta ontología;
+    el LLM nunca calcula ni infiere valores numéricos.
+
+  # ---------------------------------------------------------------------------
+  # FUENTES NORMATIVAS
+  # ---------------------------------------------------------------------------
+  fuentes_normativas:
+
+    - id: RD919
+      tipo: reglamento_nacional
+      nombre: "Real Decreto 919/2006, de 28 de julio"
+      pais: España
+      publicacion: "BOE núm. 198, de 19 de agosto de 2006"
+      url_boe: "https://www.boe.es/eli/es/rd/2006/07/28/919"
+      ambito: >
+        Reglamento técnico de distribución y utilización de combustibles gaseosos
+        y sus instrucciones técnicas complementarias ICG 01 a 11.
+
+    - id: NGTS06
+      tipo: norma_tecnica_sistema
+      nombre: "NGTS-06 — Medición, Calidad y Odorización del gas"
+      pais: España
+      publicacion: "Resolución BOE (fecha según revisión vigente)"
+      ambito: >
+        Norma de Gestión Técnica del Sistema gasista español que fija
+        las especificaciones numéricas de calidad del gas, incluyendo
+        Protocolos de Detalle (PD). Complementa y desarrolla el RD 919/2006.
+      nota: >
+        Para valores definitivos de O₂, H₂S y PCS, verificar siempre la
+        versión vigente de la NGTS-06 y sus PD publicados en el BOE.
+
+    - id: NC_INT
+      tipo: reglamento_europeo
+      nombre: "Network Code on Interoperability and Data Exchange (NC INT)"
+      referencia_legal: "Reglamento (UE) 2015/703 de la Comisión"
+      publicacion: "DOUE L 113, de 1 de mayo de 2015"
+      url_eurlex: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
+      ambito: >
+        Código de red sobre interoperabilidad e intercambio de datos.
+        Contiene las disposiciones de calidad del gas aplicables a los
+        puntos de interconexión entre redes de transporte de la UE,
+        incluyendo monitorización de Wobbe/GCV.
+
+    - id: NC_CAM
+      tipo: reglamento_europeo
+      nombre: "Network Code on Capacity Allocation Mechanisms (NC CAM)"
+      referencia_legal: "Reglamento (UE) 2017/459 de la Comisión"
+      publicacion: "DOUE L 72, de 17 de marzo de 2017"
+      url_eurlex: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459"
+      ambito: >
+        Mecanismos de asignación de capacidad en redes de transporte de gas.
+        Referenciado en el enunciado como "INT/CAM".
+
+    - id: EASEE_GAS
+      tipo: buenas_practicas
+      nombre: "EASEE-gas Common Business Practices (CBP)"
+      ambito: >
+        Recomendaciones de armonización de calidad del gas en Europa.
+        No son vinculantes pero son referencia habitual en puntos de
+        interconexión transfronteriza. Consultar CBP 2005-001/002.
+
+    - id: EN_ISO_6976
+      tipo: norma_tecnica
+      nombre: "EN ISO 6976 — Cálculo de poder calorífico, densidad e índice de Wobbe"
+      ambito: >
+        Define los métodos de cálculo y las condiciones de referencia estándar
+        para PCS/PCI a partir de la composición del gas. Imprescindible para
+        interpretar los valores de PCS con sus condiciones de referencia correctas.
+
+
+# =============================================================================
+# PARÁMETROS DE CALIDAD
+# =============================================================================
+
+parametros:
+
+  # ---------------------------------------------------------------------------
+  O2:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Oxígeno
+    simbolo: "O₂"
+    nombre_ingles: Oxygen
+    tipo: contaminante
+    motivacion_limite: >
+      El oxígeno degrada la calidad del gas, favorece la corrosión en tuberías
+      y puede comprometer la seguridad en almacenamiento subterráneo.
+    aliases:
+      - oxígeno
+      - contenido de oxígeno
+      - oxygen
+      - oxygen content
+      - O2
+      - O₂
+
+    limites:
+      ES:
+        fuente: RD919
+        fuente_secundaria: NGTS06
+        articulo: "pendiente verificación en PDF — referencia orientativa: Art. 43 / NGTS-06 PD"
+        tipo_limite: maximo
+        valor: 0.01
+        unidad: pct_vol
+        expresion_original: "0,01 % (vol)"
+        condiciones_referencia:
+          temperatura_combustion_C: null   # no aplica para O₂
+          temperatura_volumen_C: 0
+          presion_bar: 1.01325
+        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+
+      UE:
+        fuente: NC_INT
+        articulo: "pendiente verificación en PDF — referencia orientativa: Anexo I / Art. sobre calidad"
+        tipo_limite: maximo
+        valor: 0.001
+        unidad: pct_mol
+        expresion_original: "0,1 mol-% (referencia NC INT; verificar valor exacto)"
+        condiciones_referencia:
+          temperatura_combustion_C: null
+          temperatura_volumen_C: 0
+          presion_bar: 1.01325
+        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        nota: >
+          El NC INT expresa la calidad del gas en los puntos de interconexión.
+          Verificar si el límite de O₂ aparece en el Anexo I del Reglamento
+          2015/703 o en las especificaciones de calidad aplicables.
+
+    conversion:
+      par: [pct_vol, pct_mol]
+      equivalencia_gas_ideal: >
+        Para gas natural en condiciones normales, % vol ≈ % mol (diferencia < 0,1 %).
+        La distinción es formal; en la práctica se tratan como equivalentes.
+      par_2: [pct_vol, ppm_vol]
+      formula_pct_a_ppm: "ppm_vol = pct_vol * 10000"
+      formula_ppm_a_pct: "pct_vol = ppm_vol / 10000"
+      ejemplo: "0,01 % = 100 ppm(vol)"
+
+    flag_comparabilidad: COMPARABLE_TRAS_NORMALIZAR
+    comparabilidad:
+      estado: COMPARABLE_TRAS_NORMALIZAR
+      icono: "🟡"
+      requiere_conversion: true
+      conversion_exacta: true
+      resultado: >
+        Tras convertir a la misma unidad (ppm vol), los límites resultan
+        comparables directamente. Verificar valores exactos contra PDF.
+      condicion_alerta: >
+        Si las condiciones de referencia del volumen difieren entre ES y UE,
+        el flag cambia a 🔴 NO_COMPARABLE hasta especificar la conversión.
+
+
+  # ---------------------------------------------------------------------------
+  H2S:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Sulfuro de hidrógeno
+    simbolo: "H₂S"
+    nombre_ingles: Hydrogen sulphide
+    masa_molar_g_mol: 34.08
+    tipo: contaminante
+    motivacion_limite: >
+      Altamente tóxico (TLV-TWA 1 ppm), corrosivo para instalaciones metálicas
+      y precursor de SO₂ en combustión. Parte del azufre total pero con
+      parámetro propio por su toxicidad específica.
+    aliases:
+      - sulfuro de hidrógeno
+      - H2S
+      - H₂S
+      - hydrogen sulphide
+      - hydrogen sulfide
+      - ácido sulfhídrico
+      - sulfhídrico
+
+    limites:
+      ES:
+        fuente: RD919
+        fuente_secundaria: NGTS06
+        articulo: "pendiente verificación en PDF — referencia orientativa: NGTS-06 / RD 919 Apéndice"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "5 mg/Nm³"
+        condiciones_referencia:
+          temperatura_volumen_C: 0        # Nm³ = condiciones normales 0 °C
+          presion_bar: 1.01325
+        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        nota_critica: >
+          ⚠ CASO DE USO CLAVE: si el usuario proporciona un valor en mg/m³
+          a 15 °C (m³ estándar), hay que renormalizar a Nm³ (0 °C) antes de
+          comparar. Factor de corrección: valor_Nm3 = valor_15C * (288.15/273.15)
+          ≈ valor_15C * 1.055. Ver sección normalizacion_condiciones_referencia.
+
+      UE:
+        fuente: NC_INT
+        articulo: "pendiente verificación en PDF — referencia orientativa: Anexo I NC INT"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "5 mg/Nm³ (verificar; algunas fuentes citan 3,5 ppm o 6,5 mg/m³)"
+        condiciones_referencia:
+          temperatura_volumen_C: 0
+          presion_bar: 1.01325
+        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        nota: >
+          El NC INT puede expresar el límite en ppm(mol) o en mg/m³ según
+          versión y punto de interconexión. Confirmar unidad exacta en el PDF.
+
+    conversion:
+      tipo: masa_molar
+      formula_mg_nm3_a_ppm_vol: >
+        ppm_vol = (mg/Nm³ × 22.414) / masa_molar_g_mol
+        ppm_vol = (mg/Nm³ × 22.414) / 34.08
+        ppm_vol = mg/Nm³ × 0.6577
+      formula_ppm_vol_a_mg_nm3: >
+        mg/Nm³ = ppm_vol × masa_molar_g_mol / 22.414
+        mg/Nm³ = ppm_vol × 34.08 / 22.414
+        mg/Nm³ = ppm_vol × 1.5196
+      factor_mg_nm3_a_ppm: 0.6577
+      factor_ppm_a_mg_nm3: 1.5196
+      condiciones_validas: "T = 0 °C, P = 1,01325 bar (Nm³)"
+      ejemplo: "5 mg/Nm³ × 0,6577 = 3,29 ppm(vol)"
+      volumen_molar_nm3_kmol: 22.414   # volumen molar gas ideal a 0°C, 1 atm
+
+    normalizacion_condiciones_referencia:
+      descripcion: >
+        Si el valor del usuario está en mg/m³ a 15 °C, convertir a mg/Nm³
+        antes de comparar con el límite ES (expresado a 0 °C).
+      formula: "valor_Nm3 = valor_15C × (273.15 + 15) / 273.15 = valor_15C × 1.0549"
+      ejemplo: "12 mg/m³ @ 15°C → 12 × 1.0549 = 12.66 mg/Nm³"
+      flag_si_condiciones_no_especificadas: NO_COMPARABLE
+
+    flag_comparabilidad: COMPARABLE_TRAS_NORMALIZAR
+    comparabilidad:
+      estado: COMPARABLE_TRAS_NORMALIZAR
+      icono: "🟡"
+      requiere_conversion: true
+      conversion_exacta: true
+      condicion_flag_rojo: >
+        Si las condiciones de referencia del volumen (0 °C vs 15 °C) no están
+        especificadas en la fuente del valor del usuario → 🔴 NO_COMPARABLE.
+      nota: >
+        Verificar los valores exactos en los PDFs antes de emitir comparación
+        definitiva. Los valores aquí son orientativos hasta confirmación.
+
+
+  # ---------------------------------------------------------------------------
+  PCS:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Poder Calorífico Superior
+    simbolo: PCS
+    nombre_ingles: Gross Calorific Value (GCV)
+    alias_ingles: HHV (Higher Heating Value)
+    tipo: calidad_energetica
+    descripcion: >
+      Energía liberada en la combustión completa de una unidad de volumen de gas,
+      incluyendo el calor de condensación del vapor de agua en los productos.
+      Calculado según EN ISO 6976. Su valor depende CRÍTICAMENTE de las
+      condiciones de referencia (temperatura de combustión / temperatura de
+      medición del volumen). Sin especificar condiciones, el número es ambiguo.
+    aliases:
+      - poder calorífico superior
+      - PCS
+      - GCV
+      - gross calorific value
+      - valor calorífico superior
+      - HHV
+      - higher heating value
+      - poder calorífico
+    parametro_relacionado_no_incluido:
+      - nombre: PCI (Poder Calorífico Inferior / NCV / LHV)
+        nota: No es uno de los 3 parámetros del reto. No confundir con PCS.
+      - nombre: Índice de Wobbe
+        nota: >
+          PCS / √(densidad relativa). Aparece en el NC INT como indicador de
+          intercambiabilidad. No es uno de los 3 parámetros pero es contexto
+          frecuente en preguntas sobre PCS.
+
+    limites:
+      ES:
+        fuente: RD919
+        fuente_secundaria: NGTS06
+        articulo: "pendiente verificación en PDF — referencia orientativa: NGTS-06 / RD 919"
+        tipo_limite: rango
+        valor_min: 34.12
+        valor_max: 38.77
+        unidad: MJ_per_nm3
+        expresion_original: "34,12 – 38,77 MJ/Nm³ (verificar en NGTS-06 vigente)"
+        condiciones_referencia:
+          norma_calculo: EN_ISO_6976
+          temperatura_combustion_C: 25
+          temperatura_volumen_C: 0
+          presion_bar: 1.01325
+          notacion: "@25/0"
+        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        nota_critica: >
+          ⚠ CONDICIONES DE REFERENCIA CRÍTICAS: el PCS sólo es comparable
+          si ambas normativas usan las mismas condiciones @T_comb/T_vol.
+          La NGTS-06 española usa @25/0 (combustión a 25°C, volumen a 0°C).
+          Si el NC INT usa @25/15, los valores NO son directamente comparables
+          sin factor de corrección de densidad.
+
+      UE:
+        fuente: NC_INT
+        articulo: "pendiente verificación en PDF — referencia orientativa: Anexo I NC INT"
+        tipo_limite: rango
+        valor_min: 30.2       # orientativo — confirmar en PDF
+        valor_max: 47.2       # orientativo — confirmar en PDF
+        unidad: MJ_per_nm3
+        expresion_original: "verificar en PDF NC INT Reglamento 2015/703"
+        condiciones_referencia:
+          norma_calculo: EN_ISO_6976
+          temperatura_combustion_C: 25    # verificar — puede ser 25 °C
+          temperatura_volumen_C: 0        # verificar — puede ser 0 °C o 15 °C
+          presion_bar: 1.01325
+          notacion: "verificar @T_comb/T_vol en el PDF"
+        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        nota: >
+          El NC INT define calidad en puntos de interconexión y puede delegar
+          a acuerdos bilaterales entre TSOs. Verificar si el rango es una
+          recomendación o un límite vinculante, y las condiciones exactas.
+
+    conversion:
+      MJ_a_kWh:
+        formula: "kWh/Nm³ = MJ/Nm³ / 3.6"
+        formula_inversa: "MJ/Nm³ = kWh/Nm³ × 3.6"
+        factor: 0.27778
+        ejemplo: "36 MJ/Nm³ = 10 kWh/Nm³"
+      correccion_condiciones_referencia:
+        descripcion: >
+          Si ES usa @25/0 y UE usa @25/15, el volumen de referencia difiere.
+          La corrección es: PCS_0C = PCS_15C × (288.15/273.15) ≈ PCS_15C × 1.0549
+          (para convertir de m³ a 15°C a Nm³ a 0°C, el PCS expresado por Nm³ disminuye)
+        formula: "PCS@25/0 [MJ/Nm³] = PCS@25/15 [MJ/sm³] × (273.15/288.15)"
+        factor_aproximado: 0.9479
+        nota: >
+          Esta corrección sólo aplica si se confirma que las condiciones son
+          distintas. Sin confirmación de los PDF → flag 🔴 NO_COMPARABLE.
+
+    flag_comparabilidad: COMPARABLE_TRAS_NORMALIZAR
+    comparabilidad:
+      estado: COMPARABLE_TRAS_NORMALIZAR
+      icono: "🟡"
+      requiere_conversion: true
+      conversion_exacta: condicionada_a_verificar_condiciones_referencia
+      condicion_flag_verde: >
+        Las dos normativas usan exactamente las mismas condiciones de referencia
+        @T_comb/T_vol confirmadas en los PDFs.
+      condicion_flag_amarillo: >
+        Las condiciones difieren pero existe conversión determinista verificada.
+        Se aplica el factor y se muestra el resultado con la corrección.
+      condicion_flag_rojo: >
+        Las condiciones de referencia no están especificadas en alguna de las
+        fuentes o no hay conversión válida disponible. No se inventa ningún
+        número equivalente; se explica el motivo.
+      nota_presentacion: >
+        Este es el parámetro más delicado del reto en cuanto a comparabilidad.
+        Demostrar que el sistema detecta la ambigüedad de condiciones de
+        referencia es uno de los puntos de valor diferencial frente al jurado.
+
+
+# =============================================================================
+# UNIDADES
+# =============================================================================
+
+unidades:
+
+  pct_vol:
+    simbolo: "% (vol)"
+    tipo: fraccion_volumetrica
+    descripcion: Fracción volumétrica en tanto por ciento
+    equivalencia_ppm: "1 % vol = 10.000 ppm vol"
+
+  pct_mol:
+    simbolo: "% mol"
+    tipo: fraccion_molar
+    descripcion: Fracción molar en tanto por ciento
+    nota: "Para gas natural a condiciones normales, % mol ≈ % vol (diferencia < 0,1 %)"
+
+  ppm_vol:
+    simbolo: "ppm(vol)"
+    alias: "μmol/mol (gas ideal)"
+    tipo: fraccion_volumetrica
+    descripcion: Partes por millón en volumen
+
+  ppm_mol:
+    simbolo: "ppm(mol)"
+    tipo: fraccion_molar
+    descripcion: Partes por millón en fracción molar
+    nota: "Para gas ideal, ppm mol ≈ ppm vol"
+
+  mg_per_nm3:
+    simbolo: "mg/Nm³"
+    tipo: concentracion_masica
+    descripcion: Miligramos por metro cúbico normal
+    condiciones_normales:
+      temperatura_C: 0
+      presion_bar: 1.01325
+    distincion_critica: >
+      Nm³ (0 °C) ≠ m³ estándar (15 °C). Un valor en mg/m³ @ 15°C debe
+      corregirse por el cociente de temperaturas antes de comparar con
+      un límite expresado en mg/Nm³.
+
+  mg_per_sm3:
+    simbolo: "mg/m³ (@ 15°C)"
+    tipo: concentracion_masica
+    descripcion: Miligramos por metro cúbico estándar (15 °C, 1,01325 bar)
+    condiciones:
+      temperatura_C: 15
+      presion_bar: 1.01325
+    conversion_a_nm3: "valor_Nm3 = valor_sm3 × (288.15 / 273.15) ≈ valor_sm3 × 1.0549"
+
+  MJ_per_nm3:
+    simbolo: "MJ/Nm³"
+    tipo: densidad_energetica
+    descripcion: Megajulios por metro cúbico normal (0 °C, 1,01325 bar)
+
+  kWh_per_nm3:
+    simbolo: "kWh/Nm³"
+    tipo: densidad_energetica
+    descripcion: Kilovatios-hora por metro cúbico normal
+    conversion: "1 MJ/Nm³ = 1/3,6 kWh/Nm³ ≈ 0,2778 kWh/Nm³"
+
+  MJ_per_sm3:
+    simbolo: "MJ/sm³  (@25/15)"
+    tipo: densidad_energetica
+    descripcion: Megajulios por metro cúbico estándar (15 °C). Usado en algunas normas UE.
+    conversion_a_nm3: "PCS[MJ/Nm³] = PCS[MJ/sm³] × (273.15/288.15) ≈ PCS[MJ/sm³] × 0.9479"
+
+
+# =============================================================================
+# FLAGS DE COMPARABILIDAD
+# =============================================================================
+
+flags:
+
+  COMPARABLE:
+    icono: "🟢"
+    descripcion: >
+      Misma unidad y mismas condiciones de referencia (o conversión exacta
+      ya aplicada). La comparación directa es válida.
+    accion: Mostrar comparación directa con trazabilidad a fuente.
+
+  COMPARABLE_TRAS_NORMALIZAR:
+    icono: "🟡"
+    descripcion: >
+      Unidades o condiciones de referencia distintas, pero existe una
+      conversión determinista verificada. Se aplica el factor de normalización
+      y se muestra el valor equivalente con el factor explícito.
+    accion: >
+      Aplicar conversión, mostrar valor normalizado, indicar factor usado
+      y las condiciones de referencia de partida y llegada.
+
+  NO_COMPARABLE:
+    icono: "🔴"
+    descripcion: >
+      No es posible comparar porque falta información (condiciones de referencia
+      no especificadas en la fuente) o no existe conversión válida.
+      No se inventa ningún número equivalente.
+    accion: >
+      Explicar explícitamente por qué no es comparable. Indicar qué información
+      adicional sería necesaria para poder realizar la comparación.
+    ejemplos_de_activacion:
+      - "Valor de PCS del usuario sin especificar condiciones de referencia @T/T"
+      - "Valor de H₂S en mg/m³ sin especificar si es a 0°C o 15°C"
+      - "Artículo de la normativa que no especifica la condición de volumen"
+
+  NO_COMPARABLE_SIN_DATOS:
+    icono: "🔴"
+    descripcion: Falta el valor o la unidad del dato del usuario para poder comparar.
+    accion: Solicitar al usuario el valor y la unidad con sus condiciones de referencia.
+
+  UNIDADES_INCOMPATIBLES:
+    icono: "🔴"
+    descripcion: >
+      Las magnitudes físicas no son convertibles entre sí
+      (p.ej. comparar mg/Nm³ de O₂ con % de H₂S sin más datos).
+    accion: Escalar notificación — requiere revisión experta o aclaración del usuario.
+
+
+# =============================================================================
+# MOTOR DE REGLAS Y ORQUESTADOR
+# =============================================================================
+
+orquestador:
+  descripcion: >
+    Componente que recibe la pregunta del usuario (en lenguaje natural) y decide
+    qué rama del sistema activar. El LLM clasifica la intención; la lógica
+    de negocio la ejecuta código determinista.
+
+  clasificacion_preguntas:
+    comparativa:
+      descripcion: >
+        La pregunta solicita comparar un parámetro entre ES y UE,
+        o evaluar si un valor medido cumple la normativa.
+      ejemplos:
+        - "¿Cuál es el límite de H₂S en España y en la UE? ¿Son comparables?"
+        - "Compara el rango de PCS entre ES y el Network Code."
+        - "El gas tiene 12 mg/m³ de H₂S a 15°C, ¿cumple el límite español?"
+      ruta: ontologia → normalizador → flag → LLM_redacta
+
+    abierta:
+      descripcion: >
+        La pregunta solicita información sobre la normativa sin comparación
+        directa de valores numéricos. Se resuelve por RAG.
+      ejemplos:
+        - "¿Qué dice la normativa española sobre el oxígeno?"
+        - "¿Qué es el índice de Wobbe?"
+        - "¿En qué artículo del RD 919 se regula el H₂S?"
+      ruta: RAG (Vector DB + chunks PDF con metadatos) → LLM_redacta_con_cita
+
+motor_reglas:
+  descripcion: >
+    Ejecuta el pipeline determinista para preguntas comparativas.
+    Ningún paso invoca al LLM para obtener números; el LLM sólo redacta al final.
+
+  pasos:
+    "1_clasificar_pregunta":
+      accion: LLM detecta si la pregunta es comparativa o abierta.
+      salida: tipo_pregunta ∈ {comparativa, abierta}
+
+    "2_identificar_parametro":
+      accion: >
+        Mapear la consulta al parámetro canónico (O2, H2S, PCS)
+        usando la lista de aliases de la ontología + embedding semántico.
+      salida: parametro_id ∈ {O2, H2S, PCS} o ERROR_PARAMETRO_NO_RECONOCIDO
+
+    "3_recuperar_limites":
+      accion: >
+        Leer de la ontología los límites ES y UE para el parámetro identificado.
+        NO se consulta al LLM para este paso.
+      salida: limite_ES, limite_UE, condiciones_ES, condiciones_UE
+
+    "4_extraer_valor_usuario":
+      accion: >
+        Si la pregunta incluye un valor medido, extraerlo junto con su unidad
+        y condiciones de referencia. Si faltan condiciones → flag NO_COMPARABLE.
+      salida: valor_usuario, unidad_usuario, condiciones_usuario
+
+    "5_normalizar_unidades":
+      accion: >
+        Convertir todos los valores (límite ES, límite UE, valor usuario si existe)
+        a la unidad base del parámetro usando la tabla de conversiones y los
+        factores de corrección de condiciones de referencia.
+      herramienta_recomendada: pint (Python library para unidades)
+      salida: valores_normalizados, factor_aplicado, unidad_base
+
+    "6_evaluar_comparabilidad":
+      accion: >
+        Determinar si la comparación es válida según las reglas de la ontología.
+        Asignar flag: 🟢 COMPARABLE / 🟡 COMPARABLE_TRAS_NORMALIZAR / 🔴 NO_COMPARABLE
+      salida: flag, razon_flag
+
+    "7_evaluar_cumplimiento":
+      accion: >
+        Si hay valor de usuario, comparar contra límites normalizados.
+        Emitir: CUMPLE_ES, CUMPLE_UE, INCUMPLE_ES, INCUMPLE_UE.
+      salida: resultado_cumplimiento
+
+    "8_generar_respuesta":
+      accion: >
+        Pasar al LLM: parámetro, límites con citas de artículo y fuente,
+        valores normalizados, factor de conversión, flag y resultado de cumplimiento.
+        El LLM redacta en lenguaje natural sin inventar ningún número.
+      garantias:
+        - Trazabilidad: toda cifra va acompañada del artículo y documento fuente.
+        - Sin alucinación numérica: el LLM sólo recibe datos estructurados y redacta.
+        - Flag explícito: la respuesta siempre incluye el icono y la explicación del flag.
+        - Alerta de condiciones: si las condiciones de referencia son relevantes, se explicitan.
+
+
+# =============================================================================
+# ARQUITECTURA RAG (para preguntas abiertas)
+# =============================================================================
+
+rag:
+  descripcion: >
+    Motor de recuperación para preguntas abiertas sobre normativa.
+    El LLM responde fundamentado en fragmentos recuperados de los PDFs,
+    nunca de memoria. Toda afirmación va acompañada de cita por metadatos.
+
+  fuentes_pdf:
+    - id: RD919
+      descripcion: "RD 919/2006 completo"
+    - id: NGTS06
+      descripcion: "NGTS-06 y sus Protocolos de Detalle (última versión BOE)"
+    - id: NC_INT_2015_703
+      descripcion: "Reglamento (UE) 2015/703 — NC INT completo"
+    - id: NC_CAM_2017_459
+      descripcion: "Reglamento (UE) 2017/459 — NC CAM (si contiene calidad)"
+    - id: EASEE_CBP
+      descripcion: "EASEE-gas CBP relevantes (2005-001/002)"
+
+  chunking:
+    estrategia: por_articulo_o_seccion
+    tamano_aproximado_tokens: 400
+    solapamiento_tokens: 50
+    nota: >
+      Preservar el número de artículo y sección en los metadatos de cada chunk.
+      Es imprescindible para la trazabilidad verificable.
+
+  metadatos_por_chunk:
+    - documento_id       # ej. RD919, NC_INT
+    - titulo_documento
+    - articulo_o_seccion # ej. "Art. 43", "Anexo I, Tabla 1"
+    - pagina
+    - fecha_publicacion
+    - url_fuente_oficial
+
+  retrieval:
+    metodo: similitud_coseno
+    top_k: 5
+    reranking: opcional_cross_encoder
+
+  respuesta:
+    formato: >
+      Texto generado por LLM + cita inline: (Fuente: [documento_id], [artículo], p. [página])
+    garantia: El LLM no responde sin fragmento recuperado de respaldo.
+
+
+# =============================================================================
+# GLOSARIO DE DOMINIO
+# =============================================================================
+
+glosario:
+
+  PCS:
+    definicion: >
+      Energía liberada en la combustión completa de una unidad de gas,
+      incluyendo el calor de condensación del agua de los productos.
+      En inglés GCV (Gross Calorific Value) o HHV. Depende críticamente
+      de las condiciones de referencia @T_combustión/T_volumen.
+
+  PCI:
+    definicion: >
+      Como el PCS pero sin contar la condensación del agua (NCV / LHV).
+      No es uno de los 3 parámetros del reto. No confundir con PCS.
+
+  indice_wobbe:
+    definicion: >
+      PCS / √(densidad relativa). Indicador de intercambiabilidad del gas.
+      Aparece en el NC INT. No es uno de los 3 parámetros del reto pero
+      es contexto frecuente en preguntas sobre PCS.
+
+  condiciones_referencia:
+    definicion: >
+      Par (temperatura de combustión, temperatura/presión del volumen) bajo el
+      que se expresa un valor calorífico o de concentración.
+      Notación estándar: @T_comb/T_vol, p.ej. @25/0.
+      Sin especificarlas, un valor de PCS es ambiguo.
+
+  Nm3:
+    definicion: >
+      Metro cúbico normal: volumen medido a 0 °C y 1,01325 bar.
+      Distinto del m³ estándar (sm³) a 15 °C. La distinción es crítica
+      para convertir mg/m³ y valores de PCS.
+
+  sm3:
+    definicion: >
+      Metro cúbico estándar: volumen medido a 15 °C y 1,01325 bar.
+      Usado en algunas normas europeas. 1 sm³ ≈ 1,0549 Nm³.
+
+  ppm_vol:
+    definicion: "Partes por millón en volumen (= μmol/mol para gas ideal)."
+
+  EN_ISO_6976:
+    definicion: >
+      Norma de cálculo de poder calorífico, densidad e índice de Wobbe
+      a partir de la composición. Define las condiciones de referencia estándar.
+
+  NGTS:
+    definicion: >
+      Normas de Gestión Técnica del Sistema gasista español.
+      La NGTS-06 cubre medición, calidad y odorización con los valores
+      numéricos específicos de los límites.
+
+  trazabilidad:
+    definicion: >
+      Capacidad de remontar cada afirmación de la respuesta hasta su origen
+      exacto en el documento fuente (artículo, página, URL oficial).
+      Requisito central del sistema.
+
+  pint:
+    definicion: >
+      Librería de Python para manejar magnitudes con unidades y convertirlas
+      de forma segura. Candidata para implementar la capa de normalización.
+
+  streamlit:
+    definicion: >
+      Framework de Python para construir interfaces web con poco código.
+      Candidato para la UI del prototipo.
+
