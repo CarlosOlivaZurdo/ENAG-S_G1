@@ -1,24 +1,3 @@
-Sí. De hecho, si el documento va a utilizarse como **prompt maestro para gobernar todo el diseño funcional, la arquitectura, el RAG, la ontología y el comportamiento del asistente**, conviene reformularlo completamente para reflejar que el producto final **sí es un chatbot**, pero un chatbot extremadamente especializado, controlado y auditado.
-
-La diferencia clave es:
-
-- ❌ No es un chatbot generalista tipo ChatGPT.
-- ❌ No es un asistente legal.
-- ❌ No es un buscador documental.
-- ❌ No es un agente autónomo que interpreta normativa.
-
-Pero sí es:
-
-- ✅ Un chatbot especializado.
-- ✅ Un asistente conversacional técnico-regulatorio.
-- ✅ Un sistema RAG con trazabilidad.
-- ✅ Un comparador de especificaciones de calidad de gas.
-- ✅ Un copiloto para expertos de regulación y calidad de gas.
-
-Por tanto, yo reescribiría el prompt maestro desde una perspectiva mucho más orientada al producto real que vais a presentar a Enagás.
-
----
-
 # PROMPT MAESTRO DEL PROYECTO
 
 # CHATBOT ESPECIALIZADO PARA COMPARACIÓN REGULATORIA DE CALIDAD DE GAS NATURAL EN EUROPA
