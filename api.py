@@ -1,18 +1,29 @@
+import os
 from functools import wraps
 import time
-from typing import Callable, Any, Dict
+from typing import Callable, Any, Dict, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from langchain.agents import create_agent
-from langchain_xai import ChatXAI
+from langchain.chat_models import init_chat_model
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import BaseMessage
+from langchain_xai import ChatXAI
 
-from motor_determinista import consultar_excel
+from motor_determinista import consultar_excel, consultar_excel_tool
+
+load_dotenv()
+XAI_API_KEY = os.getenv("XAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if XAI_API_KEY and XAI_API_KEY.strip() == "tu_clave_aqui":
+    XAI_API_KEY = None
+if OPENAI_API_KEY and OPENAI_API_KEY.strip() == "tu_clave_aqui":
+    OPENAI_API_KEY = None
 
 
 class PeticionChat(BaseModel):
@@ -22,6 +33,12 @@ class PeticionChat(BaseModel):
 
 class RespuestaChat(BaseModel):
     respuesta: str
+    modo: str = "ia"
+
+
+class StatusResponse(BaseModel):
+    modo: str
+    detalle: str
 
 
 def medir_tiempo(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -72,17 +89,39 @@ def get_session_history(session_id: str) -> BaseChatMessageHistory:
     return session_histories[session_id]
 
 
-chat_model = ChatXAI(model="grok-2", temperature=0)
-agent = create_agent(
-    model=chat_model,
-    tools=[consultar_excel],
-    response_format=str,
-)
-agent_with_history = RunnableWithMessageHistory(
-    agent,
-    get_session_history,
-    input_messages_key="mensaje",
-    history_messages_key="history",
+chat_model = None
+agent = None
+
+if XAI_API_KEY:
+    os.environ["XAI_API_KEY"] = XAI_API_KEY
+    chat_model = ChatXAI(model="grok-2", temperature=0)
+    print("[api] INFO: Usando ChatXAI con XAI_API_KEY.")
+elif OPENAI_API_KEY:
+    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+    chat_model = init_chat_model(model="gpt-4o-mini", model_provider="openai")
+    print("[api] INFO: Usando OpenAI a través de langchain.init_chat_model con OPENAI_API_KEY.")
+else:
+    print("[api] WARNING: Ninguna clave de modelo está configurada. El backend arrancará, pero el agente no estará disponible.")
+
+if chat_model is not None:
+    agent = create_agent(
+        model=chat_model,
+        tools=[consultar_excel_tool],
+        response_format=str,
+    )
+
+agent_with_history = None
+if agent is not None:
+    agent_with_history = RunnableWithMessageHistory(
+        agent,
+        get_session_history,
+        input_messages_key="mensaje",
+        history_messages_key="history",
+    )
+
+backend_mode = "ia" if agent_with_history is not None else "determinista"
+backend_detail = (
+    "Agente IA operativo" if backend_mode == "ia" else "Sin clave de modelo válida: usando fallback determinista"
 )
 
 app = FastAPI()
@@ -95,10 +134,66 @@ app.add_middleware(
 )
 
 
+def _fallback_deterministic_response(mensaje: str) -> str:
+    texto = mensaje.lower()
+    param_keywords = [
+        "o2",
+        "pcs",
+        "h2s",
+        "wobbe",
+        "s total",
+        "co2",
+        "h2o",
+        "rsh",
+        "densidad relativa",
+        "hco",
+    ]
+    country_keywords = ["espa", "portugal", "francia", "espana", "españa"]
+    parametro = next((kw for kw in param_keywords if kw in texto), None)
+    pais = next((kw for kw in country_keywords if kw in texto), None)
+
+    if parametro and pais:
+        respuesta = consultar_excel(parametro, pais)
+        if respuesta.get("error"):
+            return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
+        if respuesta["count"] == 0:
+            return (
+                f"No se han encontrado resultados deterministas para el parámetro '{parametro}' en '{pais}'. "
+                f"Asegúrate de usar un parámetro y país presentes en el archivo de datos." 
+            )
+        matches = respuesta["matches"]
+        salida = [
+            f"Resultado determinista ({respuesta['file']}) - {respuesta['count']} coincidencia(s):"
+        ]
+        for item in matches[:5]:
+            fields = ", ".join(
+                f"{k}: {v}" for k, v in item.items() if k not in {"sheet"}
+            )
+            output_line = f"Hoja: {item.get('sheet', 'N/A')} - {fields}"
+            salida.append(output_line)
+        if respuesta["count"] > 5:
+            salida.append(f"... y {respuesta['count'] - 5} coincidencia(s) adicionales.")
+        return "\n".join(salida)
+    return (
+        "El backend está operativo, pero no hay una clave de modelo configurada. "
+        "Envía una consulta con un parámetro de calidad de gas y un país para obtener una respuesta determinista."
+    )
+
+
+@app.get("/api/status", response_model=StatusResponse)
+@gestionar_errores
+async def status_endpoint() -> StatusResponse:
+    return StatusResponse(modo=backend_mode, detalle=backend_detail)
+
+
 @app.post("/api/chat", response_model=RespuestaChat)
 @gestionar_errores
 @medir_tiempo
 async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
+    if agent_with_history is None:
+        respuesta = _fallback_deterministic_response(request.mensaje)
+        return RespuestaChat(respuesta=respuesta, modo="determinista")
+
     response = agent_with_history.invoke(
         {"mensaje": request.mensaje},
         config={"configurable": {"session_id": request.session_id}},
@@ -107,4 +202,4 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
         texto = str(response["output"])
     else:
         texto = str(response)
-    return RespuestaChat(respuesta=texto)
+    return RespuestaChat(respuesta=texto, modo="ia")

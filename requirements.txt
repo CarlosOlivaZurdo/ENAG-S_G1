@@ -11,4 +11,5 @@ pydantic
 langchain
 langchain-xai
 langchain-core
+openai
 requests

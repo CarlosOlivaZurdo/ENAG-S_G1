@@ -1,11 +1,59 @@
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from langchain_core.tools import tool
 
+EXCEL_FILENAME = "limites_calidad.xlsx"
+EXCEL_SEARCH_GLOBS = ["data/*.xlsx", "data/**/*.xlsx", "data/raw/*.xlsx"]
 
-@tool
+
+def _find_excel_path(project_root: Path) -> Path:
+    default_path = project_root.joinpath("data", EXCEL_FILENAME)
+    if default_path.exists():
+        return default_path
+
+    for pattern in EXCEL_SEARCH_GLOBS:
+        candidates = sorted(project_root.glob(pattern))
+        if candidates:
+            return candidates[0]
+
+    raise FileNotFoundError(
+        f"No se ha encontrado ningún fichero Excel válido en {project_root / 'data'}"
+    )
+
+
+def _normalize_text(value: Any) -> str:
+    text = str(value) if value is not None else ""
+    normalized = text.strip().lower()
+    return (
+        normalized.replace("á", "a")
+        .replace("é", "e")
+        .replace("í", "i")
+        .replace("ó", "o")
+        .replace("ú", "u")
+        .replace("ü", "u")
+        .replace("ñ", "n")
+    )
+
+
+def _match_query(value: Any, query: str) -> bool:
+    return query.lower() in _normalize_text(value)
+
+
+def _extract_sheet_country(sheet_name: str) -> str:
+    return _normalize_text(sheet_name)
+
+
+def _detect_header_row(df: pd.DataFrame) -> Optional[int]:
+    for index, row in df.iterrows():
+        row_values = " ".join(str(value).strip().lower() for value in row if pd.notna(value))
+        normalized = _normalize_text(row_values)
+        if "param" in normalized and any(keyword in normalized for keyword in ["pais", "pais", "country"]):
+            return index
+    return None
+
+
 def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
     """
     Consulta normativa determinista contra el fichero Excel de límites de calidad.
@@ -19,18 +67,11 @@ def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
     proporcionados por esta herramienta.
 
     Comportamiento:
-    - Lee el fichero Excel `data/limites_calidad.xlsx` situado en la raíz del
-      repositorio (carpeta `data`).
+    - Lee un fichero Excel de límites de calidad situado en la carpeta `data`.
     - Busca filas que coincidan con `parametro` y `pais` (búsqueda parcial,
       case-insensitive).
     - Devuelve un diccionario serializable con los registros encontrados y
       metadatos útiles para auditoría.
-
-    Parámetros:
-    - parametro (str): nombre del parámetro a buscar (por ejemplo, "O2",
-      "PCS", "H2S").
-    - pais (str): código o nombre del país a filtrar (por ejemplo, "España",
-      "Portugal").
 
     Retorno:
     Dict con las claves:
@@ -39,26 +80,21 @@ def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
       originales del Excel).
     - file: ruta absoluta del fichero usado como fuente.
     - error: mensaje de error en caso de fallo (omitir si no hay error).
-
-    Reglas de uso:
-    - Toda salida deberá incluir referencia al documento original (columna
-      `fuente` si existe en la hoja) y nunca debe utilizarse para generar
-      valores nuevos fuera de los campos que ya contiene el Excel.
     """
 
     project_root = Path(__file__).resolve().parent
-    excel_path = project_root.joinpath("data", "limites_calidad.xlsx")
-
-    if not excel_path.exists():
+    try:
+        excel_path = _find_excel_path(project_root)
+    except FileNotFoundError as exc:
         return {
             "count": 0,
             "matches": [],
-            "file": str(excel_path),
-            "error": "Fichero no encontrado: data/limites_calidad.xlsx",
+            "file": str(project_root.joinpath("data")),
+            "error": str(exc),
         }
 
     try:
-        df = pd.read_excel(excel_path, engine="openpyxl")
+        sheets = pd.read_excel(excel_path, engine="openpyxl", sheet_name=None, header=None)
     except Exception as exc:
         return {
             "count": 0,
@@ -67,46 +103,73 @@ def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
             "error": f"Error leyendo el fichero Excel: {exc}",
         }
 
-    # Buscar las columnas que probablemente contengan 'parametro' y 'pais'
-    columns_lower = {col.lower(): col for col in df.columns}
+    query_param = _normalize_text(parametro)
+    query_country = _normalize_text(pais)
+    all_records: List[Dict[str, Any]] = []
 
-    param_col = None
-    for candidate in ("parametro", "parámetro", "parameter", "param"):
-        if candidate in columns_lower:
-            param_col = columns_lower[candidate]
-            break
+    for sheet_name, raw_df in sheets.items():
+        sheet_country = _extract_sheet_country(sheet_name)
+        header_row = _detect_header_row(raw_df)
+        if header_row is None:
+            header_row = 0
 
-    country_col = None
-    for candidate in ("pais", "country", "país"):
-        if candidate in columns_lower:
-            country_col = columns_lower[candidate]
-            break
+        try:
+            df = pd.read_excel(excel_path, engine="openpyxl", sheet_name=sheet_name, header=header_row)
+        except Exception as exc:
+            continue
 
-    # Fallbacks: si no se encuentran, intentar con las dos primeras columnas
-    if param_col is None and len(df.columns) >= 1:
-        param_col = df.columns[0]
-    if country_col is None and len(df.columns) >= 2:
-        country_col = df.columns[1]
+        columns_lower = {str(col).strip().lower(): col for col in df.columns}
 
-    # Filtrado tolerante: búsqueda parcial y case-insensitive
-    try:
-        mask_param = df[param_col].astype(str).str.contains(parametro, case=False, na=False)
-    except Exception:
-        mask_param = pd.Series([False] * len(df))
+        param_col = None
+        for candidate in ("parametro", "parámetro", "parameter", "param", "parámetros", "parâmetros", "parmetros"):
+            if candidate in columns_lower:
+                param_col = columns_lower[candidate]
+                break
+        if param_col is None:
+            for col in df.columns:
+                col_text = _normalize_text(col)
+                if "param" in col_text:
+                    param_col = col
+                    break
 
-    try:
-        mask_country = df[country_col].astype(str).str.contains(pais, case=False, na=False)
-    except Exception:
-        mask_country = pd.Series([False] * len(df))
+        country_col = None
+        for candidate in ("pais", "country", "país", "países", "country of origin"):
+            if candidate in columns_lower:
+                country_col = columns_lower[candidate]
+                break
 
-    result_df = df[mask_param & mask_country]
+        if param_col is None and len(df.columns) >= 2:
+            param_col = df.columns[1]
+        if country_col is None and len(df.columns) >= 1:
+            country_col = df.columns[0]
 
-    records: List[Dict[str, Any]] = []
-    if not result_df.empty:
-        records = result_df.fillna("").to_dict(orient="records")
+        try:
+            param_mask = df[param_col].astype(str).apply(_normalize_text).str.contains(query_param, na=False)
+        except Exception:
+            param_mask = pd.Series([False] * len(df))
+
+        country_mask = pd.Series([False] * len(df))
+        if country_col is not None:
+            try:
+                country_mask = df[country_col].astype(str).apply(_match_query, query=query_country)
+            except Exception:
+                country_mask = pd.Series([False] * len(df))
+
+        if query_country and sheet_country and query_country in sheet_country:
+            country_mask = pd.Series([True] * len(df))
+
+        result_df = df[param_mask & country_mask]
+        if not result_df.empty:
+            records = result_df.fillna("").to_dict(orient="records")
+            for record in records:
+                record["sheet"] = sheet_name
+            all_records.extend(records)
 
     return {
-        "count": len(records),
-        "matches": records,
+        "count": len(all_records),
+        "matches": all_records,
         "file": str(excel_path),
     }
+
+
+consultar_excel_tool = tool(consultar_excel)
