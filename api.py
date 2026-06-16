@@ -15,7 +15,12 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import BaseMessage
 from langchain_xai import ChatXAI
 
-from motor_determinista import consultar_excel, consultar_excel_tool
+from motor_determinista import (
+    consultar_excel,
+    consultar_excel_tool,
+    evaluar_cumplimiento,
+    evaluar_cumplimiento_tool,
+)
 
 load_dotenv()
 XAI_API_KEY = os.getenv("XAI_API_KEY")
@@ -106,7 +111,7 @@ else:
 if chat_model is not None:
     agent = create_agent(
         model=chat_model,
-        tools=[consultar_excel_tool],
+        tools=[consultar_excel_tool, evaluar_cumplimiento_tool],
         response_format=str,
     )
 
@@ -134,6 +139,21 @@ app.add_middleware(
 )
 
 
+def _parse_numeric_value(text: str) -> Optional[float]:
+    import re
+
+    pattern = r"(?<![A-Za-z0-9_.,])([-+]?[0-9]+(?:[\.,][0-9]+)?)(?![A-Za-z0-9_.,])"
+    matches = re.findall(pattern, text)
+    if not matches:
+        return None
+    best_match = max(matches, key=lambda m: ('.' in m, len(m)))
+    raw = best_match.replace(",", ".")
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
 def _fallback_deterministic_response(mensaje: str) -> str:
     texto = mensaje.lower()
     param_keywords = [
@@ -151,6 +171,29 @@ def _fallback_deterministic_response(mensaje: str) -> str:
     country_keywords = ["espa", "portugal", "francia", "espana", "españa"]
     parametro = next((kw for kw in param_keywords if kw in texto), None)
     pais = next((kw for kw in country_keywords if kw in texto), None)
+    valor = _parse_numeric_value(texto)
+
+    if parametro and pais and valor is not None:
+        respuesta = evaluar_cumplimiento(parametro, pais, valor)
+        if respuesta.get("error"):
+            return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
+        if respuesta["count"] == 0:
+            return (
+                f"No se han encontrado resultados deterministas para el parámetro '{parametro}' en '{pais}'. "
+                f"Asegúrate de usar un parámetro y país presentes en el archivo de datos."
+            )
+        salida = [
+            f"Resultado determinista ({respuesta['file']}) - {respuesta['count']} coincidencia(s):"
+        ]
+        for item in respuesta["matches"][:5]:
+            salida.append(
+                f"Índice {item['indice']}: {item['parametro']} ({item['sheet']}) - {item['cumple']} "
+                f"con valor {item['valor_evaluado']} {item['unidad_evaluada']} "
+                f"[{item['limite_inferior']} / {item['limite_superior']}]."
+            )
+        if respuesta["count"] > 5:
+            salida.append(f"... y {respuesta['count'] - 5} coincidencia(s) adicionales.")
+        return "\n".join(salida)
 
     if parametro and pais:
         respuesta = consultar_excel(parametro, pais)
@@ -159,7 +202,7 @@ def _fallback_deterministic_response(mensaje: str) -> str:
         if respuesta["count"] == 0:
             return (
                 f"No se han encontrado resultados deterministas para el parámetro '{parametro}' en '{pais}'. "
-                f"Asegúrate de usar un parámetro y país presentes en el archivo de datos." 
+                f"Asegúrate de usar un parámetro y país presentes en el archivo de datos."
             )
         matches = respuesta["matches"]
         salida = [
@@ -174,9 +217,10 @@ def _fallback_deterministic_response(mensaje: str) -> str:
         if respuesta["count"] > 5:
             salida.append(f"... y {respuesta['count'] - 5} coincidencia(s) adicionales.")
         return "\n".join(salida)
+
     return (
         "El backend está operativo, pero no hay una clave de modelo configurada. "
-        "Envía una consulta con un parámetro de calidad de gas y un país para obtener una respuesta determinista."
+        "Envía una consulta con un parámetro de calidad de gas, un país y un valor numérico para obtener una respuesta determinista."
     )
 
 
