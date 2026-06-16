@@ -13,13 +13,18 @@
 #                       → ¿Abierta?    → RAG (Vector DB + chunks PDF) → LLM con cita
 #
 # FUENTES VERIFICADAS
-# Los valores numéricos deben confirmarse contra los PDFs originales antes
-# de producción. Los artículos indicados son referencias de localización.
+# Revisión 2026-06: los valores numéricos ES se han verificado contra el
+# Protocolo de Detalle PD-01 («Medición, Calidad y Odorización de Gas»),
+# apartado 5.2, Tabla 3, publicado en el BOE y reproducido por Enagás.
+# El Reglamento (UE) 2015/703 NO fija límites numéricos de O₂, H₂S ni de
+# rango de PCS: sólo fija unidades, condiciones de referencia y obligaciones
+# de monitorización de Wobbe/PCS. Por ello los límites numéricos UE quedan
+# marcados como NO_VERIFICABLE_SIN_FUENTE (no existen en la norma citada).
 # =============================================================================
 
 ontologia:
-  version: "1.1.0"
-  fecha_revision: "2025-07"
+  version: "2.0.0"
+  fecha_revision: "2026-06"
   descripcion: >
     Ontología determinista para comparar parámetros de calidad del gas natural
     entre la normativa española (RD 919/2006 + NGTS-06) y la europea
@@ -36,24 +41,46 @@ ontologia:
       tipo: reglamento_nacional
       nombre: "Real Decreto 919/2006, de 28 de julio"
       pais: España
-      publicacion: "BOE núm. 198, de 19 de agosto de 2006"
-      url_boe: "https://www.boe.es/eli/es/rd/2006/07/28/919"
+      publicacion: "BOE núm. 211, de 4 de septiembre de 2006, págs. 31576-31632"
+      url_boe: "https://www.boe.es/buscar/act.php?id=BOE-A-2006-15345"
+      eli: "https://www.boe.es/eli/es/rd/2006/07/28/919"
       ambito: >
         Reglamento técnico de distribución y utilización de combustibles gaseosos
         y sus instrucciones técnicas complementarias ICG 01 a 11.
+      nota: >
+        IMPORTANTE: este RD regula la distribución y utilización (ICG), NO contiene
+        la tabla numérica de especificaciones de calidad del gas de transporte.
+        Esos valores (O₂, H₂S, PCS, Wobbe, etc.) están en el PD-01 de la NGTS
+        (ver fuente PD01). El RD 919/2006 se mantiene como contexto, no como
+        origen de las cifras de calidad.
 
     - id: NGTS06
       tipo: norma_tecnica_sistema
-      nombre: "NGTS-06 — Medición, Calidad y Odorización del gas"
+      nombre: "NGTS-06 — Normas de Gestión Técnica del Sistema gasista"
       pais: España
-      publicacion: "Resolución BOE (fecha según revisión vigente)"
+      publicacion: "Aprobadas por Orden ITC/3126/2005, de 5 de octubre (BOE 15/10/2005), y modificaciones posteriores"
       ambito: >
-        Norma de Gestión Técnica del Sistema gasista español que fija
-        las especificaciones numéricas de calidad del gas, incluyendo
-        Protocolos de Detalle (PD). Complementa y desarrolla el RD 919/2006.
-      nota: >
-        Para valores definitivos de O₂, H₂S y PCS, verificar siempre la
-        versión vigente de la NGTS-06 y sus PD publicados en el BOE.
+        Normas de Gestión Técnica del Sistema gasista español. El detalle
+        numérico de las especificaciones de calidad del gas se desarrolla en
+        el Protocolo de Detalle PD-01 (ver fuente PD01).
+
+    - id: PD01
+      tipo: protocolo_detalle
+      nombre: "PD-01 — Medición, Calidad y Odorización de Gas"
+      pais: España
+      publicacion: >
+        Aprobado por Resolución DGPEM de 13/03/2006; redacción del apartado 5.2
+        (Tabla 3) vigente según Resolución de 21/12/2012 (BOE-A-2013-185) y
+        Resolución de 8/10/2018 (BOE-A-2018-14557).
+      url_boe_2012: "https://www.boe.es/eli/es/res/2012/12/21/(3)"
+      url_boe_2018: "https://www.boe.es/eli/es/res/2018/10/08/(3)"
+      url_enagas: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
+      ambito: >
+        Fuente PRIMARIA de las especificaciones numéricas de calidad del gas
+        introducido en el Sistema Gasista español (apartado 5.2, Tabla 3):
+        índice de Wobbe, PCS, densidad relativa, S total, H₂S+COS, RSH, O₂,
+        CO₂, puntos de rocío. Condiciones de referencia de la tabla:
+        [0 ºC, V(0 ºC, 1,01325 bar)].
 
     - id: NC_INT
       tipo: reglamento_europeo
@@ -120,35 +147,43 @@ parametros:
 
     limites:
       ES:
-        fuente: RD919
+        fuente: PD01
         fuente_secundaria: NGTS06
-        articulo: "pendiente verificación en PDF — referencia orientativa: Art. 43 / NGTS-06 PD"
+        articulo: "PD-01, apartado 5.2, Tabla 3 (Especificaciones de calidad del gas introducido en el Sistema Gasista)"
+        fuente_url: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
         tipo_limite: maximo
         valor: 0.01
-        unidad: pct_vol
-        expresion_original: "0,01 % (vol)"
+        unidad: pct_mol
+        expresion_original: "0,01 % mol (máximo)"
         condiciones_referencia:
-          temperatura_combustion_C: null   # no aplica para O₂
+          temperatura_combustion_C: null   # no aplica: fracción molar
           temperatura_volumen_C: 0
           presion_bar: 1.01325
-        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        estado_verificacion: VERIFICADO
+        nota: >
+          Confirmado en PD-01 Tabla 3: O₂ ≤ 0,01 % mol. La tabla expresa la
+          fracción como molar (% mol), no volumétrica; para gas ideal % mol ≈ % vol.
 
       UE:
         fuente: NC_INT
-        articulo: "pendiente verificación en PDF — referencia orientativa: Anexo I / Art. sobre calidad"
+        articulo: "Reglamento (UE) 2015/703 — no fija límite de O₂"
+        fuente_url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
         tipo_limite: maximo
-        valor: 0.001
-        unidad: pct_mol
-        expresion_original: "0,1 mol-% (referencia NC INT; verificar valor exacto)"
+        valor: null
+        unidad: null
+        expresion_original: "no establecido por el Reglamento (UE) 2015/703"
         condiciones_referencia:
           temperatura_combustion_C: null
-          temperatura_volumen_C: 0
-          presion_bar: 1.01325
-        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+          temperatura_volumen_C: null
+          presion_bar: null
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: >
-          El NC INT expresa la calidad del gas en los puntos de interconexión.
-          Verificar si el límite de O₂ aparece en el Anexo I del Reglamento
-          2015/703 o en las especificaciones de calidad aplicables.
+          El Reglamento (UE) 2015/703 (NC INT) NO contiene un límite numérico de
+          O₂. Sólo armoniza unidades, condiciones de referencia y la obligación de
+          publicar/monitorizar índice de Wobbe y PCS. Los límites de O₂ se dejan a
+          la normativa nacional / acuerdos bilaterales entre TSOs (y, como
+          referencia técnica no vinculante, a la norma EN 16726). No se puede
+          escribir un valor numérico UE sin inventarlo.
 
     conversion:
       par: [pct_vol, pct_mol]
@@ -160,18 +195,20 @@ parametros:
       formula_ppm_a_pct: "pct_vol = ppm_vol / 10000"
       ejemplo: "0,01 % = 100 ppm(vol)"
 
-    flag_comparabilidad: COMPARABLE_TRAS_NORMALIZAR
+    flag_comparabilidad: NO_COMPARABLE
     comparabilidad:
-      estado: COMPARABLE_TRAS_NORMALIZAR
-      icono: "🟡"
-      requiere_conversion: true
-      conversion_exacta: true
+      estado: NO_COMPARABLE
+      icono: "🔴"
+      requiere_conversion: false
+      conversion_exacta: false
       resultado: >
-        Tras convertir a la misma unidad (ppm vol), los límites resultan
-        comparables directamente. Verificar valores exactos contra PDF.
+        No es posible comparar O₂ entre ES y UE: España fija O₂ ≤ 0,01 % mol
+        (PD-01 Tabla 3), pero el Reglamento (UE) 2015/703 no establece ningún
+        límite numérico de O₂. La comparación queda 🔴 NO_COMPARABLE por falta
+        de valor UE en la fuente normativa citada.
       condicion_alerta: >
-        Si las condiciones de referencia del volumen difieren entre ES y UE,
-        el flag cambia a 🔴 NO_COMPARABLE hasta especificar la conversión.
+        Si se incorpora una fuente UE con límite de O₂ (p.ej. EN 16726 o un
+        acuerdo bilateral de interconexión), actualizar el valor UE y reevaluar.
 
 
   # ---------------------------------------------------------------------------
@@ -197,17 +234,28 @@ parametros:
 
     limites:
       ES:
-        fuente: RD919
+        fuente: PD01
         fuente_secundaria: NGTS06
-        articulo: "pendiente verificación en PDF — referencia orientativa: NGTS-06 / RD 919 Apéndice"
+        articulo: "PD-01, apartado 5.2, Tabla 3 — fila «H₂S + COS (como S)»"
+        fuente_url: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
         tipo_limite: maximo
-        valor: 5.0
+        valor: 15.0
         unidad: mg_per_nm3
-        expresion_original: "5 mg/Nm³"
+        expresion_original: "H₂S + COS (como S) ≤ 15 mg/Nm³ (máximo)"
+        parametro_exacto: "Suma de H₂S y COS, expresada como azufre (S)"
         condiciones_referencia:
-          temperatura_volumen_C: 0        # Nm³ = condiciones normales 0 °C
+          temperatura_volumen_C: 0        # Tabla 3: [0 ºC, V(0 ºC, 1,01325 bar)]
           presion_bar: 1.01325
-        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+        estado_verificacion: VERIFICADO
+        nota_correccion: >
+          ⚠ CORRECCIÓN: el valor anterior (5 mg/Nm³) era ERRÓNEO. El límite
+          oficial de la Tabla 3 del PD-01 es 15 mg/Nm³ para «H₂S + COS (como S)».
+          Parámetros relacionados de la misma tabla: Azufre total (S total)
+          ≤ 50 mg/Nm³ y mercaptanos RSH (como S) ≤ 17 mg/Nm³.
+        nota_unidad: >
+          El límite es una concentración másica de AZUFRE (como S), suma de H₂S y
+          COS, no de H₂S puro. La conversión a ppm(vol) de H₂S de la sección
+          inferior es por tanto orientativa (asume H₂S puro con M=34,08 g/mol).
         nota_critica: >
           ⚠ CASO DE USO CLAVE: si el usuario proporciona un valor en mg/m³
           a 15 °C (m³ estándar), hay que renormalizar a Nm³ (0 °C) antes de
@@ -216,18 +264,23 @@ parametros:
 
       UE:
         fuente: NC_INT
-        articulo: "pendiente verificación en PDF — referencia orientativa: Anexo I NC INT"
+        articulo: "Reglamento (UE) 2015/703 — no fija límite de H₂S"
+        fuente_url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
         tipo_limite: maximo
-        valor: 5.0
-        unidad: mg_per_nm3
-        expresion_original: "5 mg/Nm³ (verificar; algunas fuentes citan 3,5 ppm o 6,5 mg/m³)"
+        valor: null
+        unidad: null
+        expresion_original: "no establecido por el Reglamento (UE) 2015/703"
         condiciones_referencia:
-          temperatura_volumen_C: 0
-          presion_bar: 1.01325
-        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+          temperatura_volumen_C: null
+          presion_bar: null
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: >
-          El NC INT puede expresar el límite en ppm(mol) o en mg/m³ según
-          versión y punto de interconexión. Confirmar unidad exacta en el PDF.
+          El Reglamento (UE) 2015/703 (NC INT) NO fija un límite numérico de H₂S
+          (ni en mg/m³ ni en ppm). Los límites de H₂S/azufre en interconexión se
+          dejan a la normativa nacional / acuerdos bilaterales entre TSOs, y como
+          referencia técnica no vinculante a la norma EN 16726. El valor anterior
+          (5 mg/Nm³, «o 3,5 ppm / 6,5 mg/m³») no procedía de esta fuente y se
+          retira para no inventar una cifra.
 
     conversion:
       tipo: masa_molar
@@ -242,7 +295,11 @@ parametros:
       factor_mg_nm3_a_ppm: 0.6577
       factor_ppm_a_mg_nm3: 1.5196
       condiciones_validas: "T = 0 °C, P = 1,01325 bar (Nm³)"
-      ejemplo: "5 mg/Nm³ × 0,6577 = 3,29 ppm(vol)"
+      ejemplo: "15 mg/Nm³ × 0,6577 = 9,87 ppm(vol)  (asumiendo H₂S puro, M=34,08)"
+      nota_como_S: >
+        El límite ES está expresado «como S» (M_S = 32,06 g/mol). Si se quiere el
+        equivalente en ppm(vol) de azufre: 15 mg-S/Nm³ × 22,414 / 32,06 ≈ 10,49 ppm.
+        El factor 0,6577 aplica a H₂S puro; usarlo sólo cuando el dato sea H₂S.
       volumen_molar_nm3_kmol: 22.414   # volumen molar gas ideal a 0°C, 1 atm
 
     normalizacion_condiciones_referencia:
@@ -253,18 +310,22 @@ parametros:
       ejemplo: "12 mg/m³ @ 15°C → 12 × 1.0549 = 12.66 mg/Nm³"
       flag_si_condiciones_no_especificadas: NO_COMPARABLE
 
-    flag_comparabilidad: COMPARABLE_TRAS_NORMALIZAR
+    flag_comparabilidad: NO_COMPARABLE
     comparabilidad:
-      estado: COMPARABLE_TRAS_NORMALIZAR
-      icono: "🟡"
-      requiere_conversion: true
-      conversion_exacta: true
+      estado: NO_COMPARABLE
+      icono: "🔴"
+      requiere_conversion: false
+      conversion_exacta: false
+      resultado: >
+        No es posible comparar H₂S entre ES y UE: España fija H₂S+COS (como S)
+        ≤ 15 mg/Nm³ (PD-01 Tabla 3, @0 ºC), pero el Reglamento (UE) 2015/703 no
+        establece límite numérico de H₂S. Falta valor UE en la fuente citada.
       condicion_flag_rojo: >
-        Si las condiciones de referencia del volumen (0 °C vs 15 °C) no están
-        especificadas en la fuente del valor del usuario → 🔴 NO_COMPARABLE.
+        Además, si las condiciones de referencia del volumen (0 °C vs 15 °C) del
+        dato del usuario no están especificadas → 🔴 NO_COMPARABLE.
       nota: >
-        Verificar los valores exactos en los PDFs antes de emitir comparación
-        definitiva. Los valores aquí son orientativos hasta confirmación.
+        Para comparar con la UE haría falta una fuente que sí fije el límite
+        (EN 16726 o acuerdo bilateral de interconexión). No se inventa cifra UE.
 
 
   # ---------------------------------------------------------------------------
@@ -301,47 +362,66 @@ parametros:
 
     limites:
       ES:
-        fuente: RD919
+        fuente: PD01
         fuente_secundaria: NGTS06
-        articulo: "pendiente verificación en PDF — referencia orientativa: NGTS-06 / RD 919"
+        articulo: "PD-01, apartado 5.2, Tabla 3 — fila «PCS»"
+        fuente_url: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
         tipo_limite: rango
-        valor_min: 34.12
-        valor_max: 38.77
-        unidad: MJ_per_nm3
-        expresion_original: "34,12 – 38,77 MJ/Nm³ (verificar en NGTS-06 vigente)"
+        valor_min: 10.26
+        valor_max: 13.26
+        unidad: kWh_per_nm3
+        expresion_original: "10,26 – 13,26 kWh/Nm³ (PD-01 Tabla 3)"
+        equivalencia_MJ_per_nm3:
+          valor_min: 36.94      # 10,26 kWh × 3,6
+          valor_max: 47.74      # 13,26 kWh × 3,6
+          nota: "Conversión exacta × 3,6 MJ/kWh"
         condiciones_referencia:
           norma_calculo: EN_ISO_6976
-          temperatura_combustion_C: 25
+          temperatura_combustion_C: 0
           temperatura_volumen_C: 0
           presion_bar: 1.01325
-          notacion: "@25/0"
-        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+          notacion: "@0/0"
+          cita_condiciones: "PD-01: Hs[t1,p1,V(t2,p2)] en [0 ºC, V(0 ºC, 1,01325 bar)]"
+        estado_verificacion: VERIFICADO
+        nota_correccion: >
+          ⚠ CORRECCIÓN DOBLE: (1) el rango anterior (34,12 – 38,77 MJ/Nm³) era
+          ERRÓNEO; el oficial de la Tabla 3 del PD-01 es 10,26 – 13,26 kWh/Nm³
+          (= 36,94 – 47,74 MJ/Nm³). (2) Las condiciones de referencia anteriores
+          (@25/0) también eran erróneas: el PD-01 fija el PCS en base
+          volumétrica a [0 ºC combustión, V(0 ºC, 1,01325 bar)], es decir @0/0.
         nota_critica: >
-          ⚠ CONDICIONES DE REFERENCIA CRÍTICAS: el PCS sólo es comparable
-          si ambas normativas usan las mismas condiciones @T_comb/T_vol.
-          La NGTS-06 española usa @25/0 (combustión a 25°C, volumen a 0°C).
-          Si el NC INT usa @25/15, los valores NO son directamente comparables
-          sin factor de corrección de densidad.
+          ⚠ CONDICIONES DE REFERENCIA CRÍTICAS: España (PD-01) usa @0/0
+          (combustión 0 °C, volumen 0 °C). El Reglamento (UE) 2015/703 reporta
+          el PCS a @25/0 (combustión 25 °C por defecto, volumen 0 °C). El volumen
+          de referencia coincide (0 °C); difiere la temperatura de combustión.
+          Factor de conversión de PCS @25/0 → @0/0 = 1,0026 (Anexo del Reglamento
+          2015/703, basado en EN ISO 13443).
 
       UE:
         fuente: NC_INT
-        articulo: "pendiente verificación en PDF — referencia orientativa: Anexo I NC INT"
+        articulo: "Reglamento (UE) 2015/703, art. 13 (unidades y condiciones de referencia) y art. 16 (monitorización)"
+        fuente_url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
         tipo_limite: rango
-        valor_min: 30.2       # orientativo — confirmar en PDF
-        valor_max: 47.2       # orientativo — confirmar en PDF
-        unidad: MJ_per_nm3
-        expresion_original: "verificar en PDF NC INT Reglamento 2015/703"
+        valor_min: null
+        valor_max: null
+        unidad: kWh_per_nm3
+        expresion_original: "el Reglamento (UE) 2015/703 NO fija un rango numérico de PCS"
         condiciones_referencia:
           norma_calculo: EN_ISO_6976
-          temperatura_combustion_C: 25    # verificar — puede ser 25 °C
-          temperatura_volumen_C: 0        # verificar — puede ser 0 °C o 15 °C
+          temperatura_combustion_C: 25    # art. 13: combustión por defecto 25 °C
+          temperatura_volumen_C: 0         # art. 13: volumen 0 °C, 1,01325 bar(a)
           presion_bar: 1.01325
-          notacion: "verificar @T_comb/T_vol en el PDF"
-        estado_verificacion: PENDIENTE_CONFIRMAR_EN_PDF
+          notacion: "@25/0 (sólo condiciones de reporte; sin valores límite)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: >
-          El NC INT define calidad en puntos de interconexión y puede delegar
-          a acuerdos bilaterales entre TSOs. Verificar si el rango es una
-          recomendación o un límite vinculante, y las condiciones exactas.
+          El Reglamento (UE) 2015/703 NO establece un rango/límite numérico de PCS.
+          Lo que sí fija (art. 13) son la unidad (kWh/m³, en función del PCS) y las
+          condiciones de referencia (volumen 0 °C y 1,01325 bar; combustión por
+          defecto 25 °C), y (art. 16) la obligación de los TSO de publicar Wobbe y
+          PCS por hora en cada punto de interconexión. Los rangos de calidad se
+          dejan a acuerdos bilaterales entre TSOs / normativa nacional (y, como
+          referencia no vinculante, EN 16726). El rango anterior (30,2 – 47,2)
+          era orientativo y NO procedía de esta norma; se retira.
 
     conversion:
       MJ_a_kWh:
@@ -351,35 +431,45 @@ parametros:
         ejemplo: "36 MJ/Nm³ = 10 kWh/Nm³"
       correccion_condiciones_referencia:
         descripcion: >
-          Si ES usa @25/0 y UE usa @25/15, el volumen de referencia difiere.
-          La corrección es: PCS_0C = PCS_15C × (288.15/273.15) ≈ PCS_15C × 1.0549
-          (para convertir de m³ a 15°C a Nm³ a 0°C, el PCS expresado por Nm³ disminuye)
-        formula: "PCS@25/0 [MJ/Nm³] = PCS@25/15 [MJ/sm³] × (273.15/288.15)"
-        factor_aproximado: 0.9479
+          ES (PD-01) expresa el PCS a @0/0 (combustión 0 °C, volumen 0 °C).
+          El Reglamento (UE) 2015/703 reporta a @25/0 (combustión 25 °C por
+          defecto, volumen 0 °C). El volumen de referencia COINCIDE (0 °C); sólo
+          difiere la temperatura de combustión, lo que produce una diferencia
+          pequeña en el PCS por unidad de volumen.
+        formula: "PCS@0/0 [kWh/Nm³] = PCS@25/0 [kWh/Nm³] × 1,0026"
+        factor_25_0_a_0_0: 1.0026
+        fuente_factor: "Anexo del Reglamento (UE) 2015/703 (PCS real por volumen), basado en EN ISO 13443"
         nota: >
-          Esta corrección sólo aplica si se confirma que las condiciones son
-          distintas. Sin confirmación de los PDF → flag 🔴 NO_COMPARABLE.
+          Factores adicionales del mismo Anexo (PCS real por volumen):
+          25/20→25/0 = 1,0738 ; 25/0→15/15 = 0,9486 ; 15/15→0/0 = 1,0570.
+          El factor 25/0→0/0 = 1,0026 se deriva de la propia tabla del Anexo.
+          Sin condiciones de referencia confirmadas en alguna fuente → 🔴 NO_COMPARABLE.
 
-    flag_comparabilidad: COMPARABLE_TRAS_NORMALIZAR
+    flag_comparabilidad: NO_COMPARABLE
     comparabilidad:
-      estado: COMPARABLE_TRAS_NORMALIZAR
-      icono: "🟡"
-      requiere_conversion: true
-      conversion_exacta: condicionada_a_verificar_condiciones_referencia
+      estado: NO_COMPARABLE
+      icono: "🔴"
+      requiere_conversion: false
+      conversion_exacta: false
+      resultado: >
+        No hay rango UE numérico con el que comparar: el Reglamento (UE) 2015/703
+        no fija un rango de PCS, sólo unidades y condiciones de referencia
+        (@25/0) y la obligación de monitorizar Wobbe/PCS. España fija
+        10,26 – 13,26 kWh/Nm³ @0/0 (PD-01 Tabla 3). Comparación de RANGOS → 🔴.
       condicion_flag_verde: >
-        Las dos normativas usan exactamente las mismas condiciones de referencia
-        @T_comb/T_vol confirmadas en los PDFs.
+        Sólo si se incorpora una fuente UE con rango de PCS expresado en las
+        mismas condiciones @T_comb/T_vol confirmadas.
       condicion_flag_amarillo: >
-        Las condiciones difieren pero existe conversión determinista verificada.
-        Se aplica el factor y se muestra el resultado con la corrección.
+        Si la fuente UE da un rango en condiciones distintas pero existe el factor
+        determinista (p.ej. @25/0 → @0/0 = 1,0026), se aplica y se muestra.
       condicion_flag_rojo: >
-        Las condiciones de referencia no están especificadas en alguna de las
-        fuentes o no hay conversión válida disponible. No se inventa ningún
-        número equivalente; se explica el motivo.
+        Estado actual: no hay valores UE en la norma citada, o las condiciones de
+        referencia no están especificadas. No se inventa ningún número.
       nota_presentacion: >
-        Este es el parámetro más delicado del reto en cuanto a comparabilidad.
-        Demostrar que el sistema detecta la ambigüedad de condiciones de
-        referencia es uno de los puntos de valor diferencial frente al jurado.
+        Este es el parámetro más delicado del reto. Dos avisos clave: (1) las
+        condiciones de referencia ES (@0/0) y de reporte UE (@25/0) difieren en
+        la temperatura de combustión; (2) la UE no fija un rango numérico de PCS.
+        Detectar ambas cosas es el valor diferencial frente al jurado.
 
 
 # =============================================================================
