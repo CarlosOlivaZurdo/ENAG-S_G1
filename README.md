@@ -449,6 +449,7 @@ Construir en un plazo aproximado de seis semanas un chatbot especializado para E
 
 La solución deberá percibirse como un **asistente experto conversacional de calidad de gas natural**, capaz de combinar la facilidad de uso de un chatbot moderno con el rigor y la fiabilidad exigidos en un entorno regulatorio crítico.
 
+
 ### 1. Pregunta Interpretada
 
 Consulta normalizada.
