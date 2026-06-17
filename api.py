@@ -16,6 +16,8 @@ from langchain_core.messages import BaseMessage
 from langchain_xai import ChatXAI
 
 from motor_determinista import (
+    buscar_pdfs,
+    buscar_pdfs_tool,
     consultar_excel,
     consultar_excel_tool,
     evaluar_cumplimiento,
@@ -111,7 +113,7 @@ else:
 if chat_model is not None:
     agent = create_agent(
         model=chat_model,
-        tools=[consultar_excel_tool, evaluar_cumplimiento_tool],
+        tools=[consultar_excel_tool, evaluar_cumplimiento_tool, buscar_pdfs_tool],
         response_format=str,
     )
 
@@ -200,6 +202,19 @@ def _fallback_deterministic_response(mensaje: str) -> str:
         if respuesta.get("error"):
             return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
         if respuesta["count"] == 0:
+            pdf_resultados = buscar_pdfs(request_text=texto)
+            if pdf_resultados["count"] > 0:
+                salida = [
+                    f"No se han encontrado resultados deterministas de Excel para '{parametro}' en '{pais}'. "
+                    "Sin embargo, se han encontrado coincidencias en documentos PDF procesados:"
+                ]
+                for item in pdf_resultados["matches"][:5]:
+                    salida.append(
+                        f"{item['indice']}. {item['name']} - {item['file']}"
+                    )
+                if pdf_resultados["count"] > 5:
+                    salida.append(f"... y {pdf_resultados['count'] - 5} coincidencia(s) adicionales.")
+                return "\n".join(salida)
             return (
                 f"No se han encontrado resultados deterministas para el parámetro '{parametro}' en '{pais}'. "
                 f"Asegúrate de usar un parámetro y país presentes en el archivo de datos."
@@ -216,6 +231,18 @@ def _fallback_deterministic_response(mensaje: str) -> str:
             salida.append(output_line)
         if respuesta["count"] > 5:
             salida.append(f"... y {respuesta['count'] - 5} coincidencia(s) adicionales.")
+        return "\n".join(salida)
+
+    pdf_resultados = buscar_pdfs(request_text=texto)
+    if pdf_resultados["count"] > 0:
+        salida = [
+            "No hay una consulta determinista clara de parámetros/país/valor. "
+            "Se han encontrado estos documentos PDF relevantes:"
+        ]
+        for item in pdf_resultados["matches"][:5]:
+            salida.append(f"{item['indice']}. {item['name']} - {item['file']}")
+        if pdf_resultados["count"] > 5:
+            salida.append(f"... y {pdf_resultados['count'] - 5} coincidencia(s) adicionales.")
         return "\n".join(salida)
 
     return (
