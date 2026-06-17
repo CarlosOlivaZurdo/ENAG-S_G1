@@ -82,20 +82,30 @@ def _read_sheet_records(sheet_name: str, raw_df: pd.DataFrame) -> List[Dict[str,
     headers = [str(v).strip() if pd.notna(v) else "" for v in raw_df.iloc[header_row].tolist()]
     records: List[Dict[str, Any]] = []
     current_country = ""
+    current_conditions = ""
     for _, row in raw_df.iterrows():
         if row.isna().all():
             continue
         country_name = is_country_row(row)
         if country_name:
             current_country = country_name
+            current_conditions = ""
             continue
         if is_header_row(row):
             headers = [str(v).strip() if pd.notna(v) else "" for v in row.tolist()]
+            for idx, value in enumerate(row.tolist()):
+                text = str(value).strip() if pd.notna(value) else ""
+                if "condicion" in _normalize_text(text) or "condicion" in text.lower():
+                    current_conditions = text
+                    break
             continue
         if row.name <= header_row:
             continue
 
         record: Dict[str, Any] = {"sheet": sheet_name, "pais": current_country}
+        if current_conditions:
+            record["condiciones"] = current_conditions
+            record["condiciones de medicion"] = current_conditions
         for idx, header in enumerate(headers):
             if header:
                 record[_normalize_text(header)] = row.iloc[idx]
@@ -280,6 +290,8 @@ def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
             "limite_superior": match.get("limite superior") or match.get("limite_superior") or match.get("limitesuperior") or "",
             "unidad": match.get("unidades") or match.get("unidad") or "",
             "documento": match.get("documento principal") or match.get("documento origen") or match.get("documento") or "",
+            "condiciones": match.get("condiciones") or match.get("condiciones de medicion") or match.get("condiciones de medición") or "",
+            "url": match.get("url") or match.get("enlace") or "",
         }
         for match in match_response["matches"]
     ]

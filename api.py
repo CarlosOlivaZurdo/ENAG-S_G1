@@ -157,21 +157,41 @@ def _parse_numeric_value(text: str) -> Optional[float]:
         return None
 
 
-def _extract_unit_from_text(text: str) -> Optional[str]:
+def _extract_numeric_with_unit(text: str) -> tuple[Optional[float], Optional[str]]:
     patterns = [
-        r"(?i)\b(?:kwh|mj|mg|ppm|kg|g|bar)\s*/\s*[a-z0-9^°]+",
-        r"(?i)\b(?:kwh|mj|mg|ppm|kg|g|bar)\b",
-        r"(?i)\b%\s*molar\b",
-        r"(?i)\b(?:m\^3|nm\^3|m3|nm3)\b",
-        r"(?i)\b(?:ºc|°c)\b",
+        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*(kwh\s*/\s*[a-z0-9^°]+|mj\s*/\s*[a-z0-9^°]+|mg\s*/\s*[a-z0-9^°]+|ppm\s*/\s*[a-z0-9^°]+|kwh|mj|mg|ppm|kg|g|bar|%|m\^3|nm\^3|m3|nm3|°c|ºc)",
+        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*([a-z0-9^°]+\s*/\s*[a-z0-9^°]+)",
     ]
     for pattern in patterns:
-        match = re.search(pattern, text)
-        if match:
-            candidate = match.group(0).strip()
-            if candidate and candidate.lower() not in {"de", "del", "para", "y", "en", "con"}:
-                return candidate
-    return None
+        for match in re.finditer(pattern, text):
+            value = match.group(1).replace(",", ".")
+            unit_raw = match.group(2) if match.lastindex and match.lastindex >= 2 else match.group(0)
+            unit_clean = re.sub(r"\s+", "", unit_raw)
+            unit_norm = unit_clean.lower()
+            if any(
+                unit_norm.startswith(token) or token in unit_norm
+                for token in (
+                    "kwh",
+                    "mj",
+                    "mg",
+                    "ppm",
+                    "kg",
+                    "g",
+                    "bar",
+                    "%",
+                    "m^3",
+                    "nm^3",
+                    "m3",
+                    "nm3",
+                    "°c",
+                    "ºc",
+                )
+            ):
+                try:
+                    return float(value), unit_clean
+                except ValueError:
+                    return None, None
+    return None, None
 
 
 def _normalize_country(text: str) -> Optional[str]:
@@ -189,119 +209,259 @@ def _normalize_country(text: str) -> Optional[str]:
     return None
 
 
-def _format_summary_response(
-    mensaje: str,
+def _normalize_parameter(text: str) -> Optional[str]:
+    normalized = text.lower()
+    aliases = {
+        "o2": "o2",
+        "oxigeno": "o2",
+        "oxígeno": "o2",
+        "pcs": "pcs",
+        "h2s": "h2s+cos",
+        "h2s+cos": "h2s+cos",
+        "wobbe": "wobbe",
+        "s total": "s total",
+        "co2": "co2",
+        "h2o": "h2o(rocío)",
+        "h2o(rocío)": "h2o(rocío)",
+        "h2o(rocio)": "h2o(rocío)",
+        "rocio": "h2o(rocío)",
+        "rocío": "h2o(rocío)",
+        "hc": "hc(rocío)",
+        "hc(rocío)": "hc(rocío)",
+        "rsh": "rsh",
+        "densidad relativa": "densidad relativa",
+        "hco": "hco",
+        "indice de wobbe": "wobbe",
+        "índice de wobbe": "wobbe",
+        "azufre total": "s total",
+        "azufre": "s total",
+    }
+    for key, value in aliases.items():
+        if key in normalized:
+            return value
+    return None
+
+
+def _normalize_unit(unit: Optional[str]) -> str:
+    if not unit:
+        return ""
+    text = str(unit)
+    text = text.replace("^", "")
+    text = text.replace("³", "3").replace("²", "2")
+    text = text.replace("º", "°")
+    text = re.sub(r"\s+", "", text)
+    text = text.replace("°", "o")
+    text = text.replace("m³", "m3").replace("nm³", "nm3")
+    text = text.lower()
+    return text
+
+
+def _normalize_condition_text(text: Optional[str]) -> str:
+    if not text:
+        return ""
+    cleaned = str(text).strip()
+    cleaned = cleaned.replace("Condiciones de medición:", "")
+    cleaned = cleaned.replace("Condiciones de medicion:", "")
+    cleaned = cleaned.replace("Condiciones:", "")
+    return cleaned.strip()
+
+
+EXPECTED_UNITS = {
+    "wobbe": ["kwh/m3", "kwh/nm3", "kwh/m3", "kwh/nm3"],
+    "pcs": ["kwh/m3", "kwh/nm3", "kwh/m3", "kwh/nm3"],
+    "s total": ["mg/m3", "mg/nm3", "mgs/m3", "mgs/nm3"],
+    "h2s+cos": ["mg/m3", "mg/nm3", "mgs/m3", "mgs/nm3"],
+    "rsh": ["mg/m3", "mg/nm3", "mgs/m3", "mgs/nm3"],
+    "o2": ["%molar", "%molar", "%m", "%mol"],
+    "co2": ["%molar", "%molar", "%m", "%mol"],
+    "h2o(rocío)": ["oc", "oc", "°c", "c"],
+    "hc(rocío)": ["oc", "oc", "°c", "c"],
+}
+
+
+def _unit_matches_expected(param: str, unit: Optional[str]) -> bool:
+    if not param or not unit:
+        return False
+    normalized = _normalize_unit(unit)
+    expected = EXPECTED_UNITS.get(param, [])
+    return any(candidate == normalized for candidate in expected)
+
+
+def _is_info_request(text: str) -> bool:
+    lowered = text.lower()
+    keywords = [
+        "limite",
+        "límite",
+        "requisito",
+        "documento",
+        "regula",
+        "diferencia",
+        "todos los límites",
+        "todos los limites",
+        "monitoriz",
+        "parámetro",
+        "parametro",
+        "origen",
+        "cuál es",
+        "que es",
+        "qué",
+    ]
+    return any(keyword in lowered for keyword in keywords)
+
+
+def _format_comparison_response(
     parametro: str,
     pais: str,
     valor: float,
-    unidad_detectada: Optional[str],
+    unidad: Optional[str],
     respuesta: Dict[str, Any],
 ) -> str:
     matches = respuesta.get("matches", [])
     if not matches:
-        return f"No encontré coincidencias para {parametro} en {pais} con el valor {valor}."
+        return (
+            f"No encontré coincidencias para '{parametro}' en '{pais}' con el valor {valor}"
+            f"{f' {unidad}' if unidad else ''}."
+        )
 
     lines = [
-        f"Parámetro: {parametro.upper()} | País: {pais} | Valor: {valor}",
+        "*Resultado de la evaluación*",
+        "",
+        "| Parámetro | País | Valor usuario | Resultado |",
+        "| --- | --- | ---: | --- |",
     ]
-    if unidad_detectada:
-        lines.append(f"Unidad detectada: {unidad_detectada}")
-    else:
-        lines.append("Unidad detectada: no se especificó claramente")
+    norm_lines = [
+        "",
+        "*Información normativa*",
+        "",
+        "| País | Parámetro | Límites aplicables | Condiciones de medición | Origen documental | Enlace |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
 
-    lines.append("")
-    lines.append("Resultados:")
-    for item in matches[:5]:
-        estado = "Cumple" if item.get("cumple") == "Cumple" else "No cumple"
-        rango = f"{item.get('limite_inferior', '-')} / {item.get('limite_superior', '-')}"
-        unidad = item.get("unidad_registro") or item.get("unidad_evaluada") or ""
-        if unidad:
-            rango = f"{rango} {unidad}"
-        lines.append(f"- {item.get('parametro', parametro)}: {estado} ({rango})")
-    if len(matches) > 5:
-        lines.append(f"- ... y {len(matches) - 5} más")
+    for item in matches[:8]:
+        parametro_name = item.get("parametro", parametro)
+        estado = item.get("cumple", "No evaluable")
+        origen = item.get("documento") or "Origen no especificado"
+        limite_inf = item.get("limite_inferior", "-")
+        limite_sup = item.get("limite_superior", "-")
+        unidad_reg = item.get("unidad_registro") or item.get("unidad_evaluada") or unidad or ""
+        condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
+        if not condiciones:
+            condiciones = "No especificadas en el registro"
+        if estado == "Cumple":
+            resultado = "Cumple"
+        elif estado == "No cumple":
+            resultado = "No cumple"
+        else:
+            resultado = "No existe un criterio automático de evaluación para este parámetro"
 
+        lines.append(f"| {parametro_name} | {pais} | {valor} {unidad_reg if unidad_reg else unidad or ''} | {resultado} |")
+        norm_lines.append(
+            f"| {pais} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} | No disponible en el Excel |"
+        )
+
+    return "\n".join(lines + norm_lines)
+
+
+def _format_info_response(
+    parametro: str,
+    pais: str,
+    respuesta: Dict[str, Any],
+) -> str:
+    matches = respuesta.get("matches", [])
+    if not matches:
+        return f"No encontré información determinista para '{parametro}' en '{pais}'."
+
+    lines = [
+        f"*Consulta sobre {parametro} en {pais}*",
+        "",
+        "| Parámetro | Límites aplicables | Condiciones de medición | Origen documental | Enlace |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for item in matches[:8]:
+        parametro_name = item.get("parametro", parametro)
+        inferior = item.get("limite_inferior", "-")
+        superior = item.get("limite_superior", "-")
+        unidad_reg = item.get("unidad") or item.get("unidad_registro") or ""
+        unidad_reg = unidad_reg.strip().strip("()")
+        condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
+        if not condiciones:
+            condiciones = "No especificadas en el registro"
+        origen = item.get("documento") or "Origen no especificado"
+        if inferior == "-" and superior == "-":
+            rango = "Sin límites numéricos definidos"
+        else:
+            rango = f"{inferior} / {superior}"
+            if unidad_reg:
+                rango = f"{rango} ({unidad_reg})"
+        lines.append(f"| {parametro_name} | {rango} | {condiciones} | {origen} | {item.get('url') or 'No disponible en el Excel'} |")
     return "\n".join(lines)
 
 
 def _fallback_deterministic_response(mensaje: str) -> str:
-    texto = mensaje.lower()
-    param_keywords = [
-        "o2",
-        "pcs",
-        "h2s",
-        "wobbe",
-        "s total",
-        "co2",
-        "h2o",
-        "rsh",
-        "densidad relativa",
-        "hco",
-    ]
-    country_keywords = ["espa", "portugal", "francia", "espana", "españa"]
-    parametro = next((kw for kw in param_keywords if kw in texto), None)
-    pais = next((kw for kw in country_keywords if kw in texto), None)
-    valor = _parse_numeric_value(texto)
-    unidad_detectada = _extract_unit_from_text(mensaje)
+    texto = mensaje
+    texto_norm = texto.lower()
 
-    if pais:
-        pais_formateado = _normalize_country(pais) or pais.title()
-    else:
-        pais_formateado = None
+    parametro = _normalize_parameter(texto_norm)
+    pais = next((kw for kw in ["espa", "portugal", "francia", "espana", "españa"] if kw in texto_norm), None)
+    pais_formateado = _normalize_country(pais) if pais else None
 
-    if parametro and pais_formateado and valor is not None:
-        respuesta = evaluar_cumplimiento(parametro, pais_formateado, valor)
+    valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(texto)
+    valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(texto)
+
+    comparison_intent = (
+        parametro is not None
+        and pais_formateado is not None
+        and valor is not None
+        and (
+            unidad_detectada is not None
+            or any(token in texto_norm for token in ("cumple", "válido", "valido", "excede", "dentro", "rango", "compar"))
+        )
+    )
+
+    if comparison_intent and unidad_detectada and _unit_matches_expected(parametro, unidad_detectada):
+        respuesta = evaluar_cumplimiento(parametro, pais_formateado, valor, unidad=unidad_detectada)
         if respuesta.get("error"):
             return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
-        if respuesta["count"] == 0:
-            return (
-                f"No encontré coincidencias para '{parametro}' en '{pais_formateado}' con el valor {valor}. "
-                "Revisa el parámetro, el país o la unidad introducida."
-            )
-        return _format_summary_response(
-            mensaje=mensaje,
+        return _format_comparison_response(
             parametro=parametro,
             pais=pais_formateado,
             valor=valor,
-            unidad_detectada=unidad_detectada,
+            unidad=unidad_detectada,
             respuesta=respuesta,
         )
 
+    if (
+        parametro is not None
+        and pais_formateado is not None
+        and valor is not None
+        and not _is_info_request(texto_norm)
+    ):
+        if unidad_detectada is None:
+            return (
+                f"Para comparar {parametro} correctamente necesito la unidad exacta. "
+                f"Ejemplo: {parametro} en {pais_formateado} con unidades compatibles al valor introducido."
+            )
+        if not _unit_matches_expected(parametro, unidad_detectada):
+            expected = EXPECTED_UNITS.get(parametro, [])
+            expected_msg = expected[0] if expected else "la unidad adecuada"
+            return (
+                f"La unidad detectada ({unidad_detectada}) no coincide con la esperada para {parametro}. "
+                f"Introduce el valor nuevamente expresado en {expected_msg}."
+            )
+
+    if parametro and pais_formateado and _is_info_request(texto_norm):
+        respuesta = consultar_excel(parametro, pais_formateado)
+        if respuesta.get("count", 0) == 0:
+            return f"No encontré información específica para '{parametro}' en '{pais_formateado}'."
+        return _format_info_response(parametro, pais_formateado, respuesta)
+
     if parametro and pais_formateado:
         respuesta = consultar_excel(parametro, pais_formateado)
-        if respuesta.get("error"):
-            return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
-        if respuesta["count"] == 0:
-            pdf_resultados = buscar_pdfs(query=texto)
-            if pdf_resultados["count"] > 0:
-                return (
-                    f"Encontré referencia(s) en PDF sobre '{parametro}' en '{pais_formateado}', "
-                    "pero no hay un resultado determinista exacto para esa combinación."
-                )
-            return (
-                f"No encontré datos deterministas para '{parametro}' en '{pais_formateado}'."
-            )
-        return _format_summary_response(
-            mensaje=mensaje,
-            parametro=parametro,
-            pais=pais_formateado,
-            valor=valor if valor is not None else 0,
-            unidad_detectada=unidad_detectada,
-            respuesta={
-                "matches": [
-                    {
-                        "parametro": item.get("parametro"),
-                        "cumple": "Información",
-                        "limite_inferior": item.get("limite_inferior"),
-                        "limite_superior": item.get("limite_superior"),
-                        "unidad_registro": item.get("unidad"),
-                    }
-                    for item in respuesta["matches"]
-                ]
-            },
-        )
+        if respuesta.get("count", 0) == 0:
+            return f"No encontré información específica para '{parametro}' en '{pais_formateado}'."
+        return _format_info_response(parametro, pais_formateado, respuesta)
 
-    pdf_resultados = buscar_pdfs(query=texto)
+    pdf_resultados = buscar_pdfs(query=texto_norm)
     if pdf_resultados["count"] > 0:
         return (
             "No pude identificar con claridad el parámetro, el país o el valor. "

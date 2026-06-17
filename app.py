@@ -1,8 +1,11 @@
+import os
 import uuid
 import requests
 import streamlit as st
 
 st.set_page_config(page_title="Comparador de Calidad de Gas", layout="wide")
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
@@ -13,7 +16,7 @@ st.markdown("### Chat técnico-regulatorio")
 
 status_text = "Desconocido"
 try:
-    status_resp = requests.get("http://localhost:8000/api/status", timeout=5)
+    status_resp = requests.get(f"{BACKEND_URL}/api/status", timeout=5)
     if status_resp.ok:
         status_data = status_resp.json()
         status_text = f"Backend: {status_data.get('modo', 'desconocido')} - {status_data.get('detalle', '')}"
@@ -34,7 +37,7 @@ if user_input:
     with st.spinner("Consultando al backend..."):
         try:
             response = requests.post(
-                "http://localhost:8000/api/chat",
+                f"{BACKEND_URL}/api/chat",
                 json={"session_id": st.session_state.session_id, "mensaje": user_input},
                 timeout=30,
             )
