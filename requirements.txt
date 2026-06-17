@@ -13,3 +13,4 @@ langchain-xai
 langchain-core
 openai
 requests
+PyPDF2

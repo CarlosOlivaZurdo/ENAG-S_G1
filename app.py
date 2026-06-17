@@ -27,12 +27,6 @@ st.info(status_text)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    if message["role"] == "user":
-        st.chat_message("user").write(message["content"])
-    else:
-        st.chat_message("assistant").write(message["content"])
-
 user_input = st.chat_input("Escribe tu consulta sobre calidad de gas natural...")
 
 if user_input:
@@ -52,5 +46,13 @@ if user_input:
             assistant_text = f"Error al conectar con el backend: {exc}"
             modo = None
     if modo == "determinista":
-        st.warning("La respuesta proviene del motor determinista de datos Excel, no de un modelo IA.")
+        st.info("Respuesta basada en datos deterministas del proyecto.")
     st.session_state.messages.append({"role": "assistant", "content": assistant_text})
+
+for message in st.session_state.messages:
+    if message["role"] == "user":
+        with st.chat_message("user"):
+            st.markdown(message["content"])
+    else:
+        with st.chat_message("assistant"):
+            st.markdown(message["content"])

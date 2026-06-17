@@ -9,6 +9,7 @@ from langchain_core.tools import tool
 
 EXCEL_FILENAME = "limites_calidad.xlsx"
 EXCEL_SEARCH_GLOBS = ["data/*.xlsx", "data/**/*.xlsx", "data/raw/*.xlsx"]
+CSV_SEARCH_GLOBS = ["data/*.csv", "data/**/*.csv", "data/raw/*.csv"]
 PDF_SEARCH_GLOBS = ["data/raw/*.pdf", "data/**/*.pdf"]
 
 
@@ -63,12 +64,38 @@ def _read_sheet_records(sheet_name: str, raw_df: pd.DataFrame) -> List[Dict[str,
     header_row = _detect_header_row(raw_df)
     if header_row is None:
         header_row = 3 if len(raw_df) > 4 else 0
+
+    def is_country_row(row: pd.Series) -> Optional[str]:
+        if row.isna().all():
+            return None
+        first_cell = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ""
+        normalized_first = _normalize_text(first_cell)
+        if normalized_first in {"francia", "portugal", "españa", "espana"}:
+            return normalized_first
+        return None
+
+    def is_header_row(row: pd.Series) -> bool:
+        row_values = " ".join(str(value).strip().lower() for value in row if pd.notna(value))
+        normalized = _normalize_text(row_values)
+        return "param" in normalized and ("limite" in normalized or "limite inferior" in normalized or "limite superior" in normalized)
+
     headers = [str(v).strip() if pd.notna(v) else "" for v in raw_df.iloc[header_row].tolist()]
     records: List[Dict[str, Any]] = []
-    for _, row in raw_df.iloc[header_row + 1 :].iterrows():
+    current_country = ""
+    for _, row in raw_df.iterrows():
         if row.isna().all():
             continue
-        record: Dict[str, Any] = {"sheet": sheet_name}
+        country_name = is_country_row(row)
+        if country_name:
+            current_country = country_name
+            continue
+        if is_header_row(row):
+            headers = [str(v).strip() if pd.notna(v) else "" for v in row.tolist()]
+            continue
+        if row.name <= header_row:
+            continue
+
+        record: Dict[str, Any] = {"sheet": sheet_name, "pais": current_country}
         for idx, header in enumerate(headers):
             if header:
                 record[_normalize_text(header)] = row.iloc[idx]
@@ -84,6 +111,11 @@ def _find_excel_path(project_root: Path) -> Path:
         return default_path
 
     for pattern in EXCEL_SEARCH_GLOBS:
+        candidates = sorted(project_root.glob(pattern))
+        if candidates:
+            return candidates[0]
+
+    for pattern in CSV_SEARCH_GLOBS:
         candidates = sorted(project_root.glob(pattern))
         if candidates:
             return candidates[0]
@@ -116,10 +148,16 @@ def _detect_header_row(df: pd.DataFrame) -> Optional[int]:
 def _load_all_records() -> Tuple[List[Dict[str, Any]], Path]:
     project_root = Path(__file__).resolve().parent
     excel_path = _find_excel_path(project_root)
-    sheets = pd.read_excel(excel_path, engine="openpyxl", sheet_name=None, header=None)
     all_records: List[Dict[str, Any]] = []
-    for sheet_name, raw_df in sheets.items():
-        all_records.extend(_read_sheet_records(sheet_name, raw_df))
+
+    if excel_path.suffix.lower() == ".csv":
+        df = pd.read_csv(excel_path, sep=";", header=None, dtype=str, engine="python")
+        all_records.extend(_read_sheet_records(excel_path.name, df))
+    else:
+        sheets = pd.read_excel(excel_path, engine="openpyxl", sheet_name=None, header=None)
+        for sheet_name, raw_df in sheets.items():
+            all_records.extend(_read_sheet_records(sheet_name, raw_df))
+
     return all_records, excel_path
 
 

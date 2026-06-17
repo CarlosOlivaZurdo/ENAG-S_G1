@@ -1,4 +1,5 @@
 import os
+import re
 from functools import wraps
 import time
 from typing import Callable, Any, Dict, Optional
@@ -156,6 +157,73 @@ def _parse_numeric_value(text: str) -> Optional[float]:
         return None
 
 
+def _extract_unit_from_text(text: str) -> Optional[str]:
+    patterns = [
+        r"(?i)\b(?:kwh|mj|mg|ppm|kg|g|bar)\s*/\s*[a-z0-9^°]+",
+        r"(?i)\b(?:kwh|mj|mg|ppm|kg|g|bar)\b",
+        r"(?i)\b%\s*molar\b",
+        r"(?i)\b(?:m\^3|nm\^3|m3|nm3)\b",
+        r"(?i)\b(?:ºc|°c)\b",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            candidate = match.group(0).strip()
+            if candidate and candidate.lower() not in {"de", "del", "para", "y", "en", "con"}:
+                return candidate
+    return None
+
+
+def _normalize_country(text: str) -> Optional[str]:
+    normalized = text.lower()
+    aliases = {
+        "espa": "España",
+        "espana": "España",
+        "españa": "España",
+        "portugal": "Portugal",
+        "francia": "Francia",
+    }
+    for key, value in aliases.items():
+        if key in normalized:
+            return value
+    return None
+
+
+def _format_summary_response(
+    mensaje: str,
+    parametro: str,
+    pais: str,
+    valor: float,
+    unidad_detectada: Optional[str],
+    respuesta: Dict[str, Any],
+) -> str:
+    matches = respuesta.get("matches", [])
+    if not matches:
+        return f"No encontré coincidencias para {parametro} en {pais} con el valor {valor}."
+
+    lines = [
+        f"Parámetro: {parametro.upper()} | País: {pais} | Valor: {valor}",
+    ]
+    if unidad_detectada:
+        lines.append(f"Unidad detectada: {unidad_detectada}")
+    else:
+        lines.append("Unidad detectada: no se especificó claramente")
+
+    lines.append("")
+    lines.append("Resultados:")
+    for item in matches[:5]:
+        estado = "Cumple" if item.get("cumple") == "Cumple" else "No cumple"
+        rango = f"{item.get('limite_inferior', '-')} / {item.get('limite_superior', '-')}"
+        unidad = item.get("unidad_registro") or item.get("unidad_evaluada") or ""
+        if unidad:
+            rango = f"{rango} {unidad}"
+        lines.append(f"- {item.get('parametro', parametro)}: {estado} ({rango})")
+    if len(matches) > 5:
+        lines.append(f"- ... y {len(matches) - 5} más")
+
+    return "\n".join(lines)
+
+
 def _fallback_deterministic_response(mensaje: str) -> str:
     texto = mensaje.lower()
     param_keywords = [
@@ -174,76 +242,71 @@ def _fallback_deterministic_response(mensaje: str) -> str:
     parametro = next((kw for kw in param_keywords if kw in texto), None)
     pais = next((kw for kw in country_keywords if kw in texto), None)
     valor = _parse_numeric_value(texto)
+    unidad_detectada = _extract_unit_from_text(mensaje)
 
-    if parametro and pais and valor is not None:
-        respuesta = evaluar_cumplimiento(parametro, pais, valor)
+    if pais:
+        pais_formateado = _normalize_country(pais) or pais.title()
+    else:
+        pais_formateado = None
+
+    if parametro and pais_formateado and valor is not None:
+        respuesta = evaluar_cumplimiento(parametro, pais_formateado, valor)
         if respuesta.get("error"):
             return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
         if respuesta["count"] == 0:
             return (
-                f"No se han encontrado resultados deterministas para el parámetro '{parametro}' en '{pais}'. "
-                f"Asegúrate de usar un parámetro y país presentes en el archivo de datos."
+                f"No encontré coincidencias para '{parametro}' en '{pais_formateado}' con el valor {valor}. "
+                "Revisa el parámetro, el país o la unidad introducida."
             )
-        salida = [
-            f"Resultado determinista ({respuesta['file']}) - {respuesta['count']} coincidencia(s):"
-        ]
-        for item in respuesta["matches"][:5]:
-            salida.append(
-                f"Índice {item['indice']}: {item['parametro']} ({item['sheet']}) - {item['cumple']} "
-                f"con valor {item['valor_evaluado']} {item['unidad_evaluada']} "
-                f"[{item['limite_inferior']} / {item['limite_superior']}]."
-            )
-        if respuesta["count"] > 5:
-            salida.append(f"... y {respuesta['count'] - 5} coincidencia(s) adicionales.")
-        return "\n".join(salida)
+        return _format_summary_response(
+            mensaje=mensaje,
+            parametro=parametro,
+            pais=pais_formateado,
+            valor=valor,
+            unidad_detectada=unidad_detectada,
+            respuesta=respuesta,
+        )
 
-    if parametro and pais:
-        respuesta = consultar_excel(parametro, pais)
+    if parametro and pais_formateado:
+        respuesta = consultar_excel(parametro, pais_formateado)
         if respuesta.get("error"):
             return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
         if respuesta["count"] == 0:
-            pdf_resultados = buscar_pdfs(request_text=texto)
+            pdf_resultados = buscar_pdfs(query=texto)
             if pdf_resultados["count"] > 0:
-                salida = [
-                    f"No se han encontrado resultados deterministas de Excel para '{parametro}' en '{pais}'. "
-                    "Sin embargo, se han encontrado coincidencias en documentos PDF procesados:"
-                ]
-                for item in pdf_resultados["matches"][:5]:
-                    salida.append(
-                        f"{item['indice']}. {item['name']} - {item['file']}"
-                    )
-                if pdf_resultados["count"] > 5:
-                    salida.append(f"... y {pdf_resultados['count'] - 5} coincidencia(s) adicionales.")
-                return "\n".join(salida)
+                return (
+                    f"Encontré referencia(s) en PDF sobre '{parametro}' en '{pais_formateado}', "
+                    "pero no hay un resultado determinista exacto para esa combinación."
+                )
             return (
-                f"No se han encontrado resultados deterministas para el parámetro '{parametro}' en '{pais}'. "
-                f"Asegúrate de usar un parámetro y país presentes en el archivo de datos."
+                f"No encontré datos deterministas para '{parametro}' en '{pais_formateado}'."
             )
-        matches = respuesta["matches"]
-        salida = [
-            f"Resultado determinista ({respuesta['file']}) - {respuesta['count']} coincidencia(s):"
-        ]
-        for item in matches[:5]:
-            fields = ", ".join(
-                f"{k}: {v}" for k, v in item.items() if k not in {"sheet"}
-            )
-            output_line = f"Hoja: {item.get('sheet', 'N/A')} - {fields}"
-            salida.append(output_line)
-        if respuesta["count"] > 5:
-            salida.append(f"... y {respuesta['count'] - 5} coincidencia(s) adicionales.")
-        return "\n".join(salida)
+        return _format_summary_response(
+            mensaje=mensaje,
+            parametro=parametro,
+            pais=pais_formateado,
+            valor=valor if valor is not None else 0,
+            unidad_detectada=unidad_detectada,
+            respuesta={
+                "matches": [
+                    {
+                        "parametro": item.get("parametro"),
+                        "cumple": "Información",
+                        "limite_inferior": item.get("limite_inferior"),
+                        "limite_superior": item.get("limite_superior"),
+                        "unidad_registro": item.get("unidad"),
+                    }
+                    for item in respuesta["matches"]
+                ]
+            },
+        )
 
-    pdf_resultados = buscar_pdfs(request_text=texto)
+    pdf_resultados = buscar_pdfs(query=texto)
     if pdf_resultados["count"] > 0:
-        salida = [
-            "No hay una consulta determinista clara de parámetros/país/valor. "
-            "Se han encontrado estos documentos PDF relevantes:"
-        ]
-        for item in pdf_resultados["matches"][:5]:
-            salida.append(f"{item['indice']}. {item['name']} - {item['file']}")
-        if pdf_resultados["count"] > 5:
-            salida.append(f"... y {pdf_resultados['count'] - 5} coincidencia(s) adicionales.")
-        return "\n".join(salida)
+        return (
+            "No pude identificar con claridad el parámetro, el país o el valor. "
+            "Te dejo los documentos PDF que mejor encajan con tu consulta."
+        )
 
     return (
         "El backend está operativo, pero no hay una clave de modelo configurada. "
