@@ -1,5 +1,11 @@
 # ARQUITECTURA MULTIAGENTE Y ESTRUCTURA DE CÓDIGO
-## Proyecto: Comparador Normativo Gasista ES/UE para O₂, H₂S y PCS
+## Proyecto: Chatbot de Comparación Regulatoria de Calidad de Gas Natural en Europa
+
+> Alcance: ~10 parámetros de calidad de gas (Índice de Wobbe, PCS, densidad
+> relativa, azufre total, H₂S+COS como S, mercaptanos RSH como S, O₂, CO₂, punto de
+> rocío de agua y de hidrocarburos; excluye Polvo/Partículas) × jurisdicciones
+> España, Portugal, Francia y Marco Europeo (Niveles 1–3). La especificación
+> canónica de cada agente vive en `agents/*.md`.
 
 ---
 
@@ -53,8 +59,10 @@ gas-quality-comparator/
 │
 ├── data/
 │   ├── raw/
-│   │   ├── es/
-│   │   └── eu/
+│   │   ├── es/          # BOE, PD-01/NGTS
+│   │   ├── pt/          # Regulamento 826-2023
+│   │   ├── fr/          # GRTgaz / GRDF
+│   │   └── eu/          # Reglamentos UE (NC INT/CAM), EASEE-gas
 │   │
 │   ├── processed/
 │   │
@@ -151,59 +159,40 @@ agents/
 
 # 4. common_rules.md
 
-Todos los agentes deben obedecer estas reglas.
+> Especificación canónica en `agents/common_rules.md`. Resumen:
 
 ## Objetivo del Proyecto
 
-Comparar normativa española y europea sobre:
+Comparar requisitos de calidad de gas natural entre países europeos (ES, PT, FR, UE)
+de forma rigurosa, verificable, trazable y auditable. Sistema de dominio cerrado: NO
+es un chatbot generalista ni un asistente legal.
 
-- O₂
-- H₂S
-- PCS
+## Alcance
 
-con trazabilidad completa.
+- **Parámetros (10):** Índice de Wobbe · PCS · densidad relativa · azufre total ·
+  H₂S+COS (como S) · mercaptanos RSH (como S) · O₂ · CO₂ · punto de rocío H₂O · punto
+  de rocío HC. Excluido: Polvo/Partículas.
+- **Jurisdicciones:** Nivel 1 ES↔PT, ES↔FR · Nivel 2 ES↔Marco UE · Nivel 3 cualquier
+  país europeo.
 
----
+## Separación absoluta de mundos
+
+El LLM interpreta/identifica/reformula/resume/redacta. El motor determinista
+(ontología validada) es la única fuente de valores, unidades, conversiones,
+condiciones de referencia y flags.
 
 ## Reglas Inmutables
 
-### Regla 1
-
-Los números nunca pueden provenir del LLM.
-
----
-
-### Regla 2
-
-Toda afirmación debe tener fuente.
-
----
-
-### Regla 3
-
-No asumir condiciones de referencia.
-
----
-
-### Regla 4
-
-No inventar conversiones.
-
----
-
-### Regla 5
-
-Toda comparación debe terminar con:
-
-- 🟢 COMPARABLE
-- 🟡 COMPARABLE_TRAS_NORMALIZAR
-- 🔴 NO_COMPARABLE
-
----
-
-### Regla 6
-
-La trazabilidad es obligatoria.
+1. **Cero alucinaciones numéricas** — ningún número proviene del LLM.
+2. **Trazabilidad completa** — documento · país · versión · artículo · tabla · página ·
+   fragmento.
+3. **No asumir condiciones de referencia.**
+4. **No inventar conversiones** — sin base documentada → 🔴 NO_COMPARABLE.
+5. **Flag obligatorio** — 🟢 COMPARABLE · 🟡 COMPARABLE CON NORMALIZACIÓN ·
+   🔴 NO_COMPARABLE.
+6. **Auditabilidad total.**
+7. **Estructura de respuesta fija** (7 secciones).
+8. **Rechazo fuera de ámbito** — todo lo que no sea calidad de gas se rechaza o redirige.
 
 ---
 
@@ -231,11 +220,15 @@ Garantizar que:
 
 ## Identificación de parámetros
 
-Detectar:
+Detectar y modelar:
 
-- O₂
-- H₂S
-- PCS
+- Índice de Wobbe · PCS
+- Densidad relativa
+- Azufre total · H₂S+COS (como S) · Mercaptanos RSH (como S)
+- O₂ · CO₂
+- Punto de rocío de agua (H₂O) · Punto de rocío de hidrocarburos (HC)
+
+(Excluido: Polvo/Partículas)
 
 ---
 
@@ -447,7 +440,7 @@ Debe validar:
 ### Caso 1
 
 ```text
-Comparar H₂S ES vs UE
+Comparar H₂S+COS (como S) España ↔ Portugal (o España ↔ Francia / UE)
 ```
 
 ---
@@ -666,19 +659,21 @@ Documentación
 
 Ingesta documental
 
-- BOE
-- EUR-Lex
-- PDFs
+- ES: BOE, PD-01/NGTS
+- PT: Regulamento 826-2023
+- FR: GRTgaz / GRDF
+- UE: EUR-Lex (NC INT/CAM), EASEE-gas
 
 ---
 
 ## Fase 3
 
-Construcción ontología
+Construcción ontología (esquema multi-país × multi-parámetro)
 
-- O₂
-- H₂S
-- PCS
+- 10 parámetros (Wobbe, PCS, densidad relativa, azufre total, H₂S+COS, RSH, O₂, CO₂,
+  punto de rocío H₂O y HC)
+- Jurisdicciones ES / PT / FR / UE
+- Estados: VERIFICADO / NO_VERIFICABLE_SIN_FUENTE / PENDIENTE_EXTRACCION
 
 ---
 
@@ -686,17 +681,16 @@ Construcción ontología
 
 Motor de normalización
 
-- ppm
-- mg/Nm³
-- PCS
+- unidades (ppm, mg/Nm³, % mol, kWh/Nm³, MJ/Nm³, ºC de rocío)
+- corrección de condiciones de referencia (@T_comb/T_vol, Nm³ vs sm³)
 
 ---
 
 ## Fase 5
 
-Comparador
+Comparador multinacional
 
-- ES vs UE
+- ES ↔ PT · ES ↔ FR · ES ↔ Marco UE
 
 ---
 

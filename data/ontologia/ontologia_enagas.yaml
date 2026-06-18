@@ -1,124 +1,197 @@
 # =============================================================================
-# ONTOLOGÍA DE CALIDAD DEL GAS NATURAL — ENAGÁS RETO 5
-# Comparativa normativa ES vs UE — Parámetros: O₂, H₂S, PCS
+# ONTOLOGÍA DE CALIDAD DEL GAS NATURAL — ENAGÁS
+# Comparación regulatoria multinacional (España · Portugal · Francia · UE)
 # =============================================================================
 #
 # PROPÓSITO
 # Esta ontología es la "fuente de verdad" determinista del sistema.
 # El LLM nunca inventa números: todos los valores numéricos salen de aquí.
-# El LLM sólo interpreta la pregunta y redacta la respuesta final.
 #
 # ARQUITECTURA
 # Pregunta → Orquestador → ¿Comparativa? → Ontología + Normalizador → Flag → LLM redacta
-#                       → ¿Abierta?    → RAG (Vector DB + chunks PDF) → LLM con cita
+#                       → ¿Abierta?       → RAG (Vector DB + chunks PDF) → LLM con cita
 #
-# FUENTES VERIFICADAS
-# Revisión 2026-06: los valores numéricos ES se han verificado contra el
-# Protocolo de Detalle PD-01 («Medición, Calidad y Odorización de Gas»),
-# apartado 5.2, Tabla 3, publicado en el BOE y reproducido por Enagás.
-# El Reglamento (UE) 2015/703 NO fija límites numéricos de O₂, H₂S ni de
-# rango de PCS: sólo fija unidades, condiciones de referencia y obligaciones
-# de monitorización de Wobbe/PCS. Por ello los límites numéricos UE quedan
-# marcados como NO_VERIFICABLE_SIN_FUENTE (no existen en la norma citada).
+# ESQUEMA MULTI-PAÍS × MULTI-PARÁMETRO (v3.1.0)
+# parametros[<ID>].limites[<JURISDICCION>] con jurisdicciones abiertas (ES, PT, FR, UE).
+#
+# ESTADOS DE VERIFICACIÓN
+#   VERIFICADO                → cifra contrastada verbatim contra su fuente oficial.
+#   NO_VERIFICABLE_SIN_FUENTE → la fuente citada NO fija la cifra (no existe).
+#   PENDIENTE_EXTRACCION      → la cifra existe pero aún no se ha extraído (queda null).
+#
+# COBERTURA ACTUAL (revisión 2026-06)
+# ES: 10/10 parámetros VERIFICADOS contra la Orden TED/181/2025 (BOE-A-2025-3873),
+#     Tabla 3 (apartado 2.5.2.1), págs. 26-27. Condiciones @0/0.
+# PT: Regulamento 826/2023 (RQS, ERSE), Anexo I Secc. X, art. 39.º, pág. 371.
+#     Fija Wobbe, densidad, S total, H₂S+COS, O₂ y rocío de agua (@25/0, MJ/m³).
+#     NO fija PCS, mercaptanos RSH, CO₂ ni rocío de hidrocarburos del gas natural.
+# FR: GRTgaz «Annexe 4 — méthane de synthèse pour injection» (@0/0, kWh/m³). Fija los
+#     10 parámetros. La spec de distribución (GRDF, abril 2017) difiere en varios
+#     valores (ver notas). UE: el Reglamento 2015/703 no fija límites de calidad.
+#
+# AVISO DE COMPARABILIDAD
+# ES y FR(GRTgaz) expresan PCS/Wobbe en kWh/m³ @0/0 → comparables directamente.
+# PT expresa Wobbe en MJ/m³ @25/0 → requiere normalización (unidad + Tª combustión).
+# Los flags 🟢/🟡/🔴 los calcula el motor determinista en tiempo de consulta.
 # =============================================================================
 
 ontologia:
-  version: "2.0.0"
+  version: "3.1.0"
   fecha_revision: "2026-06"
   descripcion: >
-    Ontología determinista para comparar parámetros de calidad del gas natural
-    entre la normativa española (RD 919/2006 + NGTS-06) y la europea
-    (Network Code INT — Reglamento UE 2015/703). Cubre exclusivamente O₂, H₂S
-    y PCS. Toda respuesta comparativa se genera a partir de esta ontología;
-    el LLM nunca calcula ni infiere valores numéricos.
+    Ontología determinista para comparar parámetros de calidad del gas natural entre
+    España, Portugal, Francia y el marco europeo. Cubre los 10 parámetros del alcance
+    (excluye Polvo/Partículas). Toda respuesta comparativa se genera a partir de esta
+    ontología; el LLM nunca calcula ni infiere valores numéricos.
+
+  # ---------------------------------------------------------------------------
+  # JURISDICCIONES
+  # ---------------------------------------------------------------------------
+  jurisdicciones:
+    - codigo: ES
+      nombre: España
+      nivel: 1
+      fuente_principal: ORDEN_TED_181_2025
+      condiciones_referencia_defecto: "@0/0 — combustión 0 ºC, volumen V(0 ºC, 1,01325 bar)"
+    - codigo: PT
+      nombre: Portugal
+      nivel: 1
+      fuente_principal: REG_PT_826_2023
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar; volumen en m³(n)"
+    - codigo: FR
+      nombre: Francia
+      nivel: 1
+      fuente_principal: FR_GRTGAZ
+      condiciones_referencia_defecto: "@0/0 — combustión 0 ºC, 1,01325 bar; volumen m³(n)"
+      nota: >
+        Valores de la spec de transporte GRTgaz (Annexe 4, inyección de metano de
+        síntesis). La distribución GRDF (abril 2017) fija algunos límites distintos
+        para gas natural (p.ej. S total ≤ 150 mg/m³(n)) y para inyección (O₂ 15-40
+        mg/m³(n)). El gas francés se distribuye en tipo H (alto PCS) y tipo B (bajo
+        PCS); aquí se toma el tipo H como referencia y el tipo B se anota.
+    - codigo: UE
+      nombre: Marco Europeo Común
+      nivel: 2
+      fuente_principal: NC_INT
+      condiciones_referencia_defecto: "@25/0 (sólo condiciones de reporte; sin límites numéricos)"
+    # Nivel 3: añadir aquí nuevos códigos de país y su bloque de límites homólogo.
+
+  estados_verificacion:
+    VERIFICADO: Cifra contrastada verbatim contra su fuente oficial.
+    NO_VERIFICABLE_SIN_FUENTE: La fuente citada no fija la cifra (no existe en ella).
+    PENDIENTE_EXTRACCION: La cifra existe en el documento pero aún no se ha extraído.
 
   # ---------------------------------------------------------------------------
   # FUENTES NORMATIVAS
   # ---------------------------------------------------------------------------
   fuentes_normativas:
 
-    - id: RD919
-      tipo: reglamento_nacional
-      nombre: "Real Decreto 919/2006, de 28 de julio"
-      pais: España
-      publicacion: "BOE núm. 211, de 4 de septiembre de 2006, págs. 31576-31632"
-      url_boe: "https://www.boe.es/buscar/act.php?id=BOE-A-2006-15345"
-      eli: "https://www.boe.es/eli/es/rd/2006/07/28/919"
-      ambito: >
-        Reglamento técnico de distribución y utilización de combustibles gaseosos
-        y sus instrucciones técnicas complementarias ICG 01 a 11.
-      nota: >
-        IMPORTANTE: este RD regula la distribución y utilización (ICG), NO contiene
-        la tabla numérica de especificaciones de calidad del gas de transporte.
-        Esos valores (O₂, H₂S, PCS, Wobbe, etc.) están en el PD-01 de la NGTS
-        (ver fuente PD01). El RD 919/2006 se mantiene como contexto, no como
-        origen de las cifras de calidad.
-
-    - id: NGTS06
+    # --- España ---
+    - id: ORDEN_TED_181_2025
       tipo: norma_tecnica_sistema
-      nombre: "NGTS-06 — Normas de Gestión Técnica del Sistema gasista"
-      pais: España
-      publicacion: "Aprobadas por Orden ITC/3126/2005, de 5 de octubre (BOE 15/10/2005), y modificaciones posteriores"
-      ambito: >
-        Normas de Gestión Técnica del Sistema gasista español. El detalle
-        numérico de las especificaciones de calidad del gas se desarrolla en
-        el Protocolo de Detalle PD-01 (ver fuente PD01).
+      pais: ES
+      nombre: "Orden TED/181/2025, de 13 de febrero — Normas de Gestión Técnica del Sistema Gasista"
+      organismo: "Ministerio para la Transición Ecológica y el Reto Demográfico"
+      publicacion: "BOE-A-2025-3873, BOE núm. 50, de 27 de febrero de 2025 (texto consolidado, últ. mod. 30/09/2025)"
+      pdf: "data/raw/BOE-A-2025-3873-consolidado.pdf"
+      tabla_calidad: "Apartado 2.5.2.1 «Especificaciones del gas natural», Tabla 3 (págs. 26-27)"
+      condiciones_referencia: "[0 ºC, V(0 ºC, 1,01325 bar)] — nota (*) al pie de la Tabla 3"
+      ambito: "Fuente PRIMARIA VIGENTE de las especificaciones numéricas de calidad del gas natural español."
 
     - id: PD01
       tipo: protocolo_detalle
-      nombre: "PD-01 — Medición, Calidad y Odorización de Gas"
-      pais: España
-      publicacion: >
-        Aprobado por Resolución DGPEM de 13/03/2006; redacción del apartado 5.2
-        (Tabla 3) vigente según Resolución de 21/12/2012 (BOE-A-2013-185) y
-        Resolución de 8/10/2018 (BOE-A-2018-14557).
-      url_boe_2012: "https://www.boe.es/eli/es/res/2012/12/21/(3)"
-      url_boe_2018: "https://www.boe.es/eli/es/res/2018/10/08/(3)"
+      pais: ES
+      nombre: "PD-01 — Medición, Calidad y Odorización de Gas (NGTS-06)"
+      publicacion: "Redacción previa vía Resolución 21/12/2012 (BOE-A-2013-185) y 8/10/2018 (BOE-A-2018-14557)"
       url_enagas: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
-      ambito: >
-        Fuente PRIMARIA de las especificaciones numéricas de calidad del gas
-        introducido en el Sistema Gasista español (apartado 5.2, Tabla 3):
-        índice de Wobbe, PCS, densidad relativa, S total, H₂S+COS, RSH, O₂,
-        CO₂, puntos de rocío. Condiciones de referencia de la tabla:
-        [0 ºC, V(0 ºC, 1,01325 bar)].
+      ambito: "Fuente histórica de la Tabla 3 (apdo. 5.2). Mismos valores que la Orden TED/181/2025."
 
+    - id: RD919
+      tipo: reglamento_nacional
+      pais: ES
+      nombre: "Real Decreto 919/2006, de 28 de julio"
+      publicacion: "BOE-A-2006-15345, BOE núm. 211, de 4 de septiembre de 2006"
+      pdf: "data/raw/BOE-A-2006-15345-consolidado.pdf"
+      nota: "Distribución y utilización (ICG 01–11). Contexto; no contiene la tabla de calidad del transporte."
+
+    # --- Portugal ---
+    - id: REG_PT_826_2023
+      tipo: reglamento_nacional
+      pais: PT
+      nombre: "Regulamento n.º 826/2023 — Regulamento da Qualidade de Serviço dos Setores Elétrico e do Gás (RQS)"
+      organismo: "ERSE — Entidade Reguladora dos Serviços Energéticos"
+      publicacion: "Diário da República, 2.ª série, N.º 146, de 28 de julho de 2023"
+      pdf: "data/raw/regulacion_portugal_826-2023.pdf"
+      tabla_calidad: "Anexo I, Secção X «Características do gás (art. 39.º)», pág. 371"
+      condiciones_referencia: "0 ºC, 1,01325 bar, combustión inicial 25 ºC (ISO 13443/96); volumen en m³(n)"
+      nota: "Deroga el RQS n.º 406/2021. PCS, mercaptanos RSH, CO₂ y rocío de HC del gas natural NO se fijan numéricamente."
+
+    # --- Francia ---
+    - id: FR_GRTGAZ
+      tipo: prescripcion_tecnica
+      pais: FR
+      nombre: "GRTgaz — Annexe 4: caractéristiques physico-chimiques du méthane de synthèse destiné à être injecté"
+      organismo: "GRTgaz (gestor de transporte, Francia)"
+      pdf: "data/raw/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
+      tabla_calidad: "Tabla «Prescriptions techniques» (pág. 1)"
+      condiciones_referencia: "Combustión 0 ºC y 1,01325 bar; volumen m³(n)"
+      nota: "Alcance: inyección de metano de síntesis en la red de transporte. Distingue gas tipo H y tipo B."
+
+    - id: FR_GRDF
+      tipo: prescripcion_tecnica
+      pais: FR
+      nombre: "GRDF — Prescriptions techniques du distributeur"
+      organismo: "GRDF (Gaz Réseau Distribution France)"
+      publicacion: "Abril 2017 (base reglamentaria: décret n.º 2016-348)"
+      pdf: "data/raw/Prescriptions_techniques_GRDF.pdf"
+      tabla_calidad: "Tabla 5.1.1 (gas natural, pág. 9) y Tabla 5.1.2 (inyección de gases distintos del gas natural, págs. 10-11)"
+      nota: "Spec de distribución. Difiere de GRTgaz: S total gas natural ≤ 150 mg/m³(n); O₂ inyección 15-40 mg/m³(n)."
+
+    # --- Marco Europeo ---
     - id: NC_INT
       tipo: reglamento_europeo
+      pais: UE
       nombre: "Network Code on Interoperability and Data Exchange (NC INT)"
       referencia_legal: "Reglamento (UE) 2015/703 de la Comisión"
       publicacion: "DOUE L 113, de 1 de mayo de 2015"
       url_eurlex: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
-      ambito: >
-        Código de red sobre interoperabilidad e intercambio de datos.
-        Contiene las disposiciones de calidad del gas aplicables a los
-        puntos de interconexión entre redes de transporte de la UE,
-        incluyendo monitorización de Wobbe/GCV.
+      pdf: "data/raw/CELEX_32015R0703_ES_TXT.pdf"
+      ambito: "Armoniza unidades, condiciones de referencia y monitorización de Wobbe/PCS. NO fija límites numéricos de calidad."
 
     - id: NC_CAM
       tipo: reglamento_europeo
-      nombre: "Network Code on Capacity Allocation Mechanisms (NC CAM)"
-      referencia_legal: "Reglamento (UE) 2017/459 de la Comisión"
-      publicacion: "DOUE L 72, de 17 de marzo de 2017"
+      pais: UE
+      nombre: "Network Code on Capacity Allocation Mechanisms (NC CAM) — Reglamento (UE) 2017/459"
       url_eurlex: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459"
-      ambito: >
-        Mecanismos de asignación de capacidad en redes de transporte de gas.
-        Referenciado en el enunciado como "INT/CAM".
+      pdf: "data/raw/CELEX_32017R0459_ES_TXT.pdf"
+      ambito: "Asignación de capacidad. No fija calidad."
 
     - id: EASEE_GAS
       tipo: buenas_practicas
+      pais: UE
       nombre: "EASEE-gas Common Business Practices (CBP)"
-      ambito: >
-        Recomendaciones de armonización de calidad del gas en Europa.
-        No son vinculantes pero son referencia habitual en puntos de
-        interconexión transfronteriza. Consultar CBP 2005-001/002.
+      ambito: "Recomendaciones de armonización (no vinculantes). CBP 2005-001/002."
+
+    - id: EN_16726
+      tipo: norma_tecnica
+      pais: UE
+      nombre: "EN 16726 — Calidad del gas, grupo H"
+      ambito: "Referencia técnica no vinculante para límites de calidad en interconexión."
 
     - id: EN_ISO_6976
       tipo: norma_tecnica
-      nombre: "EN ISO 6976 — Cálculo de poder calorífico, densidad e índice de Wobbe"
-      ambito: >
-        Define los métodos de cálculo y las condiciones de referencia estándar
-        para PCS/PCI a partir de la composición del gas. Imprescindible para
-        interpretar los valores de PCS con sus condiciones de referencia correctas.
+      pais: UE
+      nombre: "EN ISO 6976 / ISO 13443 — Cálculo de poder calorífico, Wobbe y condiciones de referencia estándar"
+      ambito: "Métodos de cálculo y condiciones de referencia estándar para PCS/Wobbe."
+
+  datasets_auxiliares:
+    - id: NORM_17_06
+      archivo: "data/raw/NORM_17_06.csv"
+      nota: >
+        Extracción previa de valores (ES/PT/FR). Usado como referencia cruzada; se han
+        corregido sus errores contra los PDFs primarios (p.ej. PT O₂ ≤ 1 % mol — el CSV
+        decía «no regulado»; PT rocío H₂O −8 ºC — el CSV decía −5; ES PCS máx 13,26 — el
+        CSV decía 13,27).
 
 
 # =============================================================================
@@ -128,205 +201,57 @@ ontologia:
 parametros:
 
   # ---------------------------------------------------------------------------
-  O2:
+  WOBBE:
   # ---------------------------------------------------------------------------
-    nombre_completo: Oxígeno
-    simbolo: "O₂"
-    nombre_ingles: Oxygen
-    tipo: contaminante
-    motivacion_limite: >
-      El oxígeno degrada la calidad del gas, favorece la corrosión en tuberías
-      y puede comprometer la seguridad en almacenamiento subterráneo.
-    aliases:
-      - oxígeno
-      - contenido de oxígeno
-      - oxygen
-      - oxygen content
-      - O2
-      - O₂
-
+    nombre_completo: Índice de Wobbe
+    simbolo: "IW"
+    nombre_ingles: Wobbe Index
+    grupo: energetico
+    tipo: calidad_energetica
+    definicion: "PCS / √(densidad relativa). Indicador de intercambiabilidad del gas."
+    aliases: [índice de wobbe, wobbe, wobbe index, IW, WI]
     limites:
       ES:
-        fuente: PD01
-        fuente_secundaria: NGTS06
-        articulo: "PD-01, apartado 5.2, Tabla 3 (Especificaciones de calidad del gas introducido en el Sistema Gasista)"
-        fuente_url: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
-        tipo_limite: maximo
-        valor: 0.01
-        unidad: pct_mol
-        expresion_original: "0,01 % mol (máximo)"
-        condiciones_referencia:
-          temperatura_combustion_C: null   # no aplica: fracción molar
-          temperatura_volumen_C: 0
-          presion_bar: 1.01325
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 26)"
+        tipo_limite: rango
+        valor_min: 13.403
+        valor_max: 16.058
+        unidad: kWh_per_nm3
+        expresion_original: "Índice de Wobbe: Mínimo 13,403 — Máximo 16,058 kWh/m³"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
         estado_verificacion: VERIFICADO
-        nota: >
-          Confirmado en PD-01 Tabla 3: O₂ ≤ 0,01 % mol. La tabla expresa la
-          fracción como molar (% mol), no volumétrica; para gas ideal % mol ≈ % vol.
-
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: rango
+        valor_min: 48.17
+        valor_max: 57.66
+        unidad: MJ_per_nm3
+        expresion_original: "IW: 48,17 — 57,66 MJ/m³(n)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota_comparabilidad: "MJ/m³ @25/0. Frente a ES (kWh/m³ @0/0) requiere conversión de unidad y de Tª de combustión → 🟡."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: rango
+        valor_min: 13.64
+        valor_max: 15.70
+        unidad: kWh_per_nm3
+        expresion_original: "Gaz de type H: 13,64 à 15,7 kWh/m³(n) (combustion 0 ºC, 1,01325 bar)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas tipo H. Gas tipo B: 12,50 – 13,06 kWh/m³(n) (GRDF gas B general: 12,01–13,06)."
       UE:
         fuente: NC_INT
-        articulo: "Reglamento (UE) 2015/703 — no fija límite de O₂"
-        fuente_url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
-        tipo_limite: maximo
-        valor: null
+        articulo: "Reglamento (UE) 2015/703, art. 16 (monitorización)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
         unidad: null
-        expresion_original: "no establecido por el Reglamento (UE) 2015/703"
-        condiciones_referencia:
-          temperatura_combustion_C: null
-          temperatura_volumen_C: null
-          presion_bar: null
+        expresion_original: "Obliga a monitorizar el Wobbe pero NO fija rango numérico"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: >
-          El Reglamento (UE) 2015/703 (NC INT) NO contiene un límite numérico de
-          O₂. Sólo armoniza unidades, condiciones de referencia y la obligación de
-          publicar/monitorizar índice de Wobbe y PCS. Los límites de O₂ se dejan a
-          la normativa nacional / acuerdos bilaterales entre TSOs (y, como
-          referencia técnica no vinculante, a la norma EN 16726). No se puede
-          escribir un valor numérico UE sin inventarlo.
-
-    conversion:
-      par: [pct_vol, pct_mol]
-      equivalencia_gas_ideal: >
-        Para gas natural en condiciones normales, % vol ≈ % mol (diferencia < 0,1 %).
-        La distinción es formal; en la práctica se tratan como equivalentes.
-      par_2: [pct_vol, ppm_vol]
-      formula_pct_a_ppm: "ppm_vol = pct_vol * 10000"
-      formula_ppm_a_pct: "pct_vol = ppm_vol / 10000"
-      ejemplo: "0,01 % = 100 ppm(vol)"
-
-    flag_comparabilidad: NO_COMPARABLE
-    comparabilidad:
-      estado: NO_COMPARABLE
-      icono: "🔴"
-      requiere_conversion: false
-      conversion_exacta: false
-      resultado: >
-        No es posible comparar O₂ entre ES y UE: España fija O₂ ≤ 0,01 % mol
-        (PD-01 Tabla 3), pero el Reglamento (UE) 2015/703 no establece ningún
-        límite numérico de O₂. La comparación queda 🔴 NO_COMPARABLE por falta
-        de valor UE en la fuente normativa citada.
-      condicion_alerta: >
-        Si se incorpora una fuente UE con límite de O₂ (p.ej. EN 16726 o un
-        acuerdo bilateral de interconexión), actualizar el valor UE y reevaluar.
-
-
-  # ---------------------------------------------------------------------------
-  H2S:
-  # ---------------------------------------------------------------------------
-    nombre_completo: Sulfuro de hidrógeno
-    simbolo: "H₂S"
-    nombre_ingles: Hydrogen sulphide
-    masa_molar_g_mol: 34.08
-    tipo: contaminante
-    motivacion_limite: >
-      Altamente tóxico (TLV-TWA 1 ppm), corrosivo para instalaciones metálicas
-      y precursor de SO₂ en combustión. Parte del azufre total pero con
-      parámetro propio por su toxicidad específica.
-    aliases:
-      - sulfuro de hidrógeno
-      - H2S
-      - H₂S
-      - hydrogen sulphide
-      - hydrogen sulfide
-      - ácido sulfhídrico
-      - sulfhídrico
-
-    limites:
-      ES:
-        fuente: PD01
-        fuente_secundaria: NGTS06
-        articulo: "PD-01, apartado 5.2, Tabla 3 — fila «H₂S + COS (como S)»"
-        fuente_url: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
-        tipo_limite: maximo
-        valor: 15.0
-        unidad: mg_per_nm3
-        expresion_original: "H₂S + COS (como S) ≤ 15 mg/Nm³ (máximo)"
-        parametro_exacto: "Suma de H₂S y COS, expresada como azufre (S)"
-        condiciones_referencia:
-          temperatura_volumen_C: 0        # Tabla 3: [0 ºC, V(0 ºC, 1,01325 bar)]
-          presion_bar: 1.01325
-        estado_verificacion: VERIFICADO
-        nota_correccion: >
-          ⚠ CORRECCIÓN: el valor anterior (5 mg/Nm³) era ERRÓNEO. El límite
-          oficial de la Tabla 3 del PD-01 es 15 mg/Nm³ para «H₂S + COS (como S)».
-          Parámetros relacionados de la misma tabla: Azufre total (S total)
-          ≤ 50 mg/Nm³ y mercaptanos RSH (como S) ≤ 17 mg/Nm³.
-        nota_unidad: >
-          El límite es una concentración másica de AZUFRE (como S), suma de H₂S y
-          COS, no de H₂S puro. La conversión a ppm(vol) de H₂S de la sección
-          inferior es por tanto orientativa (asume H₂S puro con M=34,08 g/mol).
-        nota_critica: >
-          ⚠ CASO DE USO CLAVE: si el usuario proporciona un valor en mg/m³
-          a 15 °C (m³ estándar), hay que renormalizar a Nm³ (0 °C) antes de
-          comparar. Factor de corrección: valor_Nm3 = valor_15C * (288.15/273.15)
-          ≈ valor_15C * 1.055. Ver sección normalizacion_condiciones_referencia.
-
-      UE:
-        fuente: NC_INT
-        articulo: "Reglamento (UE) 2015/703 — no fija límite de H₂S"
-        fuente_url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
-        tipo_limite: maximo
-        valor: null
-        unidad: null
-        expresion_original: "no establecido por el Reglamento (UE) 2015/703"
-        condiciones_referencia:
-          temperatura_volumen_C: null
-          presion_bar: null
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: >
-          El Reglamento (UE) 2015/703 (NC INT) NO fija un límite numérico de H₂S
-          (ni en mg/m³ ni en ppm). Los límites de H₂S/azufre en interconexión se
-          dejan a la normativa nacional / acuerdos bilaterales entre TSOs, y como
-          referencia técnica no vinculante a la norma EN 16726. El valor anterior
-          (5 mg/Nm³, «o 3,5 ppm / 6,5 mg/m³») no procedía de esta fuente y se
-          retira para no inventar una cifra.
-
-    conversion:
-      tipo: masa_molar
-      formula_mg_nm3_a_ppm_vol: >
-        ppm_vol = (mg/Nm³ × 22.414) / masa_molar_g_mol
-        ppm_vol = (mg/Nm³ × 22.414) / 34.08
-        ppm_vol = mg/Nm³ × 0.6577
-      formula_ppm_vol_a_mg_nm3: >
-        mg/Nm³ = ppm_vol × masa_molar_g_mol / 22.414
-        mg/Nm³ = ppm_vol × 34.08 / 22.414
-        mg/Nm³ = ppm_vol × 1.5196
-      factor_mg_nm3_a_ppm: 0.6577
-      factor_ppm_a_mg_nm3: 1.5196
-      condiciones_validas: "T = 0 °C, P = 1,01325 bar (Nm³)"
-      ejemplo: "15 mg/Nm³ × 0,6577 = 9,87 ppm(vol)  (asumiendo H₂S puro, M=34,08)"
-      nota_como_S: >
-        El límite ES está expresado «como S» (M_S = 32,06 g/mol). Si se quiere el
-        equivalente en ppm(vol) de azufre: 15 mg-S/Nm³ × 22,414 / 32,06 ≈ 10,49 ppm.
-        El factor 0,6577 aplica a H₂S puro; usarlo sólo cuando el dato sea H₂S.
-      volumen_molar_nm3_kmol: 22.414   # volumen molar gas ideal a 0°C, 1 atm
-
-    normalizacion_condiciones_referencia:
-      descripcion: >
-        Si el valor del usuario está en mg/m³ a 15 °C, convertir a mg/Nm³
-        antes de comparar con el límite ES (expresado a 0 °C).
-      formula: "valor_Nm3 = valor_15C × (273.15 + 15) / 273.15 = valor_15C × 1.0549"
-      ejemplo: "12 mg/m³ @ 15°C → 12 × 1.0549 = 12.66 mg/Nm³"
-      flag_si_condiciones_no_especificadas: NO_COMPARABLE
-
-    flag_comparabilidad: NO_COMPARABLE
-    comparabilidad:
-      estado: NO_COMPARABLE
-      icono: "🔴"
-      requiere_conversion: false
-      conversion_exacta: false
-      resultado: >
-        No es posible comparar H₂S entre ES y UE: España fija H₂S+COS (como S)
-        ≤ 15 mg/Nm³ (PD-01 Tabla 3, @0 ºC), pero el Reglamento (UE) 2015/703 no
-        establece límite numérico de H₂S. Falta valor UE en la fuente citada.
-      condicion_flag_rojo: >
-        Además, si las condiciones de referencia del volumen (0 °C vs 15 °C) del
-        dato del usuario no están especificadas → 🔴 NO_COMPARABLE.
-      nota: >
-        Para comparar con la UE haría falta una fuente que sí fije el límite
-        (EN 16726 o acuerdo bilateral de interconexión). No se inventa cifra UE.
-
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -334,142 +259,449 @@ parametros:
     nombre_completo: Poder Calorífico Superior
     simbolo: PCS
     nombre_ingles: Gross Calorific Value (GCV)
-    alias_ingles: HHV (Higher Heating Value)
+    alias_ingles: HHV
+    grupo: energetico
     tipo: calidad_energetica
     descripcion: >
-      Energía liberada en la combustión completa de una unidad de volumen de gas,
-      incluyendo el calor de condensación del vapor de agua en los productos.
-      Calculado según EN ISO 6976. Su valor depende CRÍTICAMENTE de las
-      condiciones de referencia (temperatura de combustión / temperatura de
-      medición del volumen). Sin especificar condiciones, el número es ambiguo.
-    aliases:
-      - poder calorífico superior
-      - PCS
-      - GCV
-      - gross calorific value
-      - valor calorífico superior
-      - HHV
-      - higher heating value
-      - poder calorífico
+      Energía de combustión completa por unidad de volumen, incluyendo la condensación
+      del agua. Calculado según EN ISO 6976. Depende de las condiciones @T_comb/T_vol.
+    aliases: [poder calorífico superior, PCS, GCV, gross calorific value, HHV, pouvoir calorifique supérieur]
     parametro_relacionado_no_incluido:
-      - nombre: PCI (Poder Calorífico Inferior / NCV / LHV)
-        nota: No es uno de los 3 parámetros del reto. No confundir con PCS.
-      - nombre: Índice de Wobbe
-        nota: >
-          PCS / √(densidad relativa). Aparece en el NC INT como indicador de
-          intercambiabilidad. No es uno de los 3 parámetros pero es contexto
-          frecuente en preguntas sobre PCS.
-
+      - { nombre: "PCI (NCV/LHV)", nota: "Sin condensación de agua. No confundir con PCS." }
     limites:
       ES:
-        fuente: PD01
-        fuente_secundaria: NGTS06
-        articulo: "PD-01, apartado 5.2, Tabla 3 — fila «PCS»"
-        fuente_url: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 26)"
         tipo_limite: rango
         valor_min: 10.26
         valor_max: 13.26
         unidad: kWh_per_nm3
-        expresion_original: "10,26 – 13,26 kWh/Nm³ (PD-01 Tabla 3)"
-        equivalencia_MJ_per_nm3:
-          valor_min: 36.94      # 10,26 kWh × 3,6
-          valor_max: 47.74      # 13,26 kWh × 3,6
-          nota: "Conversión exacta × 3,6 MJ/kWh"
-        condiciones_referencia:
-          norma_calculo: EN_ISO_6976
-          temperatura_combustion_C: 0
-          temperatura_volumen_C: 0
-          presion_bar: 1.01325
-          notacion: "@0/0"
-          cita_condiciones: "PD-01: Hs[t1,p1,V(t2,p2)] en [0 ºC, V(0 ºC, 1,01325 bar)]"
+        expresion_original: "PCS: Mínimo 10,26 — Máximo 13,26 kWh/m³"
+        equivalencia_MJ_per_nm3: { valor_min: 36.94, valor_max: 47.74, nota: "× 3,6 MJ/kWh" }
+        condiciones_referencia: { norma_calculo: EN_ISO_6976, temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
         estado_verificacion: VERIFICADO
-        nota_correccion: >
-          ⚠ CORRECCIÓN DOBLE: (1) el rango anterior (34,12 – 38,77 MJ/Nm³) era
-          ERRÓNEO; el oficial de la Tabla 3 del PD-01 es 10,26 – 13,26 kWh/Nm³
-          (= 36,94 – 47,74 MJ/Nm³). (2) Las condiciones de referencia anteriores
-          (@25/0) también eran erróneas: el PD-01 fija el PCS en base
-          volumétrica a [0 ºC combustión, V(0 ºC, 1,01325 bar)], es decir @0/0.
-        nota_critica: >
-          ⚠ CONDICIONES DE REFERENCIA CRÍTICAS: España (PD-01) usa @0/0
-          (combustión 0 °C, volumen 0 °C). El Reglamento (UE) 2015/703 reporta
-          el PCS a @25/0 (combustión 25 °C por defecto, volumen 0 °C). El volumen
-          de referencia coincide (0 °C); difiere la temperatura de combustión.
-          Factor de conversión de PCS @25/0 → @0/0 = 1,0026 (Anexo del Reglamento
-          2015/703, basado en EN ISO 13443).
-
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: null
+        expresion_original: "El Regulamento 826/2023 NO fija rango numérico de PCS del gas natural (se controla vía índice de Wobbe)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: rango
+        valor_min: 10.7
+        valor_max: 12.8
+        unidad: kWh_per_nm3
+        expresion_original: "Gaz de type H: 10,7 à 12,8 kWh/m³(n) (combustion 0 ºC, 1,01325 bar)"
+        condiciones_referencia: { norma_calculo: EN_ISO_6976, temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas tipo H. Gas tipo B: 9,5 – 10,5 kWh/m³(n) (idéntico en GRDF y GRTgaz)."
+        nota_comparabilidad: "Misma unidad (kWh/m³) y condiciones (@0/0) que ES → comparable directamente con el motor."
       UE:
         fuente: NC_INT
-        articulo: "Reglamento (UE) 2015/703, art. 13 (unidades y condiciones de referencia) y art. 16 (monitorización)"
-        fuente_url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
+        articulo: "Reglamento (UE) 2015/703, art. 13 (unidades/condiciones) y art. 16 (monitorización)"
         tipo_limite: rango
         valor_min: null
         valor_max: null
         unidad: kWh_per_nm3
-        expresion_original: "el Reglamento (UE) 2015/703 NO fija un rango numérico de PCS"
-        condiciones_referencia:
-          norma_calculo: EN_ISO_6976
-          temperatura_combustion_C: 25    # art. 13: combustión por defecto 25 °C
-          temperatura_volumen_C: 0         # art. 13: volumen 0 °C, 1,01325 bar(a)
-          presion_bar: 1.01325
-          notacion: "@25/0 (sólo condiciones de reporte; sin valores límite)"
+        expresion_original: "El Reglamento (UE) 2015/703 NO fija un rango numérico de PCS"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0 (sólo reporte)" }
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: >
-          El Reglamento (UE) 2015/703 NO establece un rango/límite numérico de PCS.
-          Lo que sí fija (art. 13) son la unidad (kWh/m³, en función del PCS) y las
-          condiciones de referencia (volumen 0 °C y 1,01325 bar; combustión por
-          defecto 25 °C), y (art. 16) la obligación de los TSO de publicar Wobbe y
-          PCS por hora en cada punto de interconexión. Los rangos de calidad se
-          dejan a acuerdos bilaterales entre TSOs / normativa nacional (y, como
-          referencia no vinculante, EN 16726). El rango anterior (30,2 – 47,2)
-          era orientativo y NO procedía de esta norma; se retira.
-
     conversion:
-      MJ_a_kWh:
-        formula: "kWh/Nm³ = MJ/Nm³ / 3.6"
-        formula_inversa: "MJ/Nm³ = kWh/Nm³ × 3.6"
-        factor: 0.27778
-        ejemplo: "36 MJ/Nm³ = 10 kWh/Nm³"
+      MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
-        descripcion: >
-          ES (PD-01) expresa el PCS a @0/0 (combustión 0 °C, volumen 0 °C).
-          El Reglamento (UE) 2015/703 reporta a @25/0 (combustión 25 °C por
-          defecto, volumen 0 °C). El volumen de referencia COINCIDE (0 °C); sólo
-          difiere la temperatura de combustión, lo que produce una diferencia
-          pequeña en el PCS por unidad de volumen.
-        formula: "PCS@0/0 [kWh/Nm³] = PCS@25/0 [kWh/Nm³] × 1,0026"
+        formula: "PCS@0/0 = PCS@25/0 × 1,0026"
         factor_25_0_a_0_0: 1.0026
-        fuente_factor: "Anexo del Reglamento (UE) 2015/703 (PCS real por volumen), basado en EN ISO 13443"
-        nota: >
-          Factores adicionales del mismo Anexo (PCS real por volumen):
-          25/20→25/0 = 1,0738 ; 25/0→15/15 = 0,9486 ; 15/15→0/0 = 1,0570.
-          El factor 25/0→0/0 = 1,0026 se deriva de la propia tabla del Anexo.
-          Sin condiciones de referencia confirmadas en alguna fuente → 🔴 NO_COMPARABLE.
+        fuente_factor: "Anexo Reglamento (UE) 2015/703, basado en EN ISO 13443"
+        nota: "Sin condiciones de referencia confirmadas en la fuente → 🔴 NO_COMPARABLE."
 
-    flag_comparabilidad: NO_COMPARABLE
-    comparabilidad:
-      estado: NO_COMPARABLE
-      icono: "🔴"
-      requiere_conversion: false
-      conversion_exacta: false
-      resultado: >
-        No hay rango UE numérico con el que comparar: el Reglamento (UE) 2015/703
-        no fija un rango de PCS, sólo unidades y condiciones de referencia
-        (@25/0) y la obligación de monitorizar Wobbe/PCS. España fija
-        10,26 – 13,26 kWh/Nm³ @0/0 (PD-01 Tabla 3). Comparación de RANGOS → 🔴.
-      condicion_flag_verde: >
-        Sólo si se incorpora una fuente UE con rango de PCS expresado en las
-        mismas condiciones @T_comb/T_vol confirmadas.
-      condicion_flag_amarillo: >
-        Si la fuente UE da un rango en condiciones distintas pero existe el factor
-        determinista (p.ej. @25/0 → @0/0 = 1,0026), se aplica y se muestra.
-      condicion_flag_rojo: >
-        Estado actual: no hay valores UE en la norma citada, o las condiciones de
-        referencia no están especificadas. No se inventa ningún número.
-      nota_presentacion: >
-        Este es el parámetro más delicado del reto. Dos avisos clave: (1) las
-        condiciones de referencia ES (@0/0) y de reporte UE (@25/0) difieren en
-        la temperatura de combustión; (2) la UE no fija un rango numérico de PCS.
-        Detectar ambas cosas es el valor diferencial frente al jurado.
+  # ---------------------------------------------------------------------------
+  DENS_REL:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Densidad Relativa
+    simbolo: "d"
+    nombre_ingles: Relative density
+    grupo: fisico
+    tipo: propiedad_fisica
+    definicion: "Densidad del gas respecto al aire en las mismas condiciones (adimensional)."
+    aliases: [densidad relativa, relative density, densité relative, gravedad específica, d]
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 26)"
+        tipo_limite: rango
+        valor_min: 0.555
+        valor_max: 0.700
+        unidad: adimensional
+        expresion_original: "Densidad relativa: Mínimo 0,555 — Máximo 0,700"
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: rango
+        valor_min: 0.5549
+        valor_max: 0.7001
+        unidad: adimensional
+        expresion_original: "d: 0,5549* — 0,7001"
+        estado_verificacion: VERIFICADO
+        nota: "Mínimo reducible a 0,4900 con incorporación de H₂ hasta 20 % vol (nota al pie del Anexo I)."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: rango
+        valor_min: 0.500
+        valor_max: 0.70
+        unidad: adimensional
+        expresion_original: "Densité — comprise entre 0,500 et 0,70"
+        estado_verificacion: VERIFICADO
+        nota: "GRDF (inyección, §5.1.2) fija 0,555 – 0,70."
+      UE:
+        fuente: NC_INT
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija rango de densidad relativa"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+
+  # ---------------------------------------------------------------------------
+  S_TOTAL:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Azufre Total
+    simbolo: "S total"
+    nombre_ingles: Total sulphur
+    grupo: azufrados
+    tipo: contaminante
+    aliases: [azufre total, s total, total sulphur, soufre total, enxofre total]
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 50.0
+        unidad: mg_per_nm3
+        expresion_original: "S Total: – / 50 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: 50.0
+        unidad: mg_per_nm3
+        expresion_original: "S total: – / 50 mg/m³(n)"
+        estado_verificacion: VERIFICADO
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: 30.0
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en soufre total < 30 mgS/m³(n)"
+        estado_verificacion: VERIFICADO
+        nota: "GRTgaz (inyección transporte). GRDF gas natural distribución: ≤ 150 mg/m³(n)."
+      UE:
+        fuente: NC_INT
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija límite de azufre total"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+
+  # ---------------------------------------------------------------------------
+  H2S_COS:
+  # ---------------------------------------------------------------------------
+    nombre_completo: "H₂S + COS (expresado como S)"
+    simbolo: "H₂S + COS (como S)"
+    nombre_ingles: "H2S + COS (as S)"
+    grupo: azufrados
+    tipo: contaminante
+    masa_molar_H2S_g_mol: 34.08
+    motivacion_limite: "H₂S tóxico y corrosivo; COS hidroliza a H₂S. Se limita la suma como azufre."
+    aliases: [h2s, h₂s, sulfuro de hidrógeno, hydrogen sulphide, ácido sulfhídrico, h2s+cos, cos]
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 15.0
+        unidad: mg_per_nm3
+        expresion_original: "H2S + COS (como S): – / 15 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota_critica: "⚠ Si el usuario da mg/m³ a 15 ºC, renormalizar a Nm³ (0 ºC) × 1,0549 antes de comparar."
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "H2S + COS: – / 5 mg/m³(n)"
+        estado_verificacion: VERIFICADO
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en soufre de H2S (+ COS) < 5 mgS/m³(n)"
+        estado_verificacion: VERIFICADO
+        nota: "GRDF gas natural distribución fija H₂S (no la suma): instantáneo < 15 mg/m³(n), media 8 días < 7."
+      UE:
+        fuente: NC_INT
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija límite de H₂S/azufre"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+    conversion:
+      tipo: masa_molar
+      formula_mg_nm3_a_ppm_vol: "ppm_vol = mg/Nm³ × 22.414 / 34.08 = mg/Nm³ × 0.6577  (H₂S puro)"
+      formula_ppm_vol_a_mg_nm3: "mg/Nm³ = ppm_vol × 34.08 / 22.414 = ppm_vol × 1.5196  (H₂S puro)"
+      nota_como_S: "El límite está «como S» (M_S = 32,06). El factor 0,6577 aplica a H₂S puro, no a la suma como S."
+    normalizacion_condiciones_referencia:
+      formula: "valor_Nm3 = valor_15C × (273.15 + 15) / 273.15 = valor_15C × 1.0549"
+      flag_si_condiciones_no_especificadas: NO_COMPARABLE
+
+  # ---------------------------------------------------------------------------
+  RSH:
+  # ---------------------------------------------------------------------------
+    nombre_completo: "Mercaptanos (RSH, expresado como S)"
+    simbolo: "RSH (como S)"
+    nombre_ingles: "Mercaptans (as S)"
+    grupo: azufrados
+    tipo: contaminante
+    aliases: [mercaptanos, rsh, tioles, mercaptans, soufre mercaptique]
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 17.0
+        unidad: mg_per_nm3
+        expresion_original: "RSH (como S): – / 17 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Regulamento 826/2023 NO fija una fila de mercaptanos para el gas natural (azufre controlado vía S total)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: 6.0
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en soufre mercaptique < 6 mgS/m³(n)"
+        estado_verificacion: VERIFICADO
+      UE:
+        fuente: NC_INT
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija límite de mercaptanos"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+
+  # ---------------------------------------------------------------------------
+  O2:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Oxígeno
+    simbolo: "O₂"
+    nombre_ingles: Oxygen
+    grupo: composicion
+    tipo: contaminante
+    motivacion_limite: "Degrada la calidad, favorece la corrosión y compromete el almacenamiento subterráneo."
+    aliases: [oxígeno, oxygen, oxygène, oxigénio, O2, O₂]
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 0.01
+        unidad: pct_mol
+        expresion_original: "O2: – / 0,01 % mol"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: 1.0
+        unidad: pct_mol
+        expresion_original: "O2: 1 % mol (máximo)"
+        estado_verificacion: VERIFICADO
+        nota: "El CSV auxiliar lo daba como «no regulado»; la norma SÍ lo fija (≤ 1 % mol). Además se monitoriza (punto 2.a)."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: 0.01
+        unidad: pct_mol
+        expresion_original: "Teneur en O2 < 0,01 % (molaire)"
+        estado_verificacion: VERIFICADO
+        nota: "GRDF (inyección, §5.1.2) fija O₂ 15-40 mg/m³(n), con tolerancia hasta 0,75 % (3 % en red gas B). Spec distinta."
+      UE:
+        fuente: NC_INT
+        articulo: "Reglamento (UE) 2015/703 — no fija límite de O₂"
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "no establecido por el Reglamento (UE) 2015/703"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+    conversion:
+      formula_pct_a_ppm: "ppm_vol = pct_vol × 10000"
+      ejemplo: "0,01 % = 100 ppm(vol)"
+
+  # ---------------------------------------------------------------------------
+  CO2:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Dióxido de Carbono
+    simbolo: "CO₂"
+    nombre_ingles: Carbon dioxide
+    grupo: composicion
+    tipo: componente
+    aliases: [dióxido de carbono, co2, co₂, carbon dioxide, anhídrido carbónico]
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "CO2: – / 2,5 % mol"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X (gas natural), art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "La tabla de gas natural NO fija CO₂ (sólo se monitoriza). El 4 % mol de la norma aplica a gases renovables (Secção XI), no al gas natural"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "Teneur en CO2 < 2,5 % (molaire)"
+        estado_verificacion: VERIFICADO
+        nota: "GRDF tolera por excepción hasta 3,5 % (11,7 % en red gas B)."
+      UE:
+        fuente: NC_INT
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija límite de CO₂"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+
+  # ---------------------------------------------------------------------------
+  PR_H2O:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Punto de Rocío de Agua
+    simbolo: "PR H₂O"
+    nombre_ingles: Water dew point
+    grupo: condensacion
+    tipo: condicion_operativa
+    definicion: "Temperatura a la que condensa el agua, referida a una presión dada."
+    aliases: [punto de rocío de agua, water dew point, point de rosée eau, ponto de orvalho da água]
+    nota_comparabilidad: "Sólo comparable a la MISMA presión de referencia. ES @70 bar, PT @presión máx. operación, FR @presión máx. servicio → presiones distintas."
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 2.0
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "H2O (punto de rocío): – / +2 ºC a 70 bar"
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: -8.0
+        unidad: grados_C
+        presion_referencia_bar: null
+        expresion_original: "H2O (ponto de orvalho): – / -8 ºC à pressão máxima de operação"
+        estado_verificacion: VERIFICADO
+        nota: "Referido a la presión máxima de operación (no a 70 bar). El CSV auxiliar decía -5; la norma fija -8."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: -5.0
+        unidad: grados_C
+        presion_referencia_bar: null
+        expresion_original: "Point de rosée eau < -5 ºC à la Pression Maximale de Service du Réseau en aval du Raccordement"
+        estado_verificacion: VERIFICADO
+      UE:
+        fuente: NC_INT
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija un valor armonizado de punto de rocío de agua"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+
+  # ---------------------------------------------------------------------------
+  PR_HC:
+  # ---------------------------------------------------------------------------
+    nombre_completo: Punto de Rocío de Hidrocarburos
+    simbolo: "PR HC"
+    nombre_ingles: Hydrocarbon dew point
+    grupo: condensacion
+    tipo: condicion_operativa
+    definicion: "Temperatura a la que condensan los hidrocarburos pesados, referida a un rango de presión."
+    aliases: [punto de rocío de hidrocarburos, hydrocarbon dew point, point de rosée hydrocarbures, HCDP]
+    nota_comparabilidad: "Comparable a igual rango de presión. ES y FR coinciden en el rango 1-70 bar."
+    limites:
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Tabla 3, apartado 2.5.2.1 (pág. 27)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: grados_C
+        presion_referencia_bar: "1-70"
+        expresion_original: "HC (punto de rocío): – / +5 ºC a 1-70 bar"
+        estado_verificacion: VERIFICADO
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        presion_referencia_bar: null
+        expresion_original: "El Regulamento 826/2023 NO fija un valor de rocío de HC para el gas natural (sólo se monitoriza)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, tabla (pág. 1)"
+        tipo_limite: maximo
+        valor: -2.0
+        unidad: grados_C
+        presion_referencia_bar: "1-70"
+        expresion_original: "Point de rosée hydrocarbures < -2 ºC de 1 à 70 bars (a)"
+        estado_verificacion: VERIFICADO
+        nota: "Rango 1-70 bar coincidente con ES → comparable. Cubre sólo hidrocarburos, no aceites."
+      UE:
+        fuente: NC_INT
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        expresion_original: "El Reglamento (UE) 2015/703 no fija un valor armonizado de rocío de hidrocarburos"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+
+  # NOTA: Polvo / Partículas queda EXCLUIDO del alcance del proyecto.
+  #   ES (Tabla 3) lo recoge como «Técnicamente puro» (sin cifra). FR (GRTgaz): < 5 mg/m³(n).
 
 
 # =============================================================================
@@ -477,68 +709,30 @@ parametros:
 # =============================================================================
 
 unidades:
-
-  pct_vol:
-    simbolo: "% (vol)"
-    tipo: fraccion_volumetrica
-    descripcion: Fracción volumétrica en tanto por ciento
-    equivalencia_ppm: "1 % vol = 10.000 ppm vol"
-
-  pct_mol:
-    simbolo: "% mol"
-    tipo: fraccion_molar
-    descripcion: Fracción molar en tanto por ciento
-    nota: "Para gas natural a condiciones normales, % mol ≈ % vol (diferencia < 0,1 %)"
-
-  ppm_vol:
-    simbolo: "ppm(vol)"
-    alias: "μmol/mol (gas ideal)"
-    tipo: fraccion_volumetrica
-    descripcion: Partes por millón en volumen
-
-  ppm_mol:
-    simbolo: "ppm(mol)"
-    tipo: fraccion_molar
-    descripcion: Partes por millón en fracción molar
-    nota: "Para gas ideal, ppm mol ≈ ppm vol"
-
+  pct_vol: { simbolo: "% (vol)", tipo: fraccion_volumetrica, equivalencia_ppm: "1 % vol = 10.000 ppm vol" }
+  pct_mol: { simbolo: "% mol", tipo: fraccion_molar, nota: "Para gas natural a c.n., % mol ≈ % vol (< 0,1 %)." }
+  ppm_vol: { simbolo: "ppm(vol)", tipo: fraccion_volumetrica }
   mg_per_nm3:
     simbolo: "mg/Nm³"
     tipo: concentracion_masica
-    descripcion: Miligramos por metro cúbico normal
-    condiciones_normales:
-      temperatura_C: 0
-      presion_bar: 1.01325
-    distincion_critica: >
-      Nm³ (0 °C) ≠ m³ estándar (15 °C). Un valor en mg/m³ @ 15°C debe
-      corregirse por el cociente de temperaturas antes de comparar con
-      un límite expresado en mg/Nm³.
-
+    condiciones_normales: { temperatura_C: 0, presion_bar: 1.01325 }
+    distincion_critica: "Nm³ (0 ºC) ≠ m³ estándar (15 ºC). Corregir antes de comparar."
+    nota: "ES, PT y FR expresan las concentraciones en mg/m³(n) (= mg/Nm³, 0 ºC). Comparables directamente."
   mg_per_sm3:
-    simbolo: "mg/m³ (@ 15°C)"
+    simbolo: "mg/m³ (@15ºC)"
     tipo: concentracion_masica
-    descripcion: Miligramos por metro cúbico estándar (15 °C, 1,01325 bar)
-    condiciones:
-      temperatura_C: 15
-      presion_bar: 1.01325
-    conversion_a_nm3: "valor_Nm3 = valor_sm3 × (288.15 / 273.15) ≈ valor_sm3 × 1.0549"
-
+    condiciones: { temperatura_C: 15, presion_bar: 1.01325 }
+    conversion_a_nm3: "valor_Nm3 = valor_sm3 × (288.15 / 273.15) ≈ × 1.0549"
   MJ_per_nm3:
     simbolo: "MJ/Nm³"
     tipo: densidad_energetica
-    descripcion: Megajulios por metro cúbico normal (0 °C, 1,01325 bar)
-
+    nota: "Usado por Portugal para Wobbe. 1 MJ/m³ = 1/3,6 kWh/m³ ≈ 0,2778 kWh/m³."
   kWh_per_nm3:
     simbolo: "kWh/Nm³"
     tipo: densidad_energetica
-    descripcion: Kilovatios-hora por metro cúbico normal
-    conversion: "1 MJ/Nm³ = 1/3,6 kWh/Nm³ ≈ 0,2778 kWh/Nm³"
-
-  MJ_per_sm3:
-    simbolo: "MJ/sm³  (@25/15)"
-    tipo: densidad_energetica
-    descripcion: Megajulios por metro cúbico estándar (15 °C). Usado en algunas normas UE.
-    conversion_a_nm3: "PCS[MJ/Nm³] = PCS[MJ/sm³] × (273.15/288.15) ≈ PCS[MJ/sm³] × 0.9479"
+    nota: "Usado por España y Francia para PCS/Wobbe. 1 kWh/m³ = 3,6 MJ/m³."
+  grados_C: { simbolo: "ºC", tipo: temperatura, nota: "Puntos de rocío. Comparable sólo a igual presión de referencia." }
+  adimensional: { simbolo: "—", tipo: adimensional, nota: "Densidad relativa (gas/aire)." }
 
 
 # =============================================================================
@@ -546,260 +740,116 @@ unidades:
 # =============================================================================
 
 flags:
-
   COMPARABLE:
     icono: "🟢"
-    descripcion: >
-      Misma unidad y mismas condiciones de referencia (o conversión exacta
-      ya aplicada). La comparación directa es válida.
-    accion: Mostrar comparación directa con trazabilidad a fuente.
-
+    descripcion: "Misma unidad y condiciones de referencia (o conversión exacta aplicada)."
+    accion: "Mostrar comparación directa con trazabilidad a fuente."
   COMPARABLE_TRAS_NORMALIZAR:
     icono: "🟡"
-    descripcion: >
-      Unidades o condiciones de referencia distintas, pero existe una
-      conversión determinista verificada. Se aplica el factor de normalización
-      y se muestra el valor equivalente con el factor explícito.
-    accion: >
-      Aplicar conversión, mostrar valor normalizado, indicar factor usado
-      y las condiciones de referencia de partida y llegada.
-
+    descripcion: "Unidades/condiciones distintas pero existe conversión determinista verificada."
+    accion: "Aplicar factor, mostrar valor normalizado y condiciones de partida y llegada."
   NO_COMPARABLE:
     icono: "🔴"
-    descripcion: >
-      No es posible comparar porque falta información (condiciones de referencia
-      no especificadas en la fuente) o no existe conversión válida.
-      No se inventa ningún número equivalente.
-    accion: >
-      Explicar explícitamente por qué no es comparable. Indicar qué información
-      adicional sería necesaria para poder realizar la comparación.
+    descripcion: "Falta información (condiciones no especificadas) o no existe conversión válida."
+    accion: "Explicar por qué no es comparable e indicar qué información faltaría."
     ejemplos_de_activacion:
-      - "Valor de PCS del usuario sin especificar condiciones de referencia @T/T"
-      - "Valor de H₂S en mg/m³ sin especificar si es a 0°C o 15°C"
-      - "Artículo de la normativa que no especifica la condición de volumen"
-
+      - "Jurisdicción cuyo valor está NO_VERIFICABLE_SIN_FUENTE (p.ej. PCS de Portugal, CO₂ de Portugal)"
+      - "Puntos de rocío a presiones de referencia distintas (ES @70 bar vs PT @presión máx. operación)"
+      - "Valor en mg/m³ sin indicar si es a 0 ºC o 15 ºC"
   NO_COMPARABLE_SIN_DATOS:
     icono: "🔴"
-    descripcion: Falta el valor o la unidad del dato del usuario para poder comparar.
-    accion: Solicitar al usuario el valor y la unidad con sus condiciones de referencia.
-
+    descripcion: "Falta el valor o la unidad del dato del usuario."
+    accion: "Solicitar valor y unidad con sus condiciones de referencia."
   UNIDADES_INCOMPATIBLES:
     icono: "🔴"
-    descripcion: >
-      Las magnitudes físicas no son convertibles entre sí
-      (p.ej. comparar mg/Nm³ de O₂ con % de H₂S sin más datos).
-    accion: Escalar notificación — requiere revisión experta o aclaración del usuario.
+    descripcion: "Magnitudes físicas no convertibles entre sí."
+    accion: "Escalar a revisión experta o pedir aclaración."
 
 
 # =============================================================================
-# MOTOR DE REGLAS Y ORQUESTADOR
+# ORQUESTADOR Y MOTOR DE REGLAS
 # =============================================================================
 
 orquestador:
   descripcion: >
-    Componente que recibe la pregunta del usuario (en lenguaje natural) y decide
-    qué rama del sistema activar. El LLM clasifica la intención; la lógica
-    de negocio la ejecuta código determinista.
-
+    Recibe la pregunta en lenguaje natural y decide la rama. El LLM clasifica la
+    intención; la lógica de negocio la ejecuta código determinista.
   clasificacion_preguntas:
+    fuera_de_ambito:
+      descripcion: "La pregunta no trata de calidad de gas natural → rechazar/redirigir."
+      ejemplos: ["¿Cuál es el peaje de entrada?", "¿Cómo tributa el gas?"]
+      ruta: rechazo
     comparativa:
-      descripcion: >
-        La pregunta solicita comparar un parámetro entre ES y UE,
-        o evaluar si un valor medido cumple la normativa.
+      descripcion: "Comparar un parámetro entre jurisdicciones o evaluar cumplimiento."
       ejemplos:
-        - "¿Cuál es el límite de H₂S en España y en la UE? ¿Son comparables?"
-        - "Compara el rango de PCS entre ES y el Network Code."
-        - "El gas tiene 12 mg/m³ de H₂S a 15°C, ¿cumple el límite español?"
+        - "¿Cuál es el límite de O₂ en España y en Portugal? ¿Son comparables?"
+        - "Compara el PCS español con el francés."
+        - "El gas tiene 12 mg/m³ de H₂S+COS a 15 ºC, ¿cumple el límite español?"
       ruta: ontologia → normalizador → flag → LLM_redacta
-
     abierta:
-      descripcion: >
-        La pregunta solicita información sobre la normativa sin comparación
-        directa de valores numéricos. Se resuelve por RAG.
+      descripcion: "Información normativa sin comparación numérica directa. Se resuelve por RAG."
       ejemplos:
-        - "¿Qué dice la normativa española sobre el oxígeno?"
+        - "¿Qué dice la normativa portuguesa sobre el punto de rocío?"
         - "¿Qué es el índice de Wobbe?"
-        - "¿En qué artículo del RD 919 se regula el H₂S?"
-      ruta: RAG (Vector DB + chunks PDF con metadatos) → LLM_redacta_con_cita
+      ruta: RAG (Vector DB + chunks PDF) → LLM_redacta_con_cita
 
 motor_reglas:
-  descripcion: >
-    Ejecuta el pipeline determinista para preguntas comparativas.
-    Ningún paso invoca al LLM para obtener números; el LLM sólo redacta al final.
-
+  descripcion: "Pipeline determinista para preguntas comparativas. El LLM sólo redacta al final."
   pasos:
-    "1_clasificar_pregunta":
-      accion: LLM detecta si la pregunta es comparativa o abierta.
-      salida: tipo_pregunta ∈ {comparativa, abierta}
-
+    "1_clasificar_pregunta": { salida: "tipo ∈ {fuera_de_ambito, comparativa, abierta}" }
     "2_identificar_parametro":
+      salida: "parametro_id ∈ {WOBBE, PCS, DENS_REL, S_TOTAL, H2S_COS, RSH, O2, CO2, PR_H2O, PR_HC} o ERROR"
+    "3_identificar_jurisdicciones":
+      salida: "lista de jurisdicciones ∈ {ES, PT, FR, UE, ...}"
+    "4_recuperar_limites":
+      accion: "Leer de la ontología los límites de cada jurisdicción. Sin LLM."
+      salida: "limites[jur], condiciones[jur], estado_verificacion[jur]"
+    "5_extraer_valor_usuario":
+      accion: "Si hay valor medido, extraer valor + unidad + condiciones. Si faltan → NO_COMPARABLE."
+    "6_normalizar":
+      accion: "Convertir a unidad base con pint + factores de corrección de condiciones (MJ↔kWh, @25/0↔@0/0, Nm³↔sm³)."
+      herramienta: pint
+    "7_evaluar_comparabilidad":
       accion: >
-        Mapear la consulta al parámetro canónico (O2, H2S, PCS)
-        usando la lista de aliases de la ontología + embedding semántico.
-      salida: parametro_id ∈ {O2, H2S, PCS} o ERROR_PARAMETRO_NO_RECONOCIDO
-
-    "3_recuperar_limites":
-      accion: >
-        Leer de la ontología los límites ES y UE para el parámetro identificado.
-        NO se consulta al LLM para este paso.
-      salida: limite_ES, limite_UE, condiciones_ES, condiciones_UE
-
-    "4_extraer_valor_usuario":
-      accion: >
-        Si la pregunta incluye un valor medido, extraerlo junto con su unidad
-        y condiciones de referencia. Si faltan condiciones → flag NO_COMPARABLE.
-      salida: valor_usuario, unidad_usuario, condiciones_usuario
-
-    "5_normalizar_unidades":
-      accion: >
-        Convertir todos los valores (límite ES, límite UE, valor usuario si existe)
-        a la unidad base del parámetro usando la tabla de conversiones y los
-        factores de corrección de condiciones de referencia.
-      herramienta_recomendada: pint (Python library para unidades)
-      salida: valores_normalizados, factor_aplicado, unidad_base
-
-    "6_evaluar_comparabilidad":
-      accion: >
-        Determinar si la comparación es válida según las reglas de la ontología.
-        Asignar flag: 🟢 COMPARABLE / 🟡 COMPARABLE_TRAS_NORMALIZAR / 🔴 NO_COMPARABLE
-      salida: flag, razon_flag
-
-    "7_evaluar_cumplimiento":
-      accion: >
-        Si hay valor de usuario, comparar contra límites normalizados.
-        Emitir: CUMPLE_ES, CUMPLE_UE, INCUMPLE_ES, INCUMPLE_UE.
-      salida: resultado_cumplimiento
-
-    "8_generar_respuesta":
-      accion: >
-        Pasar al LLM: parámetro, límites con citas de artículo y fuente,
-        valores normalizados, factor de conversión, flag y resultado de cumplimiento.
-        El LLM redacta en lenguaje natural sin inventar ningún número.
+        Asignar flag. Si alguna jurisdicción está NO_VERIFICABLE_SIN_FUENTE o
+        PENDIENTE_EXTRACCION → 🔴 (no se inventa la cifra ausente). Si las unidades o
+        condiciones difieren pero hay factor verificado → 🟡. Si coinciden → 🟢.
+      salida: "flag, razon_flag"
+    "8_evaluar_cumplimiento":
+      accion: "Si hay valor de usuario, comparar contra límites normalizados."
+      salida: "CUMPLE / INCUMPLE por jurisdicción"
+    "9_generar_respuesta":
+      accion: "Pasar al LLM datos estructurados con citas; redacta las 7 secciones sin inventar números."
       garantias:
-        - Trazabilidad: toda cifra va acompañada del artículo y documento fuente.
-        - Sin alucinación numérica: el LLM sólo recibe datos estructurados y redacta.
-        - Flag explícito: la respuesta siempre incluye el icono y la explicación del flag.
-        - Alerta de condiciones: si las condiciones de referencia son relevantes, se explicitan.
+        - "Trazabilidad: toda cifra con artículo, documento, país y página."
+        - "Sin alucinación numérica."
+        - "Flag explícito con icono y explicación."
+        - "Estructura de respuesta de 7 secciones."
 
 
 # =============================================================================
-# ARQUITECTURA RAG (para preguntas abiertas)
+# ARQUITECTURA RAG (preguntas abiertas)
 # =============================================================================
 
 rag:
   descripcion: >
-    Motor de recuperación para preguntas abiertas sobre normativa.
-    El LLM responde fundamentado en fragmentos recuperados de los PDFs,
-    nunca de memoria. Toda afirmación va acompañada de cita por metadatos.
-
+    Recuperación para preguntas abiertas. El LLM responde fundamentado en fragmentos
+    recuperados de los PDFs, nunca de memoria. Toda afirmación con cita por metadatos.
   fuentes_pdf:
-    - id: RD919
-      descripcion: "RD 919/2006 completo"
-    - id: NGTS06
-      descripcion: "NGTS-06 y sus Protocolos de Detalle (última versión BOE)"
-    - id: NC_INT_2015_703
-      descripcion: "Reglamento (UE) 2015/703 — NC INT completo"
-    - id: NC_CAM_2017_459
-      descripcion: "Reglamento (UE) 2017/459 — NC CAM (si contiene calidad)"
-    - id: EASEE_CBP
-      descripcion: "EASEE-gas CBP relevantes (2005-001/002)"
-
+    - { id: ORDEN_TED_181_2025, pais: ES, archivo: "data/raw/BOE-A-2025-3873-consolidado.pdf" }
+    - { id: RD919,             pais: ES, archivo: "data/raw/BOE-A-2006-15345-consolidado.pdf" }
+    - { id: REG_PT_826_2023,   pais: PT, archivo: "data/raw/regulacion_portugal_826-2023.pdf" }
+    - { id: FR_GRDF,           pais: FR, archivo: "data/raw/Prescriptions_techniques_GRDF.pdf" }
+    - { id: FR_GRTGAZ,         pais: FR, archivo: "data/raw/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf" }
+    - { id: NC_INT,            pais: UE, archivo: "data/raw/CELEX_32015R0703_ES_TXT.pdf" }
+    - { id: NC_CAM,            pais: UE, archivo: "data/raw/CELEX_32017R0459_ES_TXT.pdf" }
   chunking:
     estrategia: por_articulo_o_seccion
     tamano_aproximado_tokens: 400
     solapamiento_tokens: 50
-    nota: >
-      Preservar el número de artículo y sección en los metadatos de cada chunk.
-      Es imprescindible para la trazabilidad verificable.
-
-  metadatos_por_chunk:
-    - documento_id       # ej. RD919, NC_INT
-    - titulo_documento
-    - articulo_o_seccion # ej. "Art. 43", "Anexo I, Tabla 1"
-    - pagina
-    - fecha_publicacion
-    - url_fuente_oficial
-
-  retrieval:
-    metodo: similitud_coseno
-    top_k: 5
-    reranking: opcional_cross_encoder
-
+    nota: "Preservar país, documento, artículo/sección y página en metadatos (trazabilidad)."
+  metadatos_por_chunk: [documento_id, pais, version_documento, titulo_documento, articulo_o_seccion, pagina, fecha_publicacion, url_fuente_oficial]
+  retrieval: { metodo: similitud_coseno, top_k: 5, reranking: opcional_cross_encoder }
   respuesta:
-    formato: >
-      Texto generado por LLM + cita inline: (Fuente: [documento_id], [artículo], p. [página])
-    garantia: El LLM no responde sin fragmento recuperado de respaldo.
-
-
-# =============================================================================
-# GLOSARIO DE DOMINIO
-# =============================================================================
-
-glosario:
-
-  PCS:
-    definicion: >
-      Energía liberada en la combustión completa de una unidad de gas,
-      incluyendo el calor de condensación del agua de los productos.
-      En inglés GCV (Gross Calorific Value) o HHV. Depende críticamente
-      de las condiciones de referencia @T_combustión/T_volumen.
-
-  PCI:
-    definicion: >
-      Como el PCS pero sin contar la condensación del agua (NCV / LHV).
-      No es uno de los 3 parámetros del reto. No confundir con PCS.
-
-  indice_wobbe:
-    definicion: >
-      PCS / √(densidad relativa). Indicador de intercambiabilidad del gas.
-      Aparece en el NC INT. No es uno de los 3 parámetros del reto pero
-      es contexto frecuente en preguntas sobre PCS.
-
-  condiciones_referencia:
-    definicion: >
-      Par (temperatura de combustión, temperatura/presión del volumen) bajo el
-      que se expresa un valor calorífico o de concentración.
-      Notación estándar: @T_comb/T_vol, p.ej. @25/0.
-      Sin especificarlas, un valor de PCS es ambiguo.
-
-  Nm3:
-    definicion: >
-      Metro cúbico normal: volumen medido a 0 °C y 1,01325 bar.
-      Distinto del m³ estándar (sm³) a 15 °C. La distinción es crítica
-      para convertir mg/m³ y valores de PCS.
-
-  sm3:
-    definicion: >
-      Metro cúbico estándar: volumen medido a 15 °C y 1,01325 bar.
-      Usado en algunas normas europeas. 1 sm³ ≈ 1,0549 Nm³.
-
-  ppm_vol:
-    definicion: "Partes por millón en volumen (= μmol/mol para gas ideal)."
-
-  EN_ISO_6976:
-    definicion: >
-      Norma de cálculo de poder calorífico, densidad e índice de Wobbe
-      a partir de la composición. Define las condiciones de referencia estándar.
-
-  NGTS:
-    definicion: >
-      Normas de Gestión Técnica del Sistema gasista español.
-      La NGTS-06 cubre medición, calidad y odorización con los valores
-      numéricos específicos de los límites.
-
-  trazabilidad:
-    definicion: >
-      Capacidad de remontar cada afirmación de la respuesta hasta su origen
-      exacto en el documento fuente (artículo, página, URL oficial).
-      Requisito central del sistema.
-
-  pint:
-    definicion: >
-      Librería de Python para manejar magnitudes con unidades y convertirlas
-      de forma segura. Candidata para implementar la capa de normalización.
-
-  streamlit:
-    definicion: >
-      Framework de Python para construir interfaces web con poco código.
-      Candidato para la UI del prototipo.
-
+    formato: "Texto del LLM + cita inline: (Fuente: [pais]/[documento_id], [artículo], p. [página])"
+    garantia: "El LLM no responde sin fragmento recuperado de respaldo."

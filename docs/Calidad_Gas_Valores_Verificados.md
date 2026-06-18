@@ -1,141 +1,135 @@
-# Especificaciones de Calidad del Gas Natural — Valores Verificados (ES vs UE)
+# Especificaciones de Calidad del Gas Natural — Valores Verificados
 
-**Conjunto de datos corregido y verificado — revisión 2026-06**
-**Proyecto ENAGÁS Reto 5**
+**Conjunto de datos verificado — revisión 2026-06**
+**Proyecto ENAGÁS — Chatbot de comparación regulatoria de calidad de gas natural en Europa**
 
-Parámetros cubiertos: O₂ · H₂S · PCS  |  Fuentes oficiales: BOE · Enagás/PD-01 · EUR-Lex
+Jurisdicciones: **España (ES) · Portugal (PT) · Francia (FR) · Marco Europeo (UE)** —
+Parámetros: los 10 del alcance (excluye Polvo/Partículas).
 
-> Nota: este documento Markdown es el **fallback** del entregable. El documento Word
-> equivalente (`Calidad_Gas_Valores_Verificados.docx`) se genera ejecutando
-> `generar_docx.py` (ver instrucciones al final).
+> Este documento es el **fallback** del entregable. El Word equivalente
+> (`Calidad_Gas_Valores_Verificados.docx`) se genera ejecutando `generar_docx.py`,
+> que lee directamente la ontología verificada (`ontologia_enagas.yaml` v3.1.0).
+> **Ninguna cifra ha sido inventada:** cada valor está contrastado verbatim contra su
+> documento oficial (artículo/tabla + página). Cuando una norma no fija un parámetro,
+> se marca "No fija" (`NO_VERIFICABLE_SIN_FUENTE`), no se rellena con una cifra.
 
 ---
 
-## 1. Introducción y alcance
+## 1. Metodología de verificación
 
-Este documento recoge los valores oficialmente verificados de las especificaciones de
-calidad del gas natural para tres parámetros clave —oxígeno (O₂), sulfuro de hidrógeno
-(H₂S) y poder calorífico superior (PCS)— comparando la normativa española con la europea.
-Constituye el conjunto de datos corregido (revisión 2026-06) que sustituye a las cifras
-erróneas del dataset original del proyecto ENAGÁS Reto 5.
+Cada valor se ha extraído y contrastado contra el PDF primario de su jurisdicción:
 
-**Metodología de verificación.** Los valores españoles se han contrastado contra el
-Protocolo de Detalle PD-01 («Medición, Calidad y Odorización de Gas»), apartado 5.2,
-Tabla 3, publicado en el BOE y reproducido por Enagás. Los valores europeos se han
-contrastado contra el Reglamento (UE) 2015/703 (Network Code on Interoperability — NC INT)
-en EUR-Lex. Toda cifra incluida es trazable a su documento, artículo o tabla de origen;
-cuando una fuente no fija un valor numérico, así se indica explícitamente y no se inventa
-ninguna cifra.
+- **ES** — Orden TED/181/2025 (BOE-A-2025-3873), **Tabla 3, apartado 2.5.2.1**, págs. 26-27.
+- **PT** — Regulamento n.º 826/2023 (RQS, ERSE), **Anexo I, Secção X (art. 39.º)**, pág. 371.
+- **FR** — GRTgaz, **Annexe 4** (méthane de synthèse pour injection); spec de distribución
+  GRDF (abril 2017) anotada como divergencia.
+- **UE** — Reglamento (UE) 2015/703 (NC INT): **no fija límites numéricos de calidad**.
 
-**Conclusión normativa clave.** El Reglamento (UE) 2015/703 **NO fija límites numéricos de
-O₂, H₂S ni un rango de PCS**: únicamente armoniza unidades, condiciones de referencia y la
-obligación de monitorizar el índice de Wobbe y el PCS. Los límites de calidad se delegan a
-la normativa nacional y a los acuerdos bilaterales entre gestores de red (TSOs); la norma
-EN 16726 es una referencia técnica no vinculante.
+El CSV auxiliar `NORM_17_06.csv` se usó como referencia cruzada y se corrigieron sus
+errores contra los PDFs (ver §5).
 
 ---
 
 ## 2. Tabla resumen de valores verificados
 
-| Parámetro | Jurisdicción | Valor verificado | Unidad | Condiciones de referencia | Fuente (documento + artículo/tabla) | Estado de verificación |
-|---|---|---|---|---|---|---|
-| O₂ (Oxígeno) | España (ES) | 0,01 (máximo) | % mol | V(0 ºC, 1,01325 bar) | PD-01, apdo. 5.2, Tabla 3 (NGTS-06) | **VERIFICADO** |
-| O₂ (Oxígeno) | Unión Europea (UE) | No fija límite | — | — | Reglamento (UE) 2015/703 — no establece límite de O₂ | **NO_VERIFICABLE_SIN_FUENTE** |
-| H₂S (Sulfuro de hidrógeno) | España (ES) | 15 (máximo) — «H₂S + COS (como S)» | mg/Nm³ | V(0 ºC, 1,01325 bar) | PD-01, apdo. 5.2, Tabla 3 (fila «H₂S + COS (como S)») | **VERIFICADO** |
-| H₂S (Sulfuro de hidrógeno) | Unión Europea (UE) | No fija límite | — | — | Reglamento (UE) 2015/703 — no establece límite de H₂S | **NO_VERIFICABLE_SIN_FUENTE** |
-| PCS (Poder Calorífico Superior) | España (ES) | 10,26 – 13,26 (= 36,94 – 47,74 MJ/Nm³) | kWh/Nm³ | @0/0 — combustión 0 ºC, V(0 ºC, 1,01325 bar) | PD-01, apdo. 5.2, Tabla 3 (fila «PCS») | **VERIFICADO** |
-| PCS (Poder Calorífico Superior) | Unión Europea (UE) | No fija rango numérico | — | @25/0 — sólo condiciones de reporte (art. 13) | Reglamento (UE) 2015/703, art. 13 (unidades/condiciones) y art. 16 (monitorización) | **NO_VERIFICABLE_SIN_FUENTE** |
-
----
-
-## 3. Correcciones aplicadas
-
-Formato *antes → después* de los errores detectados en el dataset original y su corrección
-verificada.
-
-| Parámetro / aspecto | Valor original (ERRÓNEO) | Valor corregido (VERIFICADO) | Explicación |
-|---|---|---|---|
-| **H₂S (ES) — límite** | 5 mg/Nm³ | 15 mg/Nm³ — «H₂S + COS (como S)» | El valor original era incorrecto. El límite oficial de la Tabla 3 del PD-01 es 15 mg/Nm³ para la suma de H₂S y COS expresada como azufre. Parámetros relacionados: azufre total ≤ 50 mg/Nm³; mercaptanos RSH (como S) ≤ 17 mg/Nm³. |
-| **PCS (ES) — rango** | 34,12 – 38,77 MJ/Nm³ | 10,26 – 13,26 kWh/Nm³ (= 36,94 – 47,74 MJ/Nm³) | El rango original era incorrecto. La Tabla 3 del PD-01 expresa el PCS en kWh/Nm³; su equivalente exacto en MJ se obtiene multiplicando por 3,6. |
-| **PCS (ES) — condiciones de referencia** | @25/0 (combustión 25 ºC, volumen 0 ºC) | @0/0 (combustión 0 ºC, volumen 0 ºC) | El PD-01 fija el PCS en base volumétrica a [0 ºC combustión, V(0 ºC, 1,01325 bar)]. La UE, en cambio, reporta a @25/0 (art. 13 del Reglamento 2015/703); coincide el volumen (0 ºC) pero difiere la temperatura de combustión. |
-| **O₂ (ES) — unidad** | % vol | % mol | La Tabla 3 del PD-01 expresa el O₂ como fracción molar (% mol), no volumétrica. Para gas ideal % mol ≈ % vol (diferencia < 0,1 %), pero la unidad oficial es % mol. |
-| **RD 919/2006 — fecha de publicación** | (fecha imprecisa / ausente) | BOE núm. 211, de 4 de septiembre de 2006 | Se fija la referencia oficial de publicación en el BOE (BOE-A-2006-15345). |
-| **RD 919/2006 — contenido** | Se asumía que contenía la tabla de calidad | NO contiene la tabla de calidad del gas de transporte | El RD 919/2006 regula la distribución y utilización (ICG 01–11). El detalle numérico de calidad del gas está en el PD-01 de la NGTS, no en el RD. |
-
----
-
-## 4. Valores no verificables (UE)
-
-El conjunto de datos no atribuye ningún límite numérico de O₂, H₂S ni rango de PCS a la
-normativa europea, porque **el Reglamento (UE) 2015/703 sencillamente no los define.**
-Atribuir cifras europeas supondría inventarlas. Estos parámetros se marcan como
-`NO_VERIFICABLE_SIN_FUENTE`.
-
-- **O₂ (UE):** el Reglamento (UE) 2015/703 no contiene un límite numérico de oxígeno. Sólo
-  armoniza unidades y condiciones de referencia; los límites de O₂ se dejan a la normativa
-  nacional o a acuerdos bilaterales entre TSOs (referencia no vinculante: EN 16726).
-- **H₂S (UE):** el Reglamento no fija un límite numérico de H₂S (ni en mg/m³ ni en ppm).
-  Los límites de azufre/H₂S en interconexión se delegan a la normativa nacional y a
-  acuerdos bilaterales entre TSOs.
-- **PCS (UE):** el Reglamento no establece un rango/límite numérico de PCS. Sí fija
-  (art. 13) la unidad (kWh/m³) y las condiciones de referencia (volumen 0 ºC y 1,01325 bar;
-  combustión por defecto 25 ºC), y (art. 16) la obligación de los TSOs de publicar Wobbe y
-  PCS por hora en cada punto de interconexión.
-
-**Implicación de comparabilidad:** al no existir valores UE en la fuente citada, las
-comparaciones directas ES vs UE de O₂, H₂S y PCS quedan marcadas como 🔴 NO_COMPARABLE en
-la ontología del sistema.
-
----
-
-## 5. Parámetros de contexto (PD-01, Tabla 3)
-
-**Tabla secundaria — sólo contexto.** Estos parámetros pertenecen a la misma Tabla 3 del
-PD-01 y ayudan a interpretar los límites principales. Se incluyen únicamente las cifras
-presentes en el conjunto de datos verificado; los parámetros recogidos en la tabla sin
-valor numérico en la ontología se listan sin cifra para no fabricar datos.
-
-| Parámetro de contexto | Valor verificado | Unidad | Fuente | Estado |
+| Parámetro | España (ES) | Portugal (PT) | Francia (FR, GRTgaz) | UE |
 |---|---|---|---|---|
-| Azufre total (S total) | ≤ 50 (máximo) | mg/Nm³ | PD-01, apdo. 5.2, Tabla 3 | VERIFICADO |
-| Mercaptanos RSH (como S) | ≤ 17 (máximo) | mg/Nm³ | PD-01, apdo. 5.2, Tabla 3 | VERIFICADO |
-| H₂S + COS (como S) | ≤ 15 (máximo) | mg/Nm³ | PD-01, apdo. 5.2, Tabla 3 | VERIFICADO |
-| Índice de Wobbe | Recogido en Tabla 3 (sin cifra en la ontología) | kWh/Nm³ | PD-01, apdo. 5.2, Tabla 3 | NO INCLUIDO EN DATASET |
-| Densidad relativa | Recogido en Tabla 3 (sin cifra en la ontología) | — | PD-01, apdo. 5.2, Tabla 3 | NO INCLUIDO EN DATASET |
-| CO₂ | Recogido en Tabla 3 (sin cifra en la ontología) | % mol | PD-01, apdo. 5.2, Tabla 3 | NO INCLUIDO EN DATASET |
-| Punto de rocío (agua / hidrocarburos) | Recogido en Tabla 3 (sin cifra en la ontología) | ºC | PD-01, apdo. 5.2, Tabla 3 | NO INCLUIDO EN DATASET |
+| Índice de Wobbe | 13,403 – 16,058 kWh/m³ | 48,17 – 57,66 MJ/m³ | 13,64 – 15,7 kWh/m³ (tipo H) | No fija |
+| PCS (Poder Calorífico Superior) | 10,26 – 13,26 kWh/m³ | *No fija* (control vía Wobbe) | 10,7 – 12,8 kWh/m³ (tipo H) | No fija |
+| Densidad relativa | 0,555 – 0,700 | 0,5549 – 0,7001 | 0,500 – 0,70 | No fija |
+| Azufre total (S total) | ≤ 50 mg/m³ | ≤ 50 mg/m³ | ≤ 30 mg/m³ | No fija |
+| H₂S + COS (como S) | ≤ 15 mg/m³ | ≤ 5 mg/m³ | ≤ 5 mg/m³ | No fija |
+| Mercaptanos RSH (como S) | ≤ 17 mg/m³ | *No fija* | ≤ 6 mg/m³ | No fija |
+| Oxígeno (O₂) | ≤ 0,01 % mol | ≤ 1 % mol | ≤ 0,01 % mol | No fija |
+| Dióxido de carbono (CO₂) | ≤ 2,5 % mol | *No fija* (gas natural) | ≤ 2,5 % mol | No fija |
+| Punto de rocío de agua | ≤ +2 ºC @ 70 bar | ≤ −8 ºC @ P máx. operación | ≤ −5 ºC @ P máx. servicio | No fija |
+| Punto de rocío de HC | ≤ +5 ºC @ 1-70 bar | *No fija* | ≤ −2 ºC @ 1-70 bar | No fija |
 
-*Condiciones de referencia de toda la Tabla 3 del PD-01: [0 ºC, V(0 ºC, 1,01325 bar)].*
+*Todos los valores VERIFICADOS verbatim contra la fuente. "No fija" =
+`NO_VERIFICABLE_SIN_FUENTE` (la norma no establece la cifra).*
+
+**Cobertura:** ES 10/10 · FR 10/10 · PT 6/10 · UE 0/10 verificados.
+
+---
+
+## 3. Condiciones de referencia por jurisdicción
+
+Las condiciones de referencia son **imprescindibles** para comparar (sobre todo
+energéticos y puntos de rocío):
+
+| Jurisdicción | Combustión | Volumen | Unidad energética | Notación |
+|---|---|---|---|---|
+| ES | 0 ºC | 0 ºC, 1,01325 bar | kWh/m³ | @0/0 |
+| PT | 25 ºC (ISO 13443) | 0 ºC, 1,01325 bar | MJ/m³ | @25/0 |
+| FR (GRTgaz) | 0 ºC, 1,01325 bar | m³(n) | kWh/m³ | @0/0 |
+| UE | 25 ºC (por defecto) | 0 ºC, 1,01325 bar | kWh/m³ | @25/0 (solo reporte) |
+
+---
+
+## 4. Notas de comparabilidad (hallazgos clave)
+
+- **ES ↔ FR (energéticos):** PCS e índice de Wobbe se expresan en **kWh/m³ @0/0** en
+  ambos países → **comparables directamente**. Ej.: Wobbe ES 13,403–16,058 vs FR-H
+  13,64–15,7 kWh/m³.
+- **PT (Wobbe):** en **MJ/m³ @25/0** → requiere normalización de unidad (÷3,6) y de
+  temperatura de combustión (@25/0→@0/0, factor 1,0026) antes de comparar → 🟡.
+- **Portugal no regula** PCS, mercaptanos RSH, CO₂ ni punto de rocío de HC del gas
+  natural → comparaciones de esos parámetros con PT quedan 🔴 NO_COMPARABLE.
+- **Oxígeno:** ES y FR(GRTgaz) coinciden en ≤ 0,01 % mol; **PT es mucho más laxo
+  (≤ 1 % mol)**. La spec de distribución francesa (GRDF) usa otra base (15-40 mg/m³).
+- **Azufre total:** ES y PT ≤ 50 mg/m³; FR(GRTgaz) más estricto (≤ 30); GRDF gas natural
+  distribución ≤ 150 mg/m³.
+- **Puntos de rocío de agua:** valores y presiones de referencia distintos en cada país
+  (ES +2 ºC @70 bar; PT −8 ºC @P máx. operación; FR −5 ºC @P máx. servicio) → comparar
+  exige misma presión de referencia.
+- **Gas H vs B (Francia):** se toma el **tipo H** (alto poder calorífico, homólogo al
+  gas de ES/PT/UE). El tipo B (bajo PCS) se anota en la ontología.
+
+---
+
+## 5. Correcciones aplicadas (errores del CSV auxiliar detectados al verificar)
+
+| Aspecto | Valor erróneo (CSV) | Valor verificado (PDF) | Fuente |
+|---|---|---|---|
+| **O₂ Portugal** | "sin monitorear / no regulado" | **≤ 1 % mol** | Reg. 826/2023, Anexo I Secc. X |
+| **Rocío de agua Portugal** | ≤ −5 ºC | **≤ −8 ºC** @ P máx. operación | Reg. 826/2023, Anexo I Secc. X |
+| **PCS España (máx.)** | 13,27 kWh/m³ | **13,26 kWh/m³** | Orden TED/181/2025, Tabla 3 |
+| **Wobbe Portugal (mín.)** | 48 MJ/m³ | **48,17 MJ/m³** | Reg. 826/2023, Anexo I Secc. X |
+| **Fuente ES** | "BOE" (genérico) | Orden TED/181/2025, Tabla 3, apdo. 2.5.2.1 | BOE-A-2025-3873 |
+| **Fuente PT** | RQS 406/2021 | Reg. **826/2023** (deroga al 406/2021) | DR 2.ª série N.º 146 |
 
 ---
 
 ## 6. Fuentes oficiales
 
-- **RD 919/2006 (BOE-A-2006-15345)** — BOE núm. 211, de 4 de septiembre de 2006: <https://www.boe.es/buscar/act.php?id=BOE-A-2006-15345>
-- **Resolución 21/12/2012 — PD-01, apdo. 5.2 (BOE-A-2013-185)** — Redacción vigente de la Tabla 3: <https://www.boe.es/eli/es/res/2012/12/21/(3)>
-- **Resolución 8/10/2018 — PD-01 (BOE-A-2018-14557)** — Modificación posterior del PD-01: <https://www.boe.es/eli/es/res/2018/10/08/(3)>
-- **Enagás — Calidad de gas (GTS)** — Página oficial con las especificaciones de calidad: <https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/>
-- **Reglamento (UE) 2015/703 — NC INT (CELEX:32015R0703)** — Network Code on Interoperability and Data Exchange: <https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703>
-- **Reglamento (UE) 2017/459 — NC CAM (CELEX:32017R0459)** — Network Code on Capacity Allocation Mechanisms: <https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459>
+- **ES — Orden TED/181/2025** (BOE-A-2025-3873), BOE núm. 50, 27/02/2025 (NGTS, Tabla 3):
+  <https://www.boe.es/eli/es/o/2025/02/13/ted181>
+- **ES — PD-01 / Enagás (calidad de gas, fuente histórica):**
+  <https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/>
+- **PT — Regulamento n.º 826/2023 (ERSE), DR 2.ª série N.º 146, 28/07/2023** —
+  Anexo I, Secção X (art. 39.º).
+- **FR — GRTgaz**, Annexe 4 (méthane de synthèse pour injection) ·
+  **GRDF**, Prescriptions techniques, abril 2017.
+- **UE — Reglamento (UE) 2015/703 (NC INT, CELEX:32015R0703):**
+  <https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703>
+- **UE — Reglamento (UE) 2017/459 (NC CAM, CELEX:32017R0459):**
+  <https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459>
 
 ---
 
-*Documento generado a partir de la ontología verificada (`ontologia_enagas.yaml`, v2.0.0,
-revisión 2026-06). Ninguna cifra ha sido inventada: los valores proceden del PD-01
-(Tabla 3) vía BOE y Enagás, y la ausencia de límites UE refleja el contenido real del
-Reglamento (UE) 2015/703.*
+*Documento generado a partir de la ontología verificada (`ontologia_enagas.yaml`, v3.1.0,
+revisión 2026-06). 26 valores VERIFICADOS verbatim y 14 marcados como
+`NO_VERIFICABLE_SIN_FUENTE` (la norma no los fija). Ninguna cifra inventada.*
 
 ---
 
 ## Cómo generar el documento Word (.docx)
 
-El terminal de este entorno no respondió durante la generación automática. Para producir el
-`.docx` ejecuta, desde `C:\ICAI2\CICLAB\enagas`:
-
 ```powershell
-python -m pip install python-docx
+python -m pip install python-docx pyyaml
 python ENAG-S_G1\docs\generar_docx.py
 ```
 
-El script creará `ENAG-S_G1\docs\Calidad_Gas_Valores_Verificados.docx` con este mismo
-contenido, tablas con formato, colores y enlaces clicables.
+El script lee `data/ontologia/ontologia_enagas.yaml` y crea
+`ENAG-S_G1\docs\Calidad_Gas_Valores_Verificados.docx` con la tabla multinacional,
+formato, colores y trazabilidad.
