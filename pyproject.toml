@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gas-quality-comparator"
 version = "0.1.0"
-description = "Comparador normativo gasista ES/EU para O2, H2S y PCS"
+description = "Comparador regulatorio de calidad de gas natural en Europa (ES · PT · FR · UE), 10 parámetros, con trazabilidad y motor determinista"
 
 [tool.poetry.dependencies]
 python = "^3.11"
