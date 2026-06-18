@@ -1,6 +1,5 @@
 import os
 import re
-import asyncio
 from functools import wraps
 import time
 from typing import Callable, Any, Dict, Optional
@@ -143,20 +142,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def _indexar_pdfs_en_arranque() -> None:
-    async def _run_indexing() -> None:
-        try:
-            resumen = await asyncio.to_thread(indexar_pdfs, False)
-            print(
-                f"[api] INFO: PDF indexados en SQLite: {resumen['indexed']} nuevos, {resumen['skipped']} sin cambios."
-            )
-        except Exception as exc:
-            print(f"[api] WARNING: No se pudo indexar PDFs al arrancar: {exc}")
-
-    asyncio.create_task(_run_indexing())
 
 
 def _parse_numeric_value(text: str) -> Optional[float]:
