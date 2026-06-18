@@ -3,7 +3,7 @@ import re
 import asyncio
 from functools import wraps
 import time
-from typing import Callable, Any, Dict, Optional
+from typing import Callable, Any, Dict, Optional, TypedDict
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -94,6 +94,15 @@ class InMemoryHistory(BaseChatMessageHistory):
 session_histories: Dict[str, InMemoryHistory] = {}
 
 
+class PendingValidation(TypedDict):
+    parametro: str
+    pais: str
+    valor: float
+
+
+pending_unit_validations: Dict[str, PendingValidation] = {}
+
+
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
     if session_id not in session_histories:
         session_histories[session_id] = InMemoryHistory()
@@ -176,7 +185,7 @@ def _parse_numeric_value(text: str) -> Optional[float]:
 
 def _extract_numeric_with_unit(text: str) -> tuple[Optional[float], Optional[str]]:
     patterns = [
-        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*(kwh\s*/\s*[a-z0-9^°]+|mj\s*/\s*[a-z0-9^°]+|mg\s*/\s*[a-z0-9^°]+|ppm\s*/\s*[a-z0-9^°]+|kwh|mj|mg|ppm|kg|g|bar|%|m\^3|nm\^3|m3|nm3|°c|ºc)",
+        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*(kwh\s*/\s*[a-z0-9^³°]+|mj\s*/\s*[a-z0-9^³°]+|mg\s*/\s*[a-z0-9^³°]+|ppm\s*/\s*[a-z0-9^³°]+|%\s*(?:molar|mol)?|kwh|mj|mg|ppm|kg|g|bar|m\^3|nm\^3|m3|nm3|m³|nm³|°c|ºc|c\b)",
         r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*([a-z0-9^°]+\s*/\s*[a-z0-9^°]+)",
     ]
     for pattern in patterns:
@@ -200,8 +209,11 @@ def _extract_numeric_with_unit(text: str) -> tuple[Optional[float], Optional[str
                     "nm^3",
                     "m3",
                     "nm3",
+                    "m³",
+                    "nm³",
                     "°c",
                     "ºc",
+                    "c",
                 )
             ):
                 try:
@@ -209,6 +221,16 @@ def _extract_numeric_with_unit(text: str) -> tuple[Optional[float], Optional[str
                 except ValueError:
                     return None, None
     return None, None
+
+
+def _extract_unit_only(text: str) -> Optional[str]:
+    match = re.search(
+        r"(?i)(%\s*(?:molar|mol)?|kwh\s*/\s*[a-z0-9^³°]+|mj\s*/\s*[a-z0-9^³°]+|mg\s*/\s*[a-z0-9^³°]+|ppm\s*/\s*[a-z0-9^³°]+|°c|ºc|\bc\b)",
+        text,
+    )
+    if not match:
+        return None
+    return re.sub(r"\s+", "", match.group(0))
 
 
 def _normalize_country(text: str) -> Optional[str]:
@@ -283,16 +305,16 @@ def _normalize_condition_text(text: Optional[str]) -> str:
     return cleaned.strip()
 
 
-# --- NEW VALIDATION DICTIONARY ---
+# --- Strict measurement-unit validation dictionary ---
 VALIDATION_UNITS = {
-    "wobbe": "kWh/m³",
-    "pcs": "kWh/m³",
-    "s total": "mg/m³",
-    "h2s+cos": "mg/m³",
-    "o2": "% molar",
-    "co2": "% molar",
-    "h2o(rocío)": "°C",
-    "hc(rocío)": "°C",
+    "Índice de Wobbe": "kWh/m³",
+    "PCS": "kWh/m³",
+    "S": "mg/m³",
+    "H2S + COS + RSH": "mg/m³",
+    "O2": "% molar",
+    "CO2": "% molar",
+    "Temperatura de rocío del H2O": "°C",
+    "Temperatura de rocío de HC": "°C",
 }
 
 DISPLAY_MAP = {
@@ -307,29 +329,82 @@ DISPLAY_MAP = {
 }
 
 
-EXPECTED_UNITS = {
-    "wobbe": ["kwh/m3", "kwh/nm3", "kwh/m3", "kwh/nm3"],
-    "pcs": ["kwh/m3", "kwh/nm3", "kwh/m3", "kwh/nm3"],
-    "s total": ["mg/m3", "mg/nm3", "mgs/m3", "mgs/nm3"],
-    "h2s+cos": ["mg/m3", "mg/nm3", "mgs/m3", "mgs/nm3"],
-    "rsh": ["mg/m3", "mg/nm3", "mgs/m3", "mgs/nm3"],
-    "o2": ["%molar", "%molar", "%m", "%mol"],
-    "co2": ["%molar", "%molar", "%m", "%mol"],
-    "h2o(rocío)": ["oc", "oc", "°c", "c"],
-    "hc(rocío)": ["oc", "oc", "°c", "c"],
-}
-
-
 def _unit_matches_expected(param: str, unit: Optional[str]) -> bool:
     if not param or not unit:
         return False
-    # Use strict validation dictionary
-    expected = VALIDATION_UNITS.get(param)
+    expected = VALIDATION_UNITS.get(DISPLAY_MAP.get(param, param))
     if expected is None:
         return False
-    # Normalize both units for comparison
     return _normalize_unit(unit) == _normalize_unit(expected)
 
+
+def _expected_unit_for_parameter(param: str) -> str:
+    return VALIDATION_UNITS.get(DISPLAY_MAP.get(param, param), "")
+
+
+def _missing_unit_message(parametro: str) -> str:
+    param_display = DISPLAY_MAP.get(parametro, parametro)
+    return f"⚠️ Valor detectado sin unidades. Por favor, indícame en qué unidades estás expresando este valor para el parámetro {param_display}."
+
+
+def _incorrect_unit_message(parametro: str) -> str:
+    param_display = DISPLAY_MAP.get(parametro, parametro)
+    expected_unit = _expected_unit_for_parameter(parametro)
+    return f"❌ Unidades incorrectas. Para el parámetro {param_display}, la unidad requerida es {expected_unit}."
+
+
+def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unidad: str) -> str:
+    respuesta = evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
+    if respuesta.get("error"):
+        return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
+    return _format_comparison_response(
+        parametro=parametro,
+        pais=pais,
+        valor=valor,
+        unidad=unidad,
+        respuesta=respuesta,
+    )
+
+
+def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
+    texto_norm = mensaje.lower()
+    pending = pending_unit_validations.get(session_id)
+    if pending and _parse_numeric_value(mensaje) is None:
+        unidad_respuesta = _extract_unit_only(mensaje)
+        if unidad_respuesta is None:
+            return None
+        if not _unit_matches_expected(pending["parametro"], unidad_respuesta):
+            pending_unit_validations.pop(session_id, None)
+            return _incorrect_unit_message(pending["parametro"])
+        pending_unit_validations.pop(session_id, None)
+        return _evaluate_validated_comparison(
+            pending["parametro"],
+            pending["pais"],
+            pending["valor"],
+            unidad_respuesta,
+        )
+
+    parametro = _normalize_parameter(texto_norm)
+    pais = next((kw for kw in ["espa", "portugal", "francia", "espana", "españa"] if kw in texto_norm), None)
+    pais_formateado = _normalize_country(pais) if pais else None
+    valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(mensaje)
+    valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(mensaje)
+
+    if parametro is None or pais_formateado is None or valor is None or _is_info_request(texto_norm):
+        return None
+    if not _expected_unit_for_parameter(parametro):
+        return None
+    if unidad_detectada is None:
+        pending_unit_validations[session_id] = {
+            "parametro": parametro,
+            "pais": pais_formateado,
+            "valor": valor,
+        }
+        return _missing_unit_message(parametro)
+    pending_unit_validations.pop(session_id, None)
+    if not _unit_matches_expected(parametro, unidad_detectada):
+        return _incorrect_unit_message(parametro)
+    return _evaluate_validated_comparison(parametro, pais_formateado, valor, unidad_detectada)
 
 def _is_info_request(text: str) -> bool:
     lowered = text.lower()
@@ -441,9 +516,13 @@ def _format_info_response(
     return "\n".join(lines)
 
 
-def _fallback_deterministic_response(mensaje: str) -> str:
+def _fallback_deterministic_response(mensaje: str, session_id: str = "default") -> str:
     texto = mensaje
     texto_norm = texto.lower()
+
+    validation_response = _validate_measurement_gate(session_id, mensaje)
+    if validation_response is not None:
+        return validation_response
 
     parametro = _normalize_parameter(texto_norm)
     pais = next((kw for kw in ["espa", "portugal", "francia", "espana", "españa"] if kw in texto_norm), None)
@@ -481,13 +560,9 @@ def _fallback_deterministic_response(mensaje: str) -> str:
         and not _is_info_request(texto_norm)
     ):
         if unidad_detectada is None:
-            # Number detected without unit
-            param_display = DISPLAY_MAP.get(parametro, parametro)
-            return f"⚠️ Valor detectado sin unidades. Por favor, indícame en qué unidades estás expresando este valor para el parámetro {param_display}."
+            return _missing_unit_message(parametro)
         if not _unit_matches_expected(parametro, unidad_detectada):
-            expected_unit = VALIDATION_UNITS.get(parametro, "")
-            param_display = DISPLAY_MAP.get(parametro, parametro)
-            return f"❌ Unidades incorrectas. Para el parámetro {param_display}, la unidad requerida es {expected_unit}."
+            return _incorrect_unit_message(parametro)
         # If unit matches but we are here because not comparison_intent? Actually this block runs when not info request.
         # We'll just fall through to default handling (maybe ask for country/param etc.)
 
@@ -535,8 +610,12 @@ async def status_endpoint() -> StatusResponse:
 @gestionar_errores
 @medir_tiempo
 async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
+    validation_response = _validate_measurement_gate(request.session_id, request.mensaje)
+    if validation_response is not None:
+        return RespuestaChat(respuesta=validation_response, modo="determinista")
+
     if agent_with_history is None:
-        respuesta = _fallback_deterministic_response(request.mensaje)
+        respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
     response = agent_with_history.invoke(
