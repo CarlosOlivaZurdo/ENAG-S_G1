@@ -63,7 +63,7 @@ def _ensure_database_dir() -> None:
 
 def _connect() -> sqlite3.Connection:
     _ensure_database_dir()
-    conn = sqlite3.connect(PDF_DB_PATH)
+    conn = sqlite3.connect(PDF_DB_PATH, timeout=30)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -71,6 +71,7 @@ def _connect() -> sqlite3.Connection:
 def _ensure_schema(conn: sqlite3.Connection) -> None:
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA foreign_keys=ON;")
+    conn.execute("PRAGMA busy_timeout=30000;")
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS pdf_documents (
@@ -289,18 +290,11 @@ def _search_chunks(conn: sqlite3.Connection, tokens: List[str], limit: int) -> L
     return results
 
 
-@lru_cache(maxsize=1)
-def _index_ready() -> bool:
-    summary = indexar_pdfs(force=False)
-    return summary["count"] >= 0
-
-
 def buscar_pdfs(query: str, limit: int = 5) -> Dict[str, Any]:
     """Busca información relevante en los PDF ya indexados en SQLite."""
     if not query or not query.strip():
         return {"count": 0, "matches": [], "database": str(PDF_DB_PATH)}
 
-    _index_ready()
     query_norm = _normalize_text(query)
     tokens = [token for token in re.split(r"\s+", query_norm) if len(token) > 1]
 
