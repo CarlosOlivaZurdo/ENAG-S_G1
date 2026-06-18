@@ -283,6 +283,30 @@ def _normalize_condition_text(text: Optional[str]) -> str:
     return cleaned.strip()
 
 
+# --- NEW VALIDATION DICTIONARY ---
+VALIDATION_UNITS = {
+    "wobbe": "kWh/m³",
+    "pcs": "kWh/m³",
+    "s total": "mg/m³",
+    "h2s+cos": "mg/m³",
+    "o2": "% molar",
+    "co2": "% molar",
+    "h2o(rocío)": "°C",
+    "hc(rocío)": "°C",
+}
+
+DISPLAY_MAP = {
+    "wobbe": "Índice de Wobbe",
+    "pcs": "PCS",
+    "s total": "S",
+    "h2s+cos": "H2S + COS + RSH",
+    "o2": "O2",
+    "co2": "CO2",
+    "h2o(rocío)": "Temperatura de rocío del H2O",
+    "hc(rocío)": "Temperatura de rocío de HC",
+}
+
+
 EXPECTED_UNITS = {
     "wobbe": ["kwh/m3", "kwh/nm3", "kwh/m3", "kwh/nm3"],
     "pcs": ["kwh/m3", "kwh/nm3", "kwh/m3", "kwh/nm3"],
@@ -299,9 +323,12 @@ EXPECTED_UNITS = {
 def _unit_matches_expected(param: str, unit: Optional[str]) -> bool:
     if not param or not unit:
         return False
-    normalized = _normalize_unit(unit)
-    expected = EXPECTED_UNITS.get(param, [])
-    return any(candidate == normalized for candidate in expected)
+    # Use strict validation dictionary
+    expected = VALIDATION_UNITS.get(param)
+    if expected is None:
+        return False
+    # Normalize both units for comparison
+    return _normalize_unit(unit) == _normalize_unit(expected)
 
 
 def _is_info_request(text: str) -> bool:
@@ -454,17 +481,15 @@ def _fallback_deterministic_response(mensaje: str) -> str:
         and not _is_info_request(texto_norm)
     ):
         if unidad_detectada is None:
-            return (
-                f"Para comparar {parametro} correctamente necesito la unidad exacta. "
-                f"Ejemplo: {parametro} en {pais_formateado} con unidades compatibles al valor introducido."
-            )
+            # Number detected without unit
+            param_display = DISPLAY_MAP.get(parametro, parametro)
+            return f"⚠️ Valor detectado sin unidades. Por favor, indícame en qué unidades estás expresando este valor para el parámetro {param_display}."
         if not _unit_matches_expected(parametro, unidad_detectada):
-            expected = EXPECTED_UNITS.get(parametro, [])
-            expected_msg = expected[0] if expected else "la unidad adecuada"
-            return (
-                f"La unidad detectada ({unidad_detectada}) no coincide con la esperada para {parametro}. "
-                f"Introduce el valor nuevamente expresado en {expected_msg}."
-            )
+            expected_unit = VALIDATION_UNITS.get(parametro, "")
+            param_display = DISPLAY_MAP.get(parametro, parametro)
+            return f"❌ Unidades incorrectas. Para el parámetro {param_display}, la unidad requerida es {expected_unit}."
+        # If unit matches but we are here because not comparison_intent? Actually this block runs when not info request.
+        # We'll just fall through to default handling (maybe ask for country/param etc.)
 
     if parametro and pais_formateado and _is_info_request(texto_norm):
         respuesta = consultar_excel(parametro, pais_formateado)
