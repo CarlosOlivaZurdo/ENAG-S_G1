@@ -1,5 +1,6 @@
 import os
 import re
+import asyncio
 from functools import wraps
 import time
 from typing import Callable, Any, Dict, Optional
@@ -19,6 +20,8 @@ from langchain_xai import ChatXAI
 from motor_determinista import (
     buscar_pdfs,
     buscar_pdfs_tool,
+    indexar_pdfs,
+    indexar_pdfs_tool,
     consultar_excel,
     consultar_excel_tool,
     evaluar_cumplimiento,
@@ -114,7 +117,7 @@ else:
 if chat_model is not None:
     agent = create_agent(
         model=chat_model,
-        tools=[consultar_excel_tool, evaluar_cumplimiento_tool, buscar_pdfs_tool],
+        tools=[consultar_excel_tool, evaluar_cumplimiento_tool, indexar_pdfs_tool, buscar_pdfs_tool],
         response_format=str,
     )
 
@@ -140,6 +143,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def _indexar_pdfs_en_arranque() -> None:
+    async def _run_indexing() -> None:
+        try:
+            resumen = await asyncio.to_thread(indexar_pdfs, False)
+            print(
+                f"[api] INFO: PDF indexados en SQLite: {resumen['indexed']} nuevos, {resumen['skipped']} sin cambios."
+            )
+        except Exception as exc:
+            print(f"[api] WARNING: No se pudo indexar PDFs al arrancar: {exc}")
+
+    asyncio.create_task(_run_indexing())
 
 
 def _parse_numeric_value(text: str) -> Optional[float]:
@@ -458,14 +475,23 @@ def _fallback_deterministic_response(mensaje: str) -> str:
     if parametro and pais_formateado:
         respuesta = consultar_excel(parametro, pais_formateado)
         if respuesta.get("count", 0) == 0:
+            pdf_resultados = buscar_pdfs(query=texto_norm)
+            if pdf_resultados["count"] > 0:
+                primer_resultado = pdf_resultados["matches"][0]
+                return (
+                    f"No encontré coincidencia exacta en el Excel/CSV para '{parametro}' en '{pais_formateado}', "
+                    f"pero sí encontré información en PDF: {primer_resultado.get('name')} (página {primer_resultado.get('page')}). "
+                    f"Extracto: {primer_resultado.get('snippet', '')}"
+                )
             return f"No encontré información específica para '{parametro}' en '{pais_formateado}'."
         return _format_info_response(parametro, pais_formateado, respuesta)
 
     pdf_resultados = buscar_pdfs(query=texto_norm)
     if pdf_resultados["count"] > 0:
+        primer_resultado = pdf_resultados["matches"][0]
         return (
             "No pude identificar con claridad el parámetro, el país o el valor. "
-            "Te dejo los documentos PDF que mejor encajan con tu consulta."
+            f"Sí encontré información en PDF: {primer_resultado.get('name')} (página {primer_resultado.get('page')})."
         )
 
     return (

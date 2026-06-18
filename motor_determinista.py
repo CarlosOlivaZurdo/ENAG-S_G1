@@ -1,18 +1,15 @@
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import re
 
 import pandas as pd
-from PyPDF2 import PdfReader
 from langchain_core.tools import tool
+
+from agente_pdf import buscar_pdfs, buscar_pdfs_tool, indexar_pdfs, indexar_pdfs_tool
 
 EXCEL_FILENAME = "limites_calidad.xlsx"
 EXCEL_SEARCH_GLOBS = ["data/*.xlsx", "data/**/*.xlsx", "data/raw/*.xlsx"]
 CSV_SEARCH_GLOBS = ["data/*.csv", "data/**/*.csv", "data/raw/*.csv"]
-PDF_SEARCH_GLOBS = ["data/raw/*.pdf", "data/**/*.pdf"]
-
-
 def _normalize_text(value: Any) -> str:
     text = str(value) if value is not None else ""
     normalized = text.strip().lower()
@@ -298,70 +295,6 @@ def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
     return {"count": match_response["count"], "matches": summarized, "file": match_response["file"]}
 
 
-def _find_pdf_paths(project_root: Path) -> List[Path]:
-    pdf_paths: List[Path] = []
-    seen: set[str] = set()
-    for pattern in PDF_SEARCH_GLOBS:
-        for path in sorted(project_root.glob(pattern)):
-            if path.suffix.lower() == ".pdf" and str(path) not in seen:
-                seen.add(str(path))
-                pdf_paths.append(path)
-    return pdf_paths
-
-
-@lru_cache(maxsize=1)
-def _load_pdf_texts() -> List[Dict[str, Any]]:
-    project_root = Path(__file__).resolve().parent
-    pdf_texts: List[Dict[str, Any]] = []
-    for pdf_path in _find_pdf_paths(project_root):
-        text = ""
-        try:
-            reader = PdfReader(pdf_path)
-            pages = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    pages.append(page_text)
-            text = "\n".join(pages)
-        except Exception:
-            text = ""
-        pdf_texts.append({"path": pdf_path, "name": pdf_path.name, "text": text})
-    return pdf_texts
-
-
-def _search_pdf_text(query: str) -> List[Dict[str, Any]]:
-    normalized_query = _normalize_text(query)
-    if not normalized_query:
-        return []
-
-    matches: List[Dict[str, Any]] = []
-    for item in _load_pdf_texts():
-        file_name = _normalize_text(item["name"])
-        text = item["text"] or ""
-        normalized_text = _normalize_text(text)
-        if normalized_query in file_name or normalized_query in normalized_text:
-            snippet = ""
-            if text:
-                snippet = text.replace("\n", " ").strip()
-                if len(snippet) > 300:
-                    snippet = snippet[:300].rstrip() + "..."
-            matches.append(
-                {
-                    "file": str(item["path"]),
-                    "name": item["name"],
-                    "snippet": snippet,
-                }
-            )
-    return matches
-
-
-def buscar_pdfs(query: str) -> Dict[str, Any]:
-    results = _search_pdf_text(query)
-    for index, match in enumerate(results, start=1):
-        match["indice"] = index
-    return {"count": len(results), "matches": results}
-
-
 consultar_excel_tool = tool(
     consultar_excel,
     description="Consulta registros de parámetros y país en el Excel de límites de calidad.",
@@ -372,5 +305,5 @@ evaluar_cumplimiento_tool = tool(
 )
 buscar_pdfs_tool = tool(
     buscar_pdfs,
-    description="Busca textos relevantes dentro de los archivos PDF en data/raw.",
+    description="Busca textos relevantes dentro de los PDF indexados en la base de datos SQLite.",
 )
