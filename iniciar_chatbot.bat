@@ -16,8 +16,9 @@ echo.
 REM Abre el navegador tras ~3 segundos (cuando el servidor ya esta listo)
 start "" /b cmd /c "ping -n 4 127.0.0.1 >nul & explorer http://localhost:8000/"
 
-REM Arranca el backend (esta ventana queda ocupada con el servidor)
-python -m uvicorn api:app --port 8000
+REM Arranca el backend con recarga automatica (--reload): al guardar cambios en
+REM el codigo, el servidor se reinicia solo y aplica las correcciones.
+python -m uvicorn api:app --port 8000 --reload
 
 echo.
 echo El servidor se ha detenido. Pulsa una tecla para cerrar.

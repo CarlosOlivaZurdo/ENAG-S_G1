@@ -3,6 +3,10 @@
 Herramienta de CERO ALUCINACIONES: todas las conversiones se calculan con fórmulas
 matemáticas exactas en Python. El modelo de lenguaje NUNCA debe calcular una
 conversión por su cuenta; debe invocar siempre `convertir_unidades`.
+
+Convención de este proyecto (las tablas normativas están a 0 °C y 1,01325 bar):
+  • `mg/m³` ≡ `mg/Nm³`  → condiciones NORMALES (0 °C). Son equivalentes.
+  • `mg/sm³`, `mg/m³(15)`, `mg/m³@15` → condiciones ESTÁNDAR (15 °C), solo si se marca.
 """
 import unicodedata
 from typing import Any, Dict, Optional
@@ -33,9 +37,12 @@ def _norm_txt(s: Any) -> str:
 def _normalizar_unidad(unidad: str) -> str:
     """Normaliza la cadena de unidad para poder compararla de forma robusta."""
     s = str(unidad).strip().lower()
-    s = s.replace(" ", "")
+    # quitar acentos españoles conservando símbolos (°, /, %)
+    for a, b in (("á", "a"), ("é", "e"), ("í", "i"), ("ó", "o"), ("ú", "u"), ("ü", "u"), ("ñ", "n")):
+        s = s.replace(a, b)
     s = s.replace("³", "3").replace("²", "2").replace("^", "")
     s = s.replace("º", "°")
+    s = s.replace(" ", "").replace("(", "").replace(")", "")
     return s
 
 
@@ -43,11 +50,27 @@ def _normalizar_unidad(unidad: str) -> str:
 _MJ = {"mj/m3", "mj/nm3", "mj"}
 _KWH = {"kwh/m3", "kwh/nm3", "kwh"}
 _KELVIN = {"k", "kelvin", "°k"}
-_CELSIUS = {"c", "°c", "celsius"}
+_CELSIUS = {"c", "°c", "celsius", "°gradoscentigrados", "gradoscentigrados"}
 _FAHRENHEIT = {"f", "°f", "fahrenheit"}
-_MG_NM3 = {"mg/nm3"}                                  # masa por Nm³ (0 °C)
-_MG_SM3 = {"mg/m3", "mg/sm3", "mg/m3(15)", "mg/m315", "mg/m3@15"}  # masa por m³ estándar (15 °C)
+# Concentración másica en condiciones NORMALES (0 °C). En este proyecto mg/m³ ≡ mg/Nm³.
+_CONC_NORMAL = {"mg/nm3", "mg/m3", "mgs/nm3", "mgs/m3", "mg/m3n", "mg/m3(n)"}
+# Concentración másica en condiciones ESTÁNDAR (15 °C), SOLO si se marca explícitamente.
+_CONC_STD15 = {"mg/sm3", "mgs/sm3", "mg/m3(15)", "mg/m315", "mg/m3@15", "mg/m3std"}
+# Fracción volumétrica/molar
+_PCT = {"%", "%mol", "%molar", "%vol", "%v", "%m"}
 _PPM = {"ppm", "ppmv", "ppm(vol)", "ppmvol", "ppm(mol)", "ppmmol"}
+
+# Familias en las que origen y destino son la MISMA magnitud equivalente (factor 1).
+_FAMILIAS_IDENTIDAD = (_MJ, _KWH, _KELVIN, _CELSIUS, _FAHRENHEIT, _PCT, _PPM, _CONC_NORMAL)
+
+_SOPORTADAS = [
+    "MJ/m³ ↔ kWh/m³",
+    "K ↔ °C ↔ °F",
+    "mg/m³ ≡ mg/Nm³ (0 °C)",
+    "mg/m³(15 °C) ↔ mg/Nm³(0 °C)",
+    "mg/Nm³ ↔ ppm (requiere masa molar)",
+    "% ↔ ppm",
+]
 
 
 def _masa_molar(parametro: str, masa_molar: Optional[float]) -> Optional[float]:
@@ -55,6 +78,47 @@ def _masa_molar(parametro: str, masa_molar: Optional[float]) -> Optional[float]:
     if masa_molar is not None:
         return float(masa_molar)
     return MASAS_MOLARES.get(_norm_txt(parametro))
+
+
+def _ok(valor_orig, valor_conv, uo, ud, parametro, formula, masa=None) -> Dict[str, Any]:
+    r = {
+        "valor_original": valor_orig,
+        "unidad_origen": uo,
+        "valor_convertido": round(valor_conv, 6),
+        "unidad_destino": ud,
+        "parametro": parametro,
+        "formula": formula,
+    }
+    if masa is not None:
+        r["masa_molar_g_mol"] = masa
+    return r
+
+
+def _error_no_soportada(valor, uo, ud) -> Dict[str, Any]:
+    return {
+        "error": (
+            f"Conversión no soportada de '{uo}' a '{ud}'. "
+            "No se realiza ninguna conversión para evitar resultados inventados."
+        ),
+        "valor_original": valor,
+        "unidad_origen": uo,
+        "unidad_destino": ud,
+        "conversiones_soportadas": _SOPORTADAS,
+    }
+
+
+def _error_masa_molar(valor, uo, ud, parametro) -> Dict[str, Any]:
+    return {
+        "error": (
+            "Conversión mg/Nm³ ↔ ppm no realizada: falta la masa molar del componente. "
+            f"El parámetro '{parametro}' no está en la tabla; indica `masa_molar` (g/mol) "
+            "o un parámetro reconocido (H2S, CO2, O2, mercaptanos…). No se inventa el valor."
+        ),
+        "valor_original": valor,
+        "unidad_origen": uo,
+        "unidad_destino": ud,
+        "componentes_con_masa_molar": sorted(set(MASAS_MOLARES.keys())),
+    }
 
 
 def convertir_unidades(
@@ -67,172 +131,130 @@ def convertir_unidades(
     """ÚNICA VÍA AUTORIZADA para convertir unidades de energía, temperatura y concentración.
 
     ⚠ INSTRUCCIÓN PARA EL MODELO DE LENGUAJE ⚠
-    Esta herramienta es la ÚNICA forma permitida de realizar conversiones de
-    unidades en este sistema. NUNCA calcules, estimes ni "recuerdes" de memoria una
-    conversión de energía (MJ/m³, kWh/m³), temperatura (K, °C, °F) o concentración
-    (mg/Nm³, mg/m³ a 15 °C, ppm). Si una consulta requiere normalizar o convertir
-    cualquiera de estas magnitudes, DEBES invocar SIEMPRE `convertir_unidades` y usar
-    EXCLUSIVAMENTE el valor que devuelve. Si la conversión no está soportada o falta
-    la masa molar necesaria, la función devuelve un error explícito: en ese caso NO
-    inventes el resultado, comunica que no es convertible de forma determinista.
+    Esta herramienta es la ÚNICA forma permitida de realizar conversiones de unidades en
+    este sistema. NUNCA calcules, estimes ni "recuerdes" de memoria una conversión de
+    energía (MJ/m³, kWh/m³), temperatura (K, °C, °F) o concentración (mg/m³, mg/Nm³, ppm,
+    % molar). Si una consulta requiere normalizar o convertir cualquiera de estas
+    magnitudes, DEBES invocar SIEMPRE `convertir_unidades` y usar EXCLUSIVAMENTE el valor
+    que devuelve. Si la conversión no está soportada o falta la masa molar necesaria, la
+    función devuelve un error explícito: en ese caso NO inventes el resultado.
 
     Conversiones soportadas (deterministas y exactas):
-      • Energía:        MJ/m³  ↔ kWh/m³     (÷ 3.6 / × 3.6)
-      • Temperatura:    K      ↔ °C         (- 273.15 / + 273.15)
-      • Temperatura:    °F     ↔ °C         ((x-32)·5/9 / x·9/5+32)
-      • Concentración:  mg/m³(15 °C) ↔ mg/Nm³(0 °C)   (× 1.0549 / × 0.9479)
-      • Concentración:  mg/Nm³ ↔ ppm(vol)  (requiere masa molar del componente:
-                        ppm = mg/Nm³ · 22.414 / M ; mg/Nm³ = ppm · M / 22.414)
+      • Energía:        MJ/m³  ↔ kWh/m³            (÷ 3.6 / × 3.6)
+      • Temperatura:    K ↔ °C ↔ °F                (offsets exactos)
+      • Concentración:  mg/m³ ≡ mg/Nm³ (0 °C)      (equivalentes)
+      • Concentración:  mg/m³(15 °C) ↔ mg/Nm³(0 °C) (× 1.0549 / × 0.9479)
+      • Concentración:  mg/Nm³ ↔ ppm(vol)          (requiere masa molar M del componente)
+      • Fracción:       % ↔ ppm                    (× 10000 / ÷ 10000)
 
     Parámetros
     ----------
-    valor : float
-        Magnitud numérica a convertir.
-    unidad_origen, unidad_destino : str
-        Unidades de partida y de llegada (p.ej. "mg/Nm³", "ppm", "MJ/m³", "°F").
-    parametro : str, opcional
-        Parámetro de calidad asociado (p.ej. "PCS", "H2S", "O2"). Para las
-        conversiones mg/Nm³ ↔ ppm se usa para deducir la masa molar (H2S=34.08,
-        CO2=44.01, O2=32.00, mercaptanos/azufre "como S"=32.06, …).
-    masa_molar : float, opcional
-        Masa molar en g/mol del componente. Tiene prioridad sobre `parametro`. Úsala
-        si el componente no está en la tabla interna.
+    valor : float — magnitud a convertir.
+    unidad_origen, unidad_destino : str — unidades de partida y llegada.
+    parametro : str, opcional — parámetro de calidad (PCS, Wobbe, H2S, O2…); para
+        mg/Nm³ ↔ ppm se usa para deducir la masa molar.
+    masa_molar : float, opcional — masa molar (g/mol); tiene prioridad sobre `parametro`.
 
     Devuelve
     --------
-    dict
-        Éxito: {valor_original, unidad_origen, valor_convertido, unidad_destino,
-                parametro, formula[, masa_molar_g_mol]}
-        Error: {error, valor_original, unidad_origen, unidad_destino,
-                conversiones_soportadas}
+    dict con {valor_original, unidad_origen, valor_convertido, unidad_destino, parametro,
+    formula[, masa_molar_g_mol]} o, si no es posible, {error, ...}.
     """
     o = _normalizar_unidad(unidad_origen)
     d = _normalizar_unidad(unidad_destino)
 
-    valor_convertido: Optional[float] = None
-    formula: Optional[str] = None
-    masa_usada: Optional[float] = None
+    # 0) Identidad exacta o unidades equivalentes dentro de la misma familia (factor 1).
+    if o == d:
+        return _ok(valor, valor, unidad_origen, unidad_destino, parametro, "Sin conversión (misma unidad)")
+    for fam in _FAMILIAS_IDENTIDAD:
+        if o in fam and d in fam:
+            return _ok(valor, valor, unidad_origen, unidad_destino, parametro,
+                       "Sin conversión (unidades equivalentes)")
 
     # --- Energía: MJ/m³ <-> kWh/m³ ---
     if o in _MJ and d in _KWH:
-        valor_convertido = valor / 3.6
-        formula = "kWh/m³ = MJ/m³ / 3.6"
-    elif o in _KWH and d in _MJ:
-        valor_convertido = valor * 3.6
-        formula = "MJ/m³ = kWh/m³ × 3.6"
+        return _ok(valor, valor / 3.6, unidad_origen, unidad_destino, parametro, "kWh/m³ = MJ/m³ / 3.6")
+    if o in _KWH and d in _MJ:
+        return _ok(valor, valor * 3.6, unidad_origen, unidad_destino, parametro, "MJ/m³ = kWh/m³ × 3.6")
 
-    # --- Temperatura: Kelvin <-> Celsius ---
-    elif o in _KELVIN and d in _CELSIUS:
-        valor_convertido = valor - 273.15
-        formula = "°C = K - 273.15"
-    elif o in _CELSIUS and d in _KELVIN:
-        valor_convertido = valor + 273.15
-        formula = "K = °C + 273.15"
+    # --- Temperatura ---
+    if o in _KELVIN and d in _CELSIUS:
+        return _ok(valor, valor - 273.15, unidad_origen, unidad_destino, parametro, "°C = K - 273.15")
+    if o in _CELSIUS and d in _KELVIN:
+        return _ok(valor, valor + 273.15, unidad_origen, unidad_destino, parametro, "K = °C + 273.15")
+    if o in _FAHRENHEIT and d in _CELSIUS:
+        return _ok(valor, (valor - 32) * 5 / 9, unidad_origen, unidad_destino, parametro, "°C = (°F - 32) × 5/9")
+    if o in _CELSIUS and d in _FAHRENHEIT:
+        return _ok(valor, valor * 9 / 5 + 32, unidad_origen, unidad_destino, parametro, "°F = °C × 9/5 + 32")
+    if o in _KELVIN and d in _FAHRENHEIT:
+        return _ok(valor, (valor - 273.15) * 9 / 5 + 32, unidad_origen, unidad_destino, parametro, "°F = (K - 273.15) × 9/5 + 32")
+    if o in _FAHRENHEIT and d in _KELVIN:
+        return _ok(valor, (valor - 32) * 5 / 9 + 273.15, unidad_origen, unidad_destino, parametro, "K = (°F - 32) × 5/9 + 273.15")
 
-    # --- Temperatura: Fahrenheit <-> Celsius ---
-    elif o in _FAHRENHEIT and d in _CELSIUS:
-        valor_convertido = (valor - 32) * 5 / 9
-        formula = "°C = (°F - 32) × 5/9"
-    elif o in _CELSIUS and d in _FAHRENHEIT:
-        valor_convertido = valor * 9 / 5 + 32
-        formula = "°F = °C × 9/5 + 32"
+    # --- Concentración: estándar 15 °C <-> normal 0 °C ---
+    if o in _CONC_STD15 and d in _CONC_NORMAL:
+        return _ok(valor, valor * FACTOR_SM3_A_NM3, unidad_origen, unidad_destino, parametro,
+                   "mg/Nm³(0 °C) = mg/m³(15 °C) × (288,15/273,15) ≈ × 1,0549")
+    if o in _CONC_NORMAL and d in _CONC_STD15:
+        return _ok(valor, valor / FACTOR_SM3_A_NM3, unidad_origen, unidad_destino, parametro,
+                   "mg/m³(15 °C) = mg/Nm³(0 °C) × (273,15/288,15) ≈ × 0,9479")
 
-    # --- Concentración: renormalización de condiciones de volumen (15 °C <-> 0 °C) ---
-    elif o in _MG_SM3 and d in _MG_NM3:
-        valor_convertido = valor * FACTOR_SM3_A_NM3
-        formula = "mg/Nm³(0 °C) = mg/m³(15 °C) × (288,15/273,15) ≈ × 1,0549"
-    elif o in _MG_NM3 and d in _MG_SM3:
-        valor_convertido = valor / FACTOR_SM3_A_NM3
-        formula = "mg/m³(15 °C) = mg/Nm³(0 °C) × (273,15/288,15) ≈ × 0,9479"
-
-    # --- Concentración: másica <-> volumétrica (requiere masa molar) ---
-    elif o in _MG_NM3 and d in _PPM:
-        masa_usada = _masa_molar(parametro, masa_molar)
-        if masa_usada is None:
+    # --- Concentración másica <-> ppm(vol) (requiere masa molar) ---
+    if (o in _CONC_NORMAL or o in _CONC_STD15) and d in _PPM:
+        m = _masa_molar(parametro, masa_molar)
+        if m is None:
             return _error_masa_molar(valor, unidad_origen, unidad_destino, parametro)
-        valor_convertido = valor * VOLUMEN_MOLAR_NM3 / masa_usada
-        formula = f"ppm(vol) = mg/Nm³ × 22,414 / M  (M = {masa_usada} g/mol)"
-    elif o in _PPM and d in _MG_NM3:
-        masa_usada = _masa_molar(parametro, masa_molar)
-        if masa_usada is None:
+        base = valor * FACTOR_SM3_A_NM3 if o in _CONC_STD15 else valor  # llevar a Nm³ (0 °C)
+        return _ok(valor, base * VOLUMEN_MOLAR_NM3 / m, unidad_origen, unidad_destino, parametro,
+                   f"ppm(vol) = mg/Nm³ × 22,414 / M  (M = {m} g/mol)", masa=m)
+    if o in _PPM and (d in _CONC_NORMAL or d in _CONC_STD15):
+        m = _masa_molar(parametro, masa_molar)
+        if m is None:
             return _error_masa_molar(valor, unidad_origen, unidad_destino, parametro)
-        valor_convertido = valor * masa_usada / VOLUMEN_MOLAR_NM3
-        formula = f"mg/Nm³ = ppm(vol) × M / 22,414  (M = {masa_usada} g/mol)"
+        base = valor * m / VOLUMEN_MOLAR_NM3  # mg/Nm³ (0 °C)
+        conv = base / FACTOR_SM3_A_NM3 if d in _CONC_STD15 else base
+        return _ok(valor, conv, unidad_origen, unidad_destino, parametro,
+                   f"mg/Nm³ = ppm(vol) × M / 22,414  (M = {m} g/mol)", masa=m)
 
-    # --- Caso no soportado: NO se inventa ningún resultado ---
-    if valor_convertido is None:
-        return {
-            "error": (
-                f"Conversión no soportada de '{unidad_origen}' a '{unidad_destino}'. "
-                "No se realiza ninguna conversión para evitar resultados inventados."
-            ),
-            "valor_original": valor,
-            "unidad_origen": unidad_origen,
-            "unidad_destino": unidad_destino,
-            "conversiones_soportadas": _SOPORTADAS,
-        }
+    # --- Fracción: % <-> ppm ---
+    if o in _PCT and d in _PPM:
+        return _ok(valor, valor * 10000, unidad_origen, unidad_destino, parametro, "ppm = % × 10.000")
+    if o in _PPM and d in _PCT:
+        return _ok(valor, valor / 10000, unidad_origen, unidad_destino, parametro, "% = ppm / 10.000")
 
-    resultado: Dict[str, Any] = {
-        "valor_original": valor,
-        "unidad_origen": unidad_origen,
-        "valor_convertido": round(valor_convertido, 6),
-        "unidad_destino": unidad_destino,
-        "parametro": parametro,
-        "formula": formula,
-    }
-    if masa_usada is not None:
-        resultado["masa_molar_g_mol"] = masa_usada
-    return resultado
-
-
-_SOPORTADAS = [
-    "MJ/m³ ↔ kWh/m³",
-    "K ↔ °C",
-    "°F ↔ °C",
-    "mg/m³(15 °C) ↔ mg/Nm³(0 °C)",
-    "mg/Nm³ ↔ ppm(vol) (requiere masa molar)",
-]
-
-
-def _error_masa_molar(valor, unidad_origen, unidad_destino, parametro):
-    return {
-        "error": (
-            "Conversión mg/Nm³ ↔ ppm no realizada: falta la masa molar del componente. "
-            f"El parámetro '{parametro}' no está en la tabla; indica `masa_molar` (g/mol) "
-            "o un parámetro reconocido (H2S, CO2, O2, mercaptanos…). No se inventa el valor."
-        ),
-        "valor_original": valor,
-        "unidad_origen": unidad_origen,
-        "unidad_destino": unidad_destino,
-        "componentes_con_masa_molar": sorted(set(MASAS_MOLARES.keys())),
-    }
+    # --- No soportada: NO se inventa ningún resultado ---
+    return _error_no_soportada(valor, unidad_origen, unidad_destino)
 
 
 # ---------------------------------------------------------------------------
-# Wrapper OPCIONAL de LangChain (@tool).
-# El proyecto usa OpenAI function-calling, por lo que la función pura de arriba es
-# la que se integra en api.py. Este wrapper solo se crea si LangChain está
-# instalado, para compatibilidad con entornos que usen el decorador @tool.
+# Wrapper OPCIONAL de LangChain (@tool). El proyecto usa OpenAI function-calling;
+# este wrapper solo se crea si LangChain está instalado.
 # ---------------------------------------------------------------------------
 try:  # pragma: no cover
     from langchain_core.tools import tool
 
     convertir_unidades_tool = tool(convertir_unidades)
-except Exception:  # LangChain no instalado -> el proyecto sigue funcionando
+except Exception:
     convertir_unidades_tool = None
 
 
 if __name__ == "__main__":
     import sys
     try:
-        sys.stdout.reconfigure(encoding="utf-8")  # consola Windows -> UTF-8
+        sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    print(convertir_unidades(47.74, "MJ/m³", "kWh/m³", "PCS"))
-    print(convertir_unidades(288.15, "K", "°C", "Punto de rocío"))
-    print(convertir_unidades(59, "°F", "°C", "Punto de rocío"))
-    print(convertir_unidades(15, "mg/Nm³", "ppm", "H2S"))            # 15 mg/Nm³ -> ~9.87 ppm
-    print(convertir_unidades(12, "mg/m³", "mg/Nm³", "H2S"))          # 12 @15°C -> 12.66 @0°C
-    print(convertir_unidades(10, "ppm", "mg/Nm³", "", masa_molar=34.08))  # masa molar explícita
-    print(convertir_unidades(10, "mg/Nm³", "ppm", "compuesto raro")) # error: falta masa molar
-    print(convertir_unidades(10, "bar", "Pa", "Presión"))            # error: no soportada
+    casos = [
+        (47.74, "MJ/m³", "kWh/m³", "PCS"),
+        (14, "kWh/m³", "MJ/m³", "Wobbe"),
+        (288.15, "K", "°C", "Punto de rocío"),
+        (59, "°F", "°C", "Punto de rocío"),
+        (5, "mg/m³", "mg/Nm³", "H2S"),           # equivalentes -> 5
+        (15, "mg/Nm³", "ppm", "H2S"),            # -> ~9.87 ppm
+        (12, "mg/sm³", "mg/Nm³", "H2S"),         # 15°C -> 0°C -> 12.66
+        (50, "ppm", "% molar", "O2"),            # -> 0.005 %
+        (0.01, "% molar", "ppm", "O2"),          # -> 100 ppm
+        (10, "bar", "Pa", "Presión"),            # no soportada
+    ]
+    for c in casos:
+        print(c, "->", convertir_unidades(*c))

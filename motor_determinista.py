@@ -5,6 +5,7 @@ import re
 import pandas as pd
 
 from agente_pdf import buscar_pdfs, indexar_pdfs
+from conversor_unidades import convertir_unidades, _normalizar_unidad
 
 EXCEL_FILENAME = "limites_calidad.xlsx"
 EXCEL_SEARCH_GLOBS = ["data/*.xlsx", "data/**/*.xlsx", "data/raw/*.xlsx"]
@@ -247,22 +248,43 @@ def evaluar_cumplimiento(parametro: str, pais: str, valor: float, unidad: Option
         unidad_registro = str(
             _find_record_value(record, ["unidades", "unidad"])
         ).strip()
-        cumple = _compare_value_to_limits(valor, lower, upper)
-        if lower["value"] is None and upper["value"] is None:
-            estado = "No evaluable"
-        elif cumple is None:
+
+        # --- Normalización determinista de unidades ANTES de comparar ---
+        # El valor del usuario se convierte a la unidad del registro con el conversor
+        # determinista (cero alucinaciones). Ej.: 14 kWh/m³ -> 50,4 MJ/m³.
+        valor_comparado = valor
+        conversion_formula = ""
+        unidades_compatibles = True
+        if unidad and unidad_registro and _normalizar_unidad(unidad) != _normalizar_unidad(unidad_registro):
+            conv = convertir_unidades(valor, unidad, unidad_registro, parametro)
+            if "valor_convertido" in conv:
+                valor_comparado = conv["valor_convertido"]
+                conversion_formula = conv.get("formula", "")
+            else:
+                unidades_compatibles = False
+
+        if not unidades_compatibles:
             estado = "No evaluable"
         else:
-            estado = "Cumple" if cumple else "No cumple"
+            cumple = _compare_value_to_limits(valor_comparado, lower, upper)
+            if lower["value"] is None and upper["value"] is None:
+                estado = "No evaluable"
+            elif cumple is None:
+                estado = "No evaluable"
+            else:
+                estado = "Cumple" if cumple else "No cumple"
         resultados.append(
             {
                 "indice": record.get("indice"),
                 "sheet": record.get("sheet"),
                 "parametro": record.get("parametros") or record.get("parametro") or record.get("param"),
                 "pais": pais,
-                "valor_evaluado": valor,
-                "unidad_evaluada": unidad or unidad_registro,
+                "valor_evaluado": valor_comparado,
+                "valor_usuario": valor,
+                "unidad_usuario": unidad or unidad_registro,
+                "unidad_evaluada": unidad_registro,
                 "unidad_registro": unidad_registro,
+                "conversion": conversion_formula,
                 "limite_inferior": lower["raw"],
                 "limite_superior": upper["raw"],
                 "documento": _find_record_value(record, ["documento principal", "documento origen", "documento"]) or "",

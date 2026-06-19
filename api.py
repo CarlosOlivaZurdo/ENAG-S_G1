@@ -429,7 +429,12 @@ def _unit_matches_expected(param: str, unit: Optional[str]) -> bool:
     expected = VALIDATION_UNITS.get(DISPLAY_MAP.get(param, param))
     if expected is None:
         return False
-    return _normalize_unit(unit) == _normalize_unit(expected)
+    # Acepta la unidad si es la esperada O si es convertible de forma determinista a ella
+    # (p.ej. MJ/m³ para Wobbe, ppm para H2S, mg/Nm³ para S…). El conversor decide.
+    if _normalize_unit(unit) == _normalize_unit(expected):
+        return True
+    conv = convertir_unidades(1.0, unit, expected, param)
+    return "valor_convertido" in conv
 
 
 def _expected_unit_for_parameter(param: str) -> str:
@@ -567,7 +572,14 @@ def _format_comparison_response(
         else:
             resultado = "No existe un criterio automático de evaluación para este parámetro"
 
-        lines.append(f"| {parametro_name} | {pais} | {valor} {unidad_reg if unidad_reg else unidad or ''} | {resultado} |")
+        valor_eval = item.get("valor_evaluado", valor)
+        valor_usr = item.get("valor_usuario", valor)
+        unidad_usr = item.get("unidad_usuario", unidad or "")
+        if item.get("conversion") and str(valor_usr) != str(valor_eval):
+            celda_valor = f"{valor_eval} {unidad_reg} (introducido: {valor_usr} {unidad_usr})"
+        else:
+            celda_valor = f"{valor_eval} {unidad_reg if unidad_reg else unidad or ''}"
+        lines.append(f"| {parametro_name} | {pais} | {celda_valor} | {resultado} |")
         norm_lines.append(
             f"| {pais} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} | No disponible en el Excel |"
         )
