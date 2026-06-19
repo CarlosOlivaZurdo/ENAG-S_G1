@@ -472,6 +472,52 @@ def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unid
 
 
 ALL_COUNTRIES = ["España", "Portugal", "Francia"]
+PAIS_BASE = "España"
+
+
+def _norm_pais(p: Any) -> str:
+    s = str(p).strip().lower()
+    for a, b in (("á", "a"), ("é", "e"), ("í", "i"), ("ó", "o"), ("ú", "u"), ("ñ", "n")):
+        s = s.replace(a, b)
+    return s
+
+
+def _unidad_de_pais(parametro: str, pais: str) -> Optional[str]:
+    """Devuelve la unidad que exige la normativa de `pais` para `parametro`."""
+    try:
+        resp = consultar_excel(parametro, pais)
+    except Exception:
+        return None
+    for m in resp.get("matches", []):
+        u = (m.get("unidad") or m.get("unidad_registro") or "").strip()
+        if u:
+            return u
+    return None
+
+
+def _estado_comparabilidad(parametro: str, unidad_es: Optional[str], unidad_pais: Optional[str]) -> str:
+    """Compara la normativa española vs la del país por su unidad/magnitud.
+
+    - 'Directamente Comparable': misma unidad (o equivalente, factor 1).
+    - 'Comparable con Normalización': unidades distintas, misma magnitud física.
+    - 'No Comparable': magnitudes incompatibles o falta de datos.
+    """
+    if not unidad_es or not unidad_pais:
+        return "No Comparable"
+    conv = convertir_unidades(1.0, unidad_pais, unidad_es, parametro)
+    if "valor_convertido" not in conv:
+        return "No Comparable"
+    if "Sin conversión" in conv.get("formula", ""):
+        return "Directamente Comparable"
+    return "Comparable con Normalización"
+
+
+def _celda_es_vs_pais(parametro: str, pais: str, unidad_pais: Optional[str], unidad_es: Optional[str]) -> str:
+    """Texto de la celda de comparabilidad cruzada: 'España vs [País]: [Estado]'."""
+    if _norm_pais(pais) == _norm_pais(PAIS_BASE):
+        return "— (base de referencia)"
+    estado = _estado_comparabilidad(parametro, unidad_es, unidad_pais)
+    return f"España vs {pais}: {estado}"
 
 
 def _evaluate_multipais(parametro: str, valor: float, unidad: Optional[str]) -> str:
@@ -491,15 +537,15 @@ def _evaluate_multipais(parametro: str, valor: float, unidad: Optional[str]) -> 
     lines = [
         f"**¿En qué países cumple {parametro} = {valor}{f' {unidad}' if unidad else ''}?**",
         "",
-        "| País | Parámetro | Valor evaluado | Resultado | Detalle | Comparable |",
+        "| País | Parámetro | Valor evaluado | Resultado | Detalle | Comparabilidad normativa |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
+    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
     cumple_en = []
     for item in filas:
         pais = item.get("pais", "")
         nombre = str(item.get("parametro") or parametro).strip()
         estado = item.get("cumple", "No evaluable")
-        comparable = item.get("comparable", True)
         detalle = item.get("detalle", "")
         unidad_reg = item.get("unidad_registro") or unidad or ""
         valor_eval = item.get("valor_evaluado", valor)
@@ -511,7 +557,7 @@ def _evaluate_multipais(parametro: str, valor: float, unidad: Optional[str]) -> 
         else:
             celda = f"{valor_eval} {unidad_reg}".strip()
         res = "🟢 Cumple" if estado == "Cumple" else ("🔴 No cumple" if estado == "No cumple" else "⚪ No evaluable")
-        comp = "🟢 Sí" if comparable else "🔴 No"
+        comp = _celda_es_vs_pais(parametro, pais, unidad_reg, unidad_es)
         lines.append(f"| {pais} | {nombre} | {celda} | {res} | {detalle} | {comp} |")
         if estado == "Cumple":
             cumple_en.append(f"{pais} ({nombre})")
@@ -604,19 +650,27 @@ def _format_comparison_response(
     unidad: Optional[str],
     respuesta: Dict[str, Any],
 ) -> str:
-    matches = respuesta.get("matches", [])
-    if not matches:
+    filas = list(respuesta.get("matches", []))
+    if not filas:
         return (
             f"No encontré coincidencias para '{parametro}' en '{pais}' con el valor {valor}"
             f"{f' {unidad}' if unidad else ''}."
         )
 
-    # Tabla principal: Parámetro · Resultado (cumple) · Detalle (supera/no llega) · Comparable.
-    # "Comparable" y "Cumple" son conceptos INDEPENDIENTES.
+    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
+    # Enfoque comparación entre países: si se consulta otro país, añadimos España
+    # como fila de referencia (opción A) para enfrentar ambas normativas en pantalla.
+    if _norm_pais(pais) != _norm_pais(PAIS_BASE):
+        resp_es = evaluar_cumplimiento(parametro, PAIS_BASE, valor, unidad=unidad)
+        if not resp_es.get("error"):
+            filas = list(resp_es.get("matches", [])) + filas
+
+    # La columna "Comparabilidad normativa" enfrenta la ley española vs la del país de la
+    # fila (España vs [País]: [Estado]). Es independiente del cumplimiento del valor.
     lines = [
         "**Evaluación de cumplimiento**",
         "",
-        "| Parámetro | País | Valor evaluado | Resultado | Detalle | Comparable |",
+        "| Parámetro | País | Valor evaluado | Resultado | Detalle | Comparabilidad normativa |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
     norm_lines = [
@@ -628,10 +682,10 @@ def _format_comparison_response(
     ]
     conversiones = []
 
-    for item in matches[:8]:
+    for item in filas[:12]:
         parametro_name = str(item.get("parametro") or parametro).strip()
+        pais_fila = item.get("pais", pais)
         estado = item.get("cumple", "No evaluable")
-        comparable = item.get("comparable", True)
         detalle = item.get("detalle", "")
         origen = item.get("documento") or "Origen no especificado"
         limite_inf = item.get("limite_inferior", "-")
@@ -647,7 +701,7 @@ def _format_comparison_response(
             resultado = "🔴 No cumple"
         else:
             resultado = "⚪ No evaluable"
-        comp = "🟢 Sí" if comparable else "🔴 No"
+        comp = _celda_es_vs_pais(parametro, pais_fila, unidad_reg, unidad_es)
 
         valor_eval = item.get("valor_evaluado", valor)
         valor_usr = item.get("valor_usuario", valor)
@@ -660,9 +714,9 @@ def _format_comparison_response(
         else:
             celda_valor = f"{valor_eval} {unidad_reg if unidad_reg else unidad or ''}".strip()
 
-        lines.append(f"| {parametro_name} | {pais} | {celda_valor} | {resultado} | {detalle} | {comp} |")
+        lines.append(f"| {parametro_name} | {pais_fila} | {celda_valor} | {resultado} | {detalle} | {comp} |")
         norm_lines.append(
-            f"| {pais} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} |"
+            f"| {pais_fila} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} |"
         )
 
     bloques = lines + norm_lines
