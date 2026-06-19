@@ -270,9 +270,9 @@ async def servir_chat() -> FileResponse:
 def _parse_numeric_value(text: str) -> Optional[float]:
     import re
 
-    # No excluir coma/punto finales: "15," o "15." deben dar 15 (la coma es puntuación,
-    # salvo que sea decimal: "15,7" sí se captura completo).
-    pattern = r"(?<![A-Za-z0-9])([-+]?[0-9]+(?:[\.,][0-9]+)?)(?![A-Za-z0-9])"
+    # Tolera puntuación/letra justo después ("15,", "0.03de" -> 0.03). El lookbehind
+    # evita capturar el "2" de "o2"/"co2" como número.
+    pattern = r"(?<![A-Za-z0-9])([-+]?[0-9]+(?:[\.,][0-9]+)?)"
     matches = re.findall(pattern, text)
     if not matches:
         return None
@@ -351,6 +351,9 @@ def _normalize_country(text: str) -> Optional[str]:
 
 def _normalize_parameter(text: str) -> Optional[str]:
     normalized = text.lower()
+    # "02" (cero-dos) escrito como O2 (oxígeno): normalizar el token aislado.
+    # No toca "1.02", "2002" ni "co2" (la barrera \w/.,/ lo evita).
+    normalized = re.sub(r"(?<![\w./,])02(?![\w])", "o2", normalized)
     aliases = {
         "o2": "o2",
         "oxigeno": "o2",
@@ -698,6 +701,9 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     paises = _detectar_paises(texto_norm)        # lista de países pedidos (tolera erratas)
     valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(mensaje)
     valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(mensaje)
+    # Si el número y la unidad venían separados ("0.03de % molar"), busca la unidad aparte.
+    if unidad_detectada is None:
+        unidad_detectada = _extract_unit_only(mensaje)
 
     # Compliance: hay parámetro + valor, y se menciona país(es) o hay señal de cumplimiento.
     cue_cumplimiento = any(c in texto_norm for c in [

@@ -17,22 +17,22 @@ HC(rocío);-;-2º de 1 a 70 bares;º(grados centígrados);GRTgaz;;
 ;;;;;;
 Portugal;;;;;;
 PARÁMETROS;LIMITE INFERIOR;LIMITE SUPERIOR;UNIDADES;Documento origen;;Condiciones de medición: 0ºC y 1,01325 bars
-WOBBE;48;57,66;MJ/m^3;RQS n.º 406/2021 (ERSE), art. 126.º1.a (54†L4457-L4461) (pub. 23-03-2021);;
+WOBBE;48,17;57,66;MJ/m^3;RQS n.º 406/2021 (ERSE), art. 126.º1.a (54†L4457-L4461) (pub. 23-03-2021);;
 PCS;no especificado ;no especificado ;;"– (no regulado en RQS (54†L4457-L4461); control vía índice de Wobbe)";;
 Densidad relativa;0,5549;0,7001;;RQS n.º 406/2021, art. 126.º1.b (54†L4463-L4467) (23-03-2021);;
 S total ;-;50; mg/m^3;RQS n.º 406/2021, art. 126.º3.c (54†L4472-L4476) (23-03-2021);;
 H2S+COS;-;5;mg/Nm^3;RQS n.º 406/2021, art. 126.º3.b/4.c (54†L4472-L4476) (23-03-2021);;
 RSH ;incluido en el azufre;incluido en el azufre;;;;
-O2;sin monitorear/no es fijo;sin monitorear/no es fijo;;RQS n.º 406/2021, art. 126.º4.a (54†L4478-L4486) (23-03-2021) No regulado;;
+O2;-;1;% Molar;RQS n.º 406/2021, art. 126.º4.a (54†L4478-L4486) (23-03-2021) (corregido: <=1% mol, Reg. 826/2023);;
 CO2;monitorizado;monitorizado;;– (no regulado por normativa portuguesa actual);;
-H2O(rocío);-;<=-5º;º(grados centígrados);RQS n.º 406/2021, art. 126.º3.a (54†L4472-L4476) (23-03-2021);;
+H2O(rocío);-;<=-8º;º(grados centígrados);RQS n.º 406/2021, art. 126.º3.a (54†L4472-L4476) (23-03-2021);;
 HC(rocío);monitorizado;monitorizado;;;;
 ;;;;;;
 ;;;;;;
 España;;;;;;
 PARÁMETROS;LIMITE INFERIOR;LIMITE SUPERIOR;UNIDADES;Documento origen;;Condiciones de medición: 0ºC y 1,01325 bars
 WOBBE;13,403;16,058; kWh/m^3;BOE;;
-PCS;10,26;13,27; kWh/m^3;BOE;;
+PCS;10,26;13,26; kWh/m^3;BOE;;
 Densidad relativa;0,555;0,7;;BOE;;
 S total ;-;50;mg/m^3;BOE;;
 H2S+COS;-;15;mg/Nm^3;BOE;;
