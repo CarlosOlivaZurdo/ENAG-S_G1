@@ -1,39 +1,45 @@
 import os
 import re
-from functools import wraps
+import json
 import time
-from typing import Callable, Any, Dict, Optional, TypedDict
+from functools import wraps
+from typing import Callable, Any, Dict, List, Optional, TypedDict
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
-
-from langchain.agents import create_agent
-from langchain.chat_models import init_chat_model
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.messages import BaseMessage
-from langchain_xai import ChatXAI
+from openai import OpenAI
 
 from motor_determinista import (
     buscar_pdfs,
-    buscar_pdfs_tool,
     indexar_pdfs,
-    indexar_pdfs_tool,
     consultar_excel,
-    consultar_excel_tool,
     evaluar_cumplimiento,
-    evaluar_cumplimiento_tool,
 )
+from conversor_unidades import convertir_unidades
+
+try:
+    from src.llm.prompts import SYSTEM_PROMPT
+except Exception:  # fallback si el paquete src no está en el path
+    SYSTEM_PROMPT = (
+        "Eres el Asistente Experto de Calidad de Gas Natural. Solo tratas la calidad "
+        "del gas natural (España, Portugal, Francia, UE). Nunca inventas valores "
+        "numéricos: los obtienes de las herramientas deterministas. Cita siempre la fuente."
+    )
 
 load_dotenv()
-XAI_API_KEY = os.getenv("XAI_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if XAI_API_KEY and XAI_API_KEY.strip() == "tu_clave_aqui":
-    XAI_API_KEY = None
-if OPENAI_API_KEY and OPENAI_API_KEY.strip() == "tu_clave_aqui":
-    OPENAI_API_KEY = None
+
+# --- Modelo de lenguaje: SOLO OpenAI ---------------------------------------
+# Clave leída de la variable de entorno API_OPENAI (patrón acordado por el equipo):
+#     clave = os.environ.get("API_OPENAI")
+#     client = OpenAI(api_key=clave)
+clave = os.environ.get("API_OPENAI")
+if clave and clave.strip() in {"", "tu_clave_aqui"}:
+    clave = None
+client = OpenAI(api_key=clave) if clave else None
+MODELO_OPENAI = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 
 class PeticionChat(BaseModel):
@@ -75,22 +81,8 @@ def gestionar_errores(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-class InMemoryHistory(BaseChatMessageHistory):
-    def __init__(self) -> None:
-        self._messages: list[BaseMessage] = []
-
-    @property
-    def messages(self) -> list[BaseMessage]:
-        return self._messages
-
-    def add_messages(self, messages: list[BaseMessage]) -> None:
-        self._messages.extend(messages)
-
-    def clear(self) -> None:
-        self._messages = []
-
-
-session_histories: Dict[str, InMemoryHistory] = {}
+# Historial de conversación por sesión (lista de mensajes estilo OpenAI).
+session_histories: Dict[str, List[Dict[str, Any]]] = {}
 
 
 class PendingValidation(TypedDict):
@@ -102,45 +94,154 @@ class PendingValidation(TypedDict):
 pending_unit_validations: Dict[str, PendingValidation] = {}
 
 
-def get_session_history(session_id: str) -> BaseChatMessageHistory:
+def get_session_history(session_id: str) -> List[Dict[str, Any]]:
     if session_id not in session_histories:
-        session_histories[session_id] = InMemoryHistory()
+        session_histories[session_id] = []
     return session_histories[session_id]
 
 
-chat_model = None
-agent = None
+# --- Herramientas deterministas expuestas a OpenAI (function calling) ------
+OPENAI_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "consultar_excel",
+            "description": "Consulta los límites regulatorios de calidad de gas para un parámetro y país.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "parametro": {"type": "string", "description": "Parámetro de calidad (p.ej. O2, PCS, Wobbe, S total)."},
+                    "pais": {"type": "string", "description": "País/jurisdicción (España, Portugal, Francia)."},
+                },
+                "required": ["parametro", "pais"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "evaluar_cumplimiento",
+            "description": "Evalúa si un valor medido cumple los límites regulatorios para un parámetro y país.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "parametro": {"type": "string"},
+                    "pais": {"type": "string"},
+                    "valor": {"type": "number"},
+                    "unidad": {"type": "string"},
+                },
+                "required": ["parametro", "pais", "valor"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "buscar_pdfs",
+            "description": "Busca texto relevante dentro de los PDF normativos indexados.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Texto a buscar en los documentos."},
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "convertir_unidades",
+            "description": (
+                "ÚNICA vía autorizada para convertir unidades de forma exacta y determinista. "
+                "Úsala SIEMPRE que necesites normalizar energía (MJ/m³ ↔ kWh/m³), temperatura "
+                "(K ↔ °C, °F ↔ °C) o concentración (mg/m³ a 15 °C ↔ mg/Nm³ a 0 °C; mg/Nm³ ↔ ppm). "
+                "Nunca calcules una conversión por tu cuenta."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "valor": {"type": "number", "description": "Valor numérico a convertir."},
+                    "unidad_origen": {"type": "string", "description": "Unidad de partida (p.ej. mg/Nm³, ppm, MJ/m³, K, °F)."},
+                    "unidad_destino": {"type": "string", "description": "Unidad de llegada (p.ej. kWh/m³, °C, ppm)."},
+                    "parametro": {"type": "string", "description": "Parámetro asociado (PCS, Wobbe, H2S, O2…); se usa para deducir la masa molar en mg/Nm³ ↔ ppm."},
+                    "masa_molar": {"type": "number", "description": "Masa molar en g/mol (opcional; solo para mg/Nm³ ↔ ppm si el componente no es conocido)."},
+                },
+                "required": ["valor", "unidad_origen", "unidad_destino"],
+            },
+        },
+    },
+]
 
-if XAI_API_KEY:
-    os.environ["XAI_API_KEY"] = XAI_API_KEY
-    chat_model = ChatXAI(model="grok-2", temperature=0)
-    print("[api] INFO: Usando ChatXAI con XAI_API_KEY.")
-elif OPENAI_API_KEY:
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-    chat_model = init_chat_model(model="gpt-4o-mini", model_provider="openai")
-    print("[api] INFO: Usando OpenAI a través de langchain.init_chat_model con OPENAI_API_KEY.")
-else:
-    print("[api] WARNING: Ninguna clave de modelo está configurada. El backend arrancará, pero el agente no estará disponible.")
+TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
+    "consultar_excel": consultar_excel,
+    "evaluar_cumplimiento": evaluar_cumplimiento,
+    "buscar_pdfs": buscar_pdfs,
+    "convertir_unidades": convertir_unidades,
+}
 
-if chat_model is not None:
-    agent = create_agent(
-        model=chat_model,
-        tools=[consultar_excel_tool, evaluar_cumplimiento_tool, indexar_pdfs_tool, buscar_pdfs_tool],
-        response_format=str,
-    )
 
-agent_with_history = None
-if agent is not None:
-    agent_with_history = RunnableWithMessageHistory(
-        agent,
-        get_session_history,
-        input_messages_key="mensaje",
-        history_messages_key="history",
-    )
+def responder_con_openai(mensaje: str, session_id: str) -> str:
+    """Redacta la respuesta con OpenAI usando las herramientas deterministas.
 
-backend_mode = "ia" if agent_with_history is not None else "determinista"
+    El modelo NUNCA inventa cifras: los números provienen de las herramientas
+    (Excel/PDF). El LLM solo interpreta la pregunta y redacta el resultado.
+    """
+    history = get_session_history(session_id)
+    mensajes: List[Dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    mensajes.extend(history)
+    mensajes.append({"role": "user", "content": mensaje})
+
+    texto_final = ""
+    for _ in range(5):  # límite de iteraciones de tool-calling
+        respuesta = client.chat.completions.create(
+            model=MODELO_OPENAI,
+            messages=mensajes,
+            tools=OPENAI_TOOLS,
+            temperature=0,
+        )
+        msg = respuesta.choices[0].message
+        if not msg.tool_calls:
+            texto_final = msg.content or ""
+            break
+        mensajes.append({
+            "role": "assistant",
+            "content": msg.content or "",
+            "tool_calls": [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                }
+                for tc in msg.tool_calls
+            ],
+        })
+        for tc in msg.tool_calls:
+            func = TOOL_FUNCS.get(tc.function.name)
+            try:
+                args = json.loads(tc.function.arguments or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            try:
+                resultado = func(**args) if func else {"error": "herramienta desconocida"}
+            except Exception as exc:  # noqa: BLE001
+                resultado = {"error": str(exc)}
+            mensajes.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": json.dumps(resultado, ensure_ascii=False, default=str),
+            })
+
+    # Persistir el turno en el historial de la sesión.
+    history.append({"role": "user", "content": mensaje})
+    history.append({"role": "assistant", "content": texto_final})
+    return texto_final
+
+
+backend_mode = "ia" if client is not None else "determinista"
 backend_detail = (
-    "Agente IA operativo" if backend_mode == "ia" else "Sin clave de modelo válida: usando fallback determinista"
+    "Agente OpenAI operativo" if backend_mode == "ia"
+    else "Sin clave API_OPENAI válida: usando fallback determinista"
 )
 
 app = FastAPI()
@@ -151,6 +252,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_INDEX_HTML = os.path.join(os.path.dirname(__file__), "index.html")
+
+
+@app.get("/")
+async def servir_chat() -> FileResponse:
+    """Sirve la interfaz web del chatbot en la raíz (http://localhost:8000/)."""
+    return FileResponse(_INDEX_HTML)
 
 
 def _parse_numeric_value(text: str) -> Optional[float]:
@@ -599,16 +708,9 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
     if validation_response is not None:
         return RespuestaChat(respuesta=validation_response, modo="determinista")
 
-    if agent_with_history is None:
+    if client is None:
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
-    response = agent_with_history.invoke(
-        {"mensaje": request.mensaje},
-        config={"configurable": {"session_id": request.session_id}},
-    )
-    if isinstance(response, dict) and "output" in response:
-        texto = str(response["output"])
-    else:
-        texto = str(response)
+    texto = responder_con_openai(request.mensaje, request.session_id)
     return RespuestaChat(respuesta=texto, modo="ia")

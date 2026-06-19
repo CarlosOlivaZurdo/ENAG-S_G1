@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
 import pdfplumber
-from langchain_core.tools import tool
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -306,14 +305,3 @@ def buscar_pdfs(query: str, limit: int = 5) -> Dict[str, Any]:
         match["indice"] = index
 
     return {"count": len(matches), "matches": matches, "database": str(PDF_DB_PATH)}
-
-
-indexar_pdfs_tool = tool(
-    indexar_pdfs,
-    description="Lee los PDF de data/raw con pdfplumber y los guarda en la base de datos SQLite.",
-)
-
-buscar_pdfs_tool = tool(
-    buscar_pdfs,
-    description="Busca texto relevante dentro de los PDF indexados en la base de datos SQLite.",
-)

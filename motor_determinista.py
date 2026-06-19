@@ -3,9 +3,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import re
 
 import pandas as pd
-from langchain_core.tools import tool
 
-from agente_pdf import buscar_pdfs, buscar_pdfs_tool, indexar_pdfs, indexar_pdfs_tool
+from agente_pdf import buscar_pdfs, indexar_pdfs
 
 EXCEL_FILENAME = "limites_calidad.xlsx"
 EXCEL_SEARCH_GLOBS = ["data/*.xlsx", "data/**/*.xlsx", "data/raw/*.xlsx"]
@@ -293,17 +292,3 @@ def consultar_excel(parametro: str, pais: str) -> Dict[str, Any]:
         for match in match_response["matches"]
     ]
     return {"count": match_response["count"], "matches": summarized, "file": match_response["file"]}
-
-
-consultar_excel_tool = tool(
-    consultar_excel,
-    description="Consulta registros de parámetros y país en el Excel de límites de calidad.",
-)
-evaluar_cumplimiento_tool = tool(
-    evaluar_cumplimiento,
-    description="Evalúa si un valor cumple los límites regulatorios del Excel para un parámetro y país.",
-)
-buscar_pdfs_tool = tool(
-    buscar_pdfs,
-    description="Busca textos relevantes dentro de los PDF indexados en la base de datos SQLite.",
-)

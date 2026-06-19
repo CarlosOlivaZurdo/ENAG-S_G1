@@ -8,9 +8,6 @@ openpyxl
 fastapi
 uvicorn
 pydantic
-langchain
-langchain-xai
-langchain-core
 openai
 requests
 PyPDF2
