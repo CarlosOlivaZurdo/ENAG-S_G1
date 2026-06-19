@@ -36,8 +36,12 @@ load_dotenv()
 #     clave = os.environ.get("API_OPENAI")
 #     client = OpenAI(api_key=clave)
 clave = os.environ.get("API_OPENAI")
-if clave and clave.strip() in {"", "tu_clave_aqui"}:
-    clave = None
+if clave:
+    clave = clave.strip()
+    # Las claves válidas de OpenAI empiezan por "sk-". Descarta placeholders/inválidas
+    # para no romper el chat (caería al motor determinista).
+    if clave in {"", "tu_clave_aqui"} or not clave.startswith("sk-"):
+        clave = None
 client = OpenAI(api_key=clave) if clave else None
 MODELO_OPENAI = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
@@ -265,7 +269,9 @@ async def servir_chat() -> FileResponse:
 def _parse_numeric_value(text: str) -> Optional[float]:
     import re
 
-    pattern = r"(?<![A-Za-z0-9_.,])([-+]?[0-9]+(?:[\.,][0-9]+)?)(?![A-Za-z0-9_.,])"
+    # No excluir coma/punto finales: "15," o "15." deben dar 15 (la coma es puntuación,
+    # salvo que sea decimal: "15,7" sí se captura completo).
+    pattern = r"(?<![A-Za-z0-9])([-+]?[0-9]+(?:[\.,][0-9]+)?)(?![A-Za-z0-9])"
     matches = re.findall(pattern, text)
     if not matches:
         return None
@@ -465,6 +471,55 @@ def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unid
     )
 
 
+ALL_COUNTRIES = ["España", "Portugal", "Francia"]
+
+
+def _evaluate_multipais(parametro: str, valor: float, unidad: Optional[str]) -> str:
+    """Evalúa un valor contra TODOS los países y muestra en cuáles cumple."""
+    filas: list = []
+    for pais in ALL_COUNTRIES:
+        resp = evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
+        if resp.get("error"):
+            continue
+        filas.extend(resp.get("matches", []))
+    if not filas:
+        return (
+            f"No encontré registros de '{parametro}' en {', '.join(ALL_COUNTRIES)} "
+            f"para evaluar el valor {valor}{f' {unidad}' if unidad else ''}."
+        )
+
+    lines = [
+        f"**¿En qué países cumple {parametro} = {valor}{f' {unidad}' if unidad else ''}?**",
+        "",
+        "| País | Parámetro | Valor evaluado | Resultado | Detalle | Comparable |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    cumple_en = []
+    for item in filas:
+        pais = item.get("pais", "")
+        nombre = str(item.get("parametro") or parametro).strip()
+        estado = item.get("cumple", "No evaluable")
+        comparable = item.get("comparable", True)
+        detalle = item.get("detalle", "")
+        unidad_reg = item.get("unidad_registro") or unidad or ""
+        valor_eval = item.get("valor_evaluado", valor)
+        valor_usr = item.get("valor_usuario", valor)
+        unidad_usr = item.get("unidad_usuario", unidad or "")
+        conv = item.get("conversion", "")
+        if conv and str(valor_usr) != str(valor_eval):
+            celda = f"{valor_eval} {unidad_reg} (de {valor_usr} {unidad_usr})"
+        else:
+            celda = f"{valor_eval} {unidad_reg}".strip()
+        res = "🟢 Cumple" if estado == "Cumple" else ("🔴 No cumple" if estado == "No cumple" else "⚪ No evaluable")
+        comp = "🟢 Sí" if comparable else "🔴 No"
+        lines.append(f"| {pais} | {nombre} | {celda} | {res} | {detalle} | {comp} |")
+        if estado == "Cumple":
+            cumple_en.append(f"{pais} ({nombre})")
+    resumen = ", ".join(cumple_en) if cumple_en else "ninguno de los evaluados"
+    lines += ["", f"**Cumple en:** {resumen}."]
+    return "\n".join(lines)
+
+
 def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     texto_norm = mensaje.lower()
     pending = pending_unit_validations.get(session_id)
@@ -476,6 +531,8 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
             pending_unit_validations.pop(session_id, None)
             return _incorrect_unit_message(pending["parametro"])
         pending_unit_validations.pop(session_id, None)
+        if pending.get("pais") == "__TODOS__":
+            return _evaluate_multipais(pending["parametro"], pending["valor"], unidad_respuesta)
         return _evaluate_validated_comparison(
             pending["parametro"],
             pending["pais"],
@@ -488,6 +545,19 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     pais_formateado = _normalize_country(pais) if pais else None
     valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(mensaje)
     valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(mensaje)
+
+    # --- Consulta MULTI-PAÍS: "¿en qué países cumple X?" (sin país concreto) ---
+    cues_multipais = any(c in texto_norm for c in ["cumple", "paises", "países", "donde", "dónde", "pais", "país"])
+    if parametro is not None and valor is not None and pais_formateado is None and cues_multipais:
+        expected = _expected_unit_for_parameter(parametro)
+        if expected and unidad_detectada is None:
+            pending_unit_validations[session_id] = {
+                "parametro": parametro, "pais": "__TODOS__", "valor": valor,
+            }
+            return _missing_unit_message(parametro)
+        if expected and unidad_detectada is not None and not _unit_matches_expected(parametro, unidad_detectada):
+            return _incorrect_unit_message(parametro)
+        return _evaluate_multipais(parametro, valor, unidad_detectada)
 
     if parametro is None or pais_formateado is None or valor is None or _is_info_request(texto_norm):
         return None
@@ -541,23 +611,28 @@ def _format_comparison_response(
             f"{f' {unidad}' if unidad else ''}."
         )
 
+    # Tabla principal: Parámetro · Resultado (cumple) · Detalle (supera/no llega) · Comparable.
+    # "Comparable" y "Cumple" son conceptos INDEPENDIENTES.
     lines = [
-        "*Resultado de la evaluación*",
+        "**Evaluación de cumplimiento**",
         "",
-        "| Parámetro | País | Valor usuario | Resultado |",
-        "| --- | --- | ---: | --- |",
+        "| Parámetro | País | Valor evaluado | Resultado | Detalle | Comparable |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     norm_lines = [
         "",
-        "*Información normativa*",
+        "**Información normativa**",
         "",
-        "| País | Parámetro | Límites aplicables | Condiciones de medición | Origen documental | Enlace |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| País | Parámetro | Límites aplicables | Condiciones de medición | Origen documental |",
+        "| --- | --- | --- | --- | --- |",
     ]
+    conversiones = []
 
     for item in matches[:8]:
-        parametro_name = item.get("parametro", parametro)
+        parametro_name = str(item.get("parametro") or parametro).strip()
         estado = item.get("cumple", "No evaluable")
+        comparable = item.get("comparable", True)
+        detalle = item.get("detalle", "")
         origen = item.get("documento") or "Origen no especificado"
         limite_inf = item.get("limite_inferior", "-")
         limite_sup = item.get("limite_superior", "-")
@@ -565,26 +640,35 @@ def _format_comparison_response(
         condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
         if not condiciones:
             condiciones = "No especificadas en el registro"
+
         if estado == "Cumple":
-            resultado = "Cumple"
+            resultado = "🟢 Cumple"
         elif estado == "No cumple":
-            resultado = "No cumple"
+            resultado = "🔴 No cumple"
         else:
-            resultado = "No existe un criterio automático de evaluación para este parámetro"
+            resultado = "⚪ No evaluable"
+        comp = "🟢 Sí" if comparable else "🔴 No"
 
         valor_eval = item.get("valor_evaluado", valor)
         valor_usr = item.get("valor_usuario", valor)
         unidad_usr = item.get("unidad_usuario", unidad or "")
-        if item.get("conversion") and str(valor_usr) != str(valor_eval):
-            celda_valor = f"{valor_eval} {unidad_reg} (introducido: {valor_usr} {unidad_usr})"
+        conv = item.get("conversion", "")
+        if conv and str(valor_usr) != str(valor_eval):
+            celda_valor = f"{valor_eval} {unidad_reg} (de {valor_usr} {unidad_usr})"
+            if conv not in conversiones and "Sin conversión" not in conv:
+                conversiones.append(conv)
         else:
-            celda_valor = f"{valor_eval} {unidad_reg if unidad_reg else unidad or ''}"
-        lines.append(f"| {parametro_name} | {pais} | {celda_valor} | {resultado} |")
+            celda_valor = f"{valor_eval} {unidad_reg if unidad_reg else unidad or ''}".strip()
+
+        lines.append(f"| {parametro_name} | {pais} | {celda_valor} | {resultado} | {detalle} | {comp} |")
         norm_lines.append(
-            f"| {pais} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} | No disponible en el Excel |"
+            f"| {pais} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} |"
         )
 
-    return "\n".join(lines + norm_lines)
+    bloques = lines + norm_lines
+    if conversiones:
+        bloques += ["", "**Conversión aplicada**", ""] + [f"- {c}" for c in conversiones]
+    return "\n".join(bloques)
 
 
 def _format_info_response(
@@ -724,5 +808,12 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
-    texto = responder_con_openai(request.mensaje, request.session_id)
-    return RespuestaChat(respuesta=texto, modo="ia")
+    # Si OpenAI falla (clave inválida, red, límite…), NO rompemos el chat:
+    # caemos al motor determinista en vez de devolver un error 500.
+    try:
+        texto = responder_con_openai(request.mensaje, request.session_id)
+        return RespuestaChat(respuesta=texto, modo="ia")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[chat] OpenAI no disponible ({exc}); usando motor determinista.")
+        respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
+        return RespuestaChat(respuesta=respuesta, modo="determinista")

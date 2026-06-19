@@ -248,6 +248,8 @@ def evaluar_cumplimiento(parametro: str, pais: str, valor: float, unidad: Option
         unidad_registro = str(
             _find_record_value(record, ["unidades", "unidad"])
         ).strip()
+        # limpieza para presentación: "(kWh/m^3)" -> "kWh/m³"
+        unidad_registro = unidad_registro.strip("()").strip().replace("^3", "³").replace("^2", "²")
 
         # --- Normalización determinista de unidades ANTES de comparar ---
         # El valor del usuario se convierte a la unidad del registro con el conversor
@@ -273,6 +275,27 @@ def evaluar_cumplimiento(parametro: str, pais: str, valor: float, unidad: Option
                 estado = "No evaluable"
             else:
                 estado = "Cumple" if cumple else "No cumple"
+
+        # comparable = se pudo evaluar (unidades convertibles a la del registro).
+        # Es INDEPENDIENTE de cumple/no cumple.
+        comparable = unidades_compatibles
+        # detalle: si no cumple, indicar si supera el máximo o no alcanza el mínimo.
+        if not comparable:
+            detalle = "Unidades incompatibles: no convertibles de forma determinista"
+        elif lower["value"] is None and upper["value"] is None:
+            detalle = "Sin límite numérico que evaluar en la fuente"
+        elif estado == "Cumple":
+            detalle = "Dentro de los límites"
+        elif estado == "No cumple":
+            partes = []
+            if upper["value"] is not None and valor_comparado > upper["value"]:
+                partes.append(f"supera el máximo ({upper['raw']} {unidad_registro})")
+            if lower["value"] is not None and valor_comparado < lower["value"]:
+                partes.append(f"no alcanza el mínimo ({lower['raw']} {unidad_registro})")
+            detalle = "; ".join(partes) if partes else "fuera de los límites"
+        else:
+            detalle = "No hay criterio numérico de evaluación"
+
         resultados.append(
             {
                 "indice": record.get("indice"),
@@ -290,6 +313,8 @@ def evaluar_cumplimiento(parametro: str, pais: str, valor: float, unidad: Option
                 "documento": _find_record_value(record, ["documento principal", "documento origen", "documento"]) or "",
                 "condiciones": _find_record_value(record, ["condiciones", "condiciones de medicion", "condiciones de medicion: 0c y 1,01325 bars"]) or "",
                 "cumple": estado,
+                "comparable": comparable,
+                "detalle": detalle,
             }
         )
     return {"count": len(resultados), "matches": resultados, "file": match_response["file"]}
