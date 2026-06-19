@@ -2,6 +2,7 @@ import os
 import re
 import json
 import time
+import difflib
 from functools import wraps
 from typing import Callable, Any, Dict, List, Optional, TypedDict
 
@@ -459,16 +460,8 @@ def _incorrect_unit_message(parametro: str) -> str:
 
 
 def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unidad: str) -> str:
-    respuesta = evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
-    if respuesta.get("error"):
-        return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
-    return _format_comparison_response(
-        parametro=parametro,
-        pais=pais,
-        valor=valor,
-        unidad=unidad,
-        respuesta=respuesta,
-    )
+    # Filtrado estricto: solo el país pedido (España se usa por detrás para comparar).
+    return _evaluar_paises(parametro, valor, unidad, [pais])
 
 
 ALL_COUNTRIES = ["España", "Portugal", "Francia"]
@@ -480,6 +473,22 @@ def _norm_pais(p: Any) -> str:
     for a, b in (("á", "a"), ("é", "e"), ("í", "i"), ("ó", "o"), ("ú", "u"), ("ñ", "n")):
         s = s.replace(a, b)
     return s
+
+
+def _txt(v: Any) -> str:
+    """Coerciona a texto de forma robusta (NaN de pandas / None -> '')."""
+    if v is None:
+        return ""
+    if isinstance(v, float) and v != v:  # NaN
+        return ""
+    return str(v).strip()
+
+
+def _sin_limite(s: str) -> bool:
+    """¿La celda indica ausencia de límite numérico?"""
+    s = s.lower()
+    return (s in ("-", "") or "especific" in s or s.startswith("sin")
+            or "no regulad" in s or "monitor" in s or "incluido" in s or "no es fijo" in s)
 
 
 def _unidad_de_pais(parametro: str, pais: str) -> Optional[str]:
@@ -520,49 +529,152 @@ def _celda_es_vs_pais(parametro: str, pais: str, unidad_pais: Optional[str], uni
     return f"España vs {pais}: {estado}"
 
 
-def _evaluate_multipais(parametro: str, valor: float, unidad: Optional[str]) -> str:
-    """Evalúa un valor contra TODOS los países y muestra en cuáles cumple."""
+_PAIS_FUZZY = {"espana": "España", "portugal": "Portugal", "francia": "Francia"}
+
+
+def _detectar_paises(texto_norm: str) -> list:
+    """Devuelve la lista de países mencionados, tolerando erratas (ej. 'frnacia').
+
+    Vacía si el usuario no menciona ningún país (→ se asumirán todos).
+    """
+    t = _norm_pais(texto_norm)  # minúsculas sin acentos
+    encontrados: list = []
+    # 1) coincidencia directa por subcadena (evita falsos positivos con "espan")
+    for kw, nombre in [("espan", "España"), ("spain", "España"),
+                       ("portugal", "Portugal"), ("francia", "Francia"), ("france", "Francia")]:
+        if kw in t and nombre not in encontrados:
+            encontrados.append(nombre)
+    if encontrados:
+        return encontrados
+    # 2) coincidencia difusa por palabra (tolera erratas: frnacia, portgal, espanha…)
+    for palabra in re.findall(r"[a-z]{4,}", t):
+        match = difflib.get_close_matches(palabra, list(_PAIS_FUZZY.keys()), n=1, cutoff=0.78)
+        if match:
+            nombre = _PAIS_FUZZY[match[0]]
+            if nombre not in encontrados:
+                encontrados.append(nombre)
+    return encontrados
+
+
+def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises: list, todos: bool = False) -> str:
+    """Evalúa un valor contra los países indicados y devuelve la tabla.
+
+    FILTRADO ESTRICTO: solo se muestran filas de los países pedidos. España se
+    consulta SIEMPRE por detrás (en memoria) para la columna 'Comparabilidad
+    normativa', pero NO aparece como fila salvo que el usuario la pida.
+    """
+    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)  # background: solo para comparar
     filas: list = []
-    for pais in ALL_COUNTRIES:
+    for pais in paises:
         resp = evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
         if resp.get("error"):
             continue
         filas.extend(resp.get("matches", []))
     if not filas:
         return (
-            f"No encontré registros de '{parametro}' en {', '.join(ALL_COUNTRIES)} "
+            f"No encontré registros de '{parametro}' en {', '.join(paises)} "
             f"para evaluar el valor {valor}{f' {unidad}' if unidad else ''}."
         )
 
+    if todos:
+        titulo = f"**¿En qué países cumple {parametro} = {valor}{f' {unidad}' if unidad else ''}?**"
+    else:
+        titulo = f"**Evaluación de cumplimiento — {', '.join(paises)}**"
     lines = [
-        f"**¿En qué países cumple {parametro} = {valor}{f' {unidad}' if unidad else ''}?**",
+        titulo,
         "",
         "| País | Parámetro | Valor evaluado | Resultado | Detalle | Comparabilidad normativa |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
-    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
-    cumple_en = []
-    for item in filas:
-        pais = item.get("pais", "")
+    norm_lines = [
+        "",
+        "**Información normativa**",
+        "",
+        "| País | Parámetro | Límites aplicables | Condiciones de medición | Origen documental |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    conversiones: list = []
+    cumple_en: list = []
+    for item in filas[:12]:
+        pais_fila = item.get("pais", "")
         nombre = str(item.get("parametro") or parametro).strip()
         estado = item.get("cumple", "No evaluable")
         detalle = item.get("detalle", "")
+        origen = item.get("documento") or "Origen no especificado"
+        limite_inf = item.get("limite_inferior", "-")
+        limite_sup = item.get("limite_superior", "-")
         unidad_reg = item.get("unidad_registro") or unidad or ""
+        condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
+        if not condiciones:
+            condiciones = "No especificadas en el registro"
+        res = "🟢 Cumple" if estado == "Cumple" else ("🔴 No cumple" if estado == "No cumple" else "⚪ No evaluable")
+        comp = _celda_es_vs_pais(parametro, pais_fila, unidad_reg, unidad_es)
         valor_eval = item.get("valor_evaluado", valor)
         valor_usr = item.get("valor_usuario", valor)
         unidad_usr = item.get("unidad_usuario", unidad or "")
         conv = item.get("conversion", "")
         if conv and str(valor_usr) != str(valor_eval):
             celda = f"{valor_eval} {unidad_reg} (de {valor_usr} {unidad_usr})"
+            if conv not in conversiones and "Sin conversión" not in conv:
+                conversiones.append(conv)
         else:
             celda = f"{valor_eval} {unidad_reg}".strip()
-        res = "🟢 Cumple" if estado == "Cumple" else ("🔴 No cumple" if estado == "No cumple" else "⚪ No evaluable")
-        comp = _celda_es_vs_pais(parametro, pais, unidad_reg, unidad_es)
-        lines.append(f"| {pais} | {nombre} | {celda} | {res} | {detalle} | {comp} |")
+        lines.append(f"| {pais_fila} | {nombre} | {celda} | {res} | {detalle} | {comp} |")
+        norm_lines.append(
+            f"| {pais_fila} | {nombre} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} |"
+        )
         if estado == "Cumple":
-            cumple_en.append(f"{pais} ({nombre})")
-    resumen = ", ".join(cumple_en) if cumple_en else "ninguno de los evaluados"
-    lines += ["", f"**Cumple en:** {resumen}."]
+            cumple_en.append(f"{pais_fila} ({nombre})")
+    bloques = lines + norm_lines
+    if conversiones:
+        bloques += ["", "**Conversión aplicada**", ""] + [f"- {c}" for c in conversiones]
+    if todos:
+        resumen = ", ".join(cumple_en) if cumple_en else "ninguno de los evaluados"
+        bloques += ["", f"**Cumple en:** {resumen}."]
+    return "\n".join(bloques)
+
+
+def _comparar_normativa(parametro: str, paises: list) -> str:
+    """Compara la NORMATIVA (límites/unidades) entre países, SIN valor del usuario.
+
+    Muestra una fila por país enfrentando sus límites, con la columna de
+    comparabilidad cruzada (España como referencia).
+    """
+    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
+    lines = [
+        f"**Comparación normativa de {parametro} — {' vs '.join(paises)}**",
+        "",
+        "| País | Parámetro | Límites | Unidad | Condiciones | Comparabilidad normativa |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    hubo = False
+    estados: list = []
+    for pais in paises:
+        try:
+            resp = consultar_excel(parametro, pais)
+        except Exception:
+            continue
+        for m in resp.get("matches", []):
+            hubo = True
+            nombre = str(m.get("parametro") or parametro).strip()
+            inf = _txt(m.get("limite_inferior")) or "-"
+            sup = _txt(m.get("limite_superior")) or "-"
+            unidad_reg = _txt(m.get("unidad")).strip("()").replace("^3", "³").replace("^2", "²")
+            cond = _normalize_condition_text(_txt(m.get("condiciones"))) or "—"
+            if _sin_limite(inf) and _sin_limite(sup):
+                limite = "Sin límite numérico"
+            else:
+                limite = f"{inf} / {sup}"
+            comp = _celda_es_vs_pais(parametro, pais, unidad_reg, unidad_es)
+            if _norm_pais(pais) != _norm_pais(PAIS_BASE):
+                estados.append((pais, _estado_comparabilidad(parametro, unidad_es, unidad_reg)))
+            lines.append(f"| {pais} | {nombre} | {limite} | {unidad_reg or '—'} | {cond} | {comp} |")
+    if not hubo:
+        return f"No encontré datos normativos de '{parametro}' en {', '.join(paises)}."
+    if estados:
+        estados_u = list(dict.fromkeys(estados))  # dedup (un país puede tener varias filas)
+        sint = "; ".join(f"España vs {p}: {e}" for p, e in estados_u)
+        lines += ["", f"**Síntesis:** {sint}."]
     return "\n".join(lines)
 
 
@@ -577,49 +689,48 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
             pending_unit_validations.pop(session_id, None)
             return _incorrect_unit_message(pending["parametro"])
         pending_unit_validations.pop(session_id, None)
-        if pending.get("pais") == "__TODOS__":
-            return _evaluate_multipais(pending["parametro"], pending["valor"], unidad_respuesta)
-        return _evaluate_validated_comparison(
-            pending["parametro"],
-            pending["pais"],
-            pending["valor"],
-            unidad_respuesta,
+        return _evaluar_paises(
+            pending["parametro"], pending["valor"], unidad_respuesta,
+            pending["paises"], todos=pending.get("todos", False),
         )
 
     parametro = _normalize_parameter(texto_norm)
-    pais = next((kw for kw in ["espa", "portugal", "francia", "espana", "españa"] if kw in texto_norm), None)
-    pais_formateado = _normalize_country(pais) if pais else None
+    paises = _detectar_paises(texto_norm)        # lista de países pedidos (tolera erratas)
     valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(mensaje)
     valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(mensaje)
 
-    # --- Consulta MULTI-PAÍS: "¿en qué países cumple X?" (sin país concreto) ---
-    cues_multipais = any(c in texto_norm for c in ["cumple", "paises", "países", "donde", "dónde", "pais", "país"])
-    if parametro is not None and valor is not None and pais_formateado is None and cues_multipais:
+    # Compliance: hay parámetro + valor, y se menciona país(es) o hay señal de cumplimiento.
+    cue_cumplimiento = any(c in texto_norm for c in [
+        "cumple", "paises", "países", "donde", "dónde", "pais", "país", "valido", "válido", "dentro",
+    ])
+    if parametro is not None and valor is not None and (paises or cue_cumplimiento):
+        # FILTRADO ESTRICTO: si hay país(es) explícito(s), solo esos. Si no, todos.
+        todos = not paises
+        paises_efectivos = paises if paises else list(ALL_COUNTRIES)
         expected = _expected_unit_for_parameter(parametro)
         if expected and unidad_detectada is None:
             pending_unit_validations[session_id] = {
-                "parametro": parametro, "pais": "__TODOS__", "valor": valor,
+                "parametro": parametro, "paises": paises_efectivos, "todos": todos, "valor": valor,
             }
             return _missing_unit_message(parametro)
         if expected and unidad_detectada is not None and not _unit_matches_expected(parametro, unidad_detectada):
             return _incorrect_unit_message(parametro)
-        return _evaluate_multipais(parametro, valor, unidad_detectada)
+        return _evaluar_paises(parametro, valor, unidad_detectada, paises_efectivos, todos=todos)
 
-    if parametro is None or pais_formateado is None or valor is None or _is_info_request(texto_norm):
-        return None
-    if not _expected_unit_for_parameter(parametro):
-        return None
-    if unidad_detectada is None:
-        pending_unit_validations[session_id] = {
-            "parametro": parametro,
-            "pais": pais_formateado,
-            "valor": valor,
-        }
-        return _missing_unit_message(parametro)
-    pending_unit_validations.pop(session_id, None)
-    if not _unit_matches_expected(parametro, unidad_detectada):
-        return _incorrect_unit_message(parametro)
-    return _evaluate_validated_comparison(parametro, pais_formateado, valor, unidad_detectada)
+    # Comparación de NORMATIVA entre países (sin valor del usuario):
+    # "compara el Wobbe entre España y Francia", "diferencia de O2 España vs Portugal"…
+    cue_comparar = any(c in texto_norm for c in [
+        "compara", "comparar", "comparacion", "comparación", "diferencia",
+        "frente a", "versus", " vs ", "enfrenta", "respecto",
+    ])
+    if parametro is not None and valor is None and (len(paises) >= 2 or (cue_comparar and len(paises) >= 1)):
+        paises_efectivos = list(paises)
+        # En comparaciones de un solo país, añadir España como referencia visual.
+        if len(paises_efectivos) == 1 and _norm_pais(paises_efectivos[0]) != _norm_pais(PAIS_BASE):
+            paises_efectivos = [PAIS_BASE] + paises_efectivos
+        return _comparar_normativa(parametro, paises_efectivos)
+
+    return None
 
 def _is_info_request(text: str) -> bool:
     lowered = text.lower()
@@ -641,88 +752,6 @@ def _is_info_request(text: str) -> bool:
         "qué",
     ]
     return any(keyword in lowered for keyword in keywords)
-
-
-def _format_comparison_response(
-    parametro: str,
-    pais: str,
-    valor: float,
-    unidad: Optional[str],
-    respuesta: Dict[str, Any],
-) -> str:
-    filas = list(respuesta.get("matches", []))
-    if not filas:
-        return (
-            f"No encontré coincidencias para '{parametro}' en '{pais}' con el valor {valor}"
-            f"{f' {unidad}' if unidad else ''}."
-        )
-
-    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
-    # Enfoque comparación entre países: si se consulta otro país, añadimos España
-    # como fila de referencia (opción A) para enfrentar ambas normativas en pantalla.
-    if _norm_pais(pais) != _norm_pais(PAIS_BASE):
-        resp_es = evaluar_cumplimiento(parametro, PAIS_BASE, valor, unidad=unidad)
-        if not resp_es.get("error"):
-            filas = list(resp_es.get("matches", [])) + filas
-
-    # La columna "Comparabilidad normativa" enfrenta la ley española vs la del país de la
-    # fila (España vs [País]: [Estado]). Es independiente del cumplimiento del valor.
-    lines = [
-        "**Evaluación de cumplimiento**",
-        "",
-        "| Parámetro | País | Valor evaluado | Resultado | Detalle | Comparabilidad normativa |",
-        "| --- | --- | --- | --- | --- | --- |",
-    ]
-    norm_lines = [
-        "",
-        "**Información normativa**",
-        "",
-        "| País | Parámetro | Límites aplicables | Condiciones de medición | Origen documental |",
-        "| --- | --- | --- | --- | --- |",
-    ]
-    conversiones = []
-
-    for item in filas[:12]:
-        parametro_name = str(item.get("parametro") or parametro).strip()
-        pais_fila = item.get("pais", pais)
-        estado = item.get("cumple", "No evaluable")
-        detalle = item.get("detalle", "")
-        origen = item.get("documento") or "Origen no especificado"
-        limite_inf = item.get("limite_inferior", "-")
-        limite_sup = item.get("limite_superior", "-")
-        unidad_reg = item.get("unidad_registro") or item.get("unidad_evaluada") or unidad or ""
-        condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
-        if not condiciones:
-            condiciones = "No especificadas en el registro"
-
-        if estado == "Cumple":
-            resultado = "🟢 Cumple"
-        elif estado == "No cumple":
-            resultado = "🔴 No cumple"
-        else:
-            resultado = "⚪ No evaluable"
-        comp = _celda_es_vs_pais(parametro, pais_fila, unidad_reg, unidad_es)
-
-        valor_eval = item.get("valor_evaluado", valor)
-        valor_usr = item.get("valor_usuario", valor)
-        unidad_usr = item.get("unidad_usuario", unidad or "")
-        conv = item.get("conversion", "")
-        if conv and str(valor_usr) != str(valor_eval):
-            celda_valor = f"{valor_eval} {unidad_reg} (de {valor_usr} {unidad_usr})"
-            if conv not in conversiones and "Sin conversión" not in conv:
-                conversiones.append(conv)
-        else:
-            celda_valor = f"{valor_eval} {unidad_reg if unidad_reg else unidad or ''}".strip()
-
-        lines.append(f"| {parametro_name} | {pais_fila} | {celda_valor} | {resultado} | {detalle} | {comp} |")
-        norm_lines.append(
-            f"| {pais_fila} | {parametro_name} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} |"
-        )
-
-    bloques = lines + norm_lines
-    if conversiones:
-        bloques += ["", "**Conversión aplicada**", ""] + [f"- {c}" for c in conversiones]
-    return "\n".join(bloques)
 
 
 def _format_info_response(
@@ -786,16 +815,7 @@ def _fallback_deterministic_response(mensaje: str, session_id: str = "default") 
     )
 
     if comparison_intent and unidad_detectada and _unit_matches_expected(parametro, unidad_detectada):
-        respuesta = evaluar_cumplimiento(parametro, pais_formateado, valor, unidad=unidad_detectada)
-        if respuesta.get("error"):
-            return f"Consulta determinista disponible, pero ocurrió un error: {respuesta['error']}"
-        return _format_comparison_response(
-            parametro=parametro,
-            pais=pais_formateado,
-            valor=valor,
-            unidad=unidad_detectada,
-            respuesta=respuesta,
-        )
+        return _evaluar_paises(parametro, valor, unidad_detectada, [pais_formateado])
 
     if (
         parametro is not None
