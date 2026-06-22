@@ -462,6 +462,51 @@ def _incorrect_unit_message(parametro: str) -> str:
     return f"❌ Unidades incorrectas. Para el parámetro {param_display}, la unidad requerida es {expected_unit}."
 
 
+# Lista de parámetros que el sistema sabe consultar (ámbito del PROMPT MAESTRO).
+# Se muestra al usuario cuando escribe un índice que no reconocemos.
+PARAMETROS_DISPONIBLES = [
+    "Índice de Wobbe",
+    "PCS (Poder Calorífico Superior)",
+    "Densidad relativa",
+    "Azufre total (S)",
+    "H₂S + COS",
+    "Mercaptanos (RSH)",
+    "O₂ (oxígeno)",
+    "CO₂",
+    "Punto de rocío del agua (H₂O)",
+    "Punto de rocío de hidrocarburos (HC)",
+]
+
+
+def _parametro_no_reconocido_message() -> str:
+    opciones = "\n".join(f"- {p}" for p in PARAMETROS_DISPONIBLES)
+    return (
+        "No he reconocido el parámetro de tu consulta. "
+        "Los parámetros disponibles son:\n\n"
+        f"{opciones}\n\n"
+        "Indícame uno de ellos junto con el país (España, Portugal, Francia o UE) "
+        "para darte los valores o comprobar el cumplimiento."
+    )
+
+
+def _parece_consulta_parametro(texto_norm: str, pais: Optional[str], valor: Optional[float]) -> bool:
+    """¿El usuario está intentando preguntar por un parámetro de calidad de gas?
+
+    Se usa para decidir, cuando NO reconocemos el índice, si mostramos la lista de
+    parámetros disponibles (intención clara) o el mensaje genérico (saludo, etc.).
+    """
+    if pais is not None or valor is not None:
+        return True
+    señales = (
+        "valor", "valores", "limite", "límite", "limites", "límites",
+        "cumple", "cumplir", "requisito", "requisitos", "dato", "datos",
+        "nivel", "contenido", "rango", "especificac", "maximo", "máximo",
+        "minimo", "mínimo", "dame", "dime", "muestra", "indica", "cuanto",
+        "cuánto", "cual es", "cuál es", "parametro", "parámetro", "indice", "índice",
+    )
+    return any(s in texto_norm for s in señales)
+
+
 def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unidad: str) -> str:
     # Filtrado estricto: solo el país pedido (España se usa por detrás para comparar).
     return _evaluar_paises(parametro, valor, unidad, [pais])
@@ -723,6 +768,11 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
             return _incorrect_unit_message(parametro)
         return _evaluar_paises(parametro, valor, unidad_detectada, paises_efectivos, todos=todos)
 
+    # El usuario plantea un cumplimiento (valor + unidad o señal de "cumple") pero el
+    # parámetro no se reconoce → indícalo y ofrece la lista de parámetros disponibles.
+    if parametro is None and valor is not None and (unidad_detectada is not None or cue_cumplimiento):
+        return _parametro_no_reconocido_message()
+
     # Comparación de NORMATIVA entre países (sin valor del usuario):
     # "compara el Wobbe entre España y Francia", "diferencia de O2 España vs Portugal"…
     cue_comparar = any(c in texto_norm for c in [
@@ -855,6 +905,11 @@ def _fallback_deterministic_response(mensaje: str, session_id: str = "default") 
                 )
             return f"No encontré información específica para '{parametro}' en '{pais_formateado}'."
         return _format_info_response(parametro, pais_formateado, respuesta)
+
+    # No reconocimos el parámetro, pero el usuario claramente pregunta por uno
+    # (menciona país, da un valor o usa palabras de consulta) → ofrece la lista.
+    if parametro is None and _parece_consulta_parametro(texto_norm, pais_formateado, valor):
+        return _parametro_no_reconocido_message()
 
     pdf_resultados = buscar_pdfs(query=texto_norm)
     if pdf_resultados["count"] > 0:
