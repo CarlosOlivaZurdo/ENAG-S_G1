@@ -224,8 +224,7 @@
   function fillRecord(rec, text, modo){
     const r = md(text);
     const body = '<div class="rec-a">'+(r.html !== undefined ? r.html : '<div style="white-space:pre-wrap">'+esc(r.text)+'</div>')+
-      '<div class="rec-foot"><span class="modo '+(modo==="ia"?"ia":modo==="error"?"err":"det")+'">'+
-      (modo==="ia"?"IA · datos verificados":modo==="error"?"Error":"Motor determinista")+'</span></div></div>';
+      '</div>';
     rec.querySelector(".rec-loading").outerHTML = body;
     scrollDown();
   }
@@ -262,9 +261,9 @@
     const dot = $("statusDot"), txt = $("statusText"), foot = $("footStatus");
     try{
       const r = await fetch(backendUrl.replace(/\/$/,"")+"/api/status");
-      const d = await r.json(); const modo = (d.modo||"").toLowerCase();
-      dot.className = "dot "+(modo==="ia"?"ok":"det");
-      txt.textContent = modo==="ia" ? "Operativo · IA" : "Operativo · Motor determinista";
+      await r.json();
+      dot.className = "dot ok";
+      txt.textContent = "Operativo";
       foot.textContent = "En línea";
     }catch(e){
       dot.className = "dot off"; txt.textContent = "Sin conexión"; foot.textContent = "Desconectado";

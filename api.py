@@ -489,22 +489,52 @@ def _parametro_no_reconocido_message() -> str:
     )
 
 
-def _parece_consulta_parametro(texto_norm: str, pais: Optional[str], valor: Optional[float]) -> bool:
-    """¿El usuario está intentando preguntar por un parámetro de calidad de gas?
-
-    Se usa para decidir, cuando NO reconocemos el índice, si mostramos la lista de
-    parámetros disponibles (intención clara) o el mensaje genérico (saludo, etc.).
-    """
-    if pais is not None or valor is not None:
-        return True
-    señales = (
-        "valor", "valores", "limite", "límite", "limites", "límites",
-        "cumple", "cumplir", "requisito", "requisitos", "dato", "datos",
-        "nivel", "contenido", "rango", "especificac", "maximo", "máximo",
-        "minimo", "mínimo", "dame", "dime", "muestra", "indica", "cuanto",
-        "cuánto", "cual es", "cuál es", "parametro", "parámetro", "indice", "índice",
+def _mensaje_capacidades() -> str:
+    opciones = "\n".join(f"- {p}" for p in PARAMETROS_DISPONIBLES)
+    return (
+        "Puedo ayudarte con consultas sobre **calidad del gas natural** en España, "
+        "Portugal, Francia y la UE. Los parámetros que puedes consultar son:\n\n"
+        f"{opciones}\n\n"
+        "Puedes pedirme, por ejemplo: los valores de un parámetro en un país, "
+        "comprobar si un valor cumple la normativa, o comparar dos países."
     )
-    return any(s in texto_norm for s in señales)
+
+
+def _mensaje_fuera_de_ambito() -> str:
+    return (
+        "Este chat no admite respuestas para ese tipo de preguntas. "
+        "Solo respondo a consultas sobre **calidad del gas natural**: introduce un "
+        "índice o parámetro de calidad del gas (Índice de Wobbe, PCS, O₂, CO₂, azufre, "
+        "punto de rocío…) y, si quieres, un país y un valor."
+    )
+
+
+def _es_pregunta_capacidades(texto_norm: str) -> bool:
+    """¿El usuario pregunta qué puede hacer/consultar el chatbot?"""
+    patrones = (
+        "que puedo consultar", "qué puedo consultar", "que puedo preguntar",
+        "qué puedo preguntar", "que se puede consultar", "qué se puede consultar",
+        "que valores se pueden consultar", "qué valores se pueden consultar",
+        "que valores puedo", "qué valores puedo", "que parametros", "qué parámetros",
+        "que parámetros", "qué parametros", "que indices", "qué índices",
+        "que índices", "qué indices", "para que sirve", "para qué sirve",
+        "que haces", "qué haces", "que puedes hacer", "qué puedes hacer",
+        "como funciona", "cómo funciona", "que datos", "qué datos",
+        "que preguntas puedo", "qué preguntas puedo", "opciones disponibles",
+    )
+    return any(p in texto_norm for p in patrones)
+
+
+def _es_tema_calidad_gas(texto_norm: str) -> bool:
+    """¿El mensaje trata, aunque sea vagamente, de calidad del gas natural?"""
+    terminos = (
+        "gas", "calidad", "wobbe", "pcs", "poder calorifico", "poder calorífico",
+        "azufre", "sulfur", "h2s", "cos", "mercaptano", "rsh", "oxigeno", "oxígeno",
+        "o2", "co2", "dioxido", "dióxido", "carbono", "rocio", "rocío", "densidad",
+        "indice", "índice", "ppm", "nm3", "nm³", "kwh", "mj", "molar",
+        "limite", "límite", "normativa", "especificac", "hidrocarburo",
+    )
+    return any(t in texto_norm for t in terminos)
 
 
 def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unidad: str) -> str:
@@ -906,23 +936,16 @@ def _fallback_deterministic_response(mensaje: str, session_id: str = "default") 
             return f"No encontré información específica para '{parametro}' en '{pais_formateado}'."
         return _format_info_response(parametro, pais_formateado, respuesta)
 
-    # No reconocimos el parámetro, pero el usuario claramente pregunta por uno
-    # (menciona país, da un valor o usa palabras de consulta) → ofrece la lista.
-    if parametro is None and _parece_consulta_parametro(texto_norm, pais_formateado, valor):
-        return _parametro_no_reconocido_message()
+    # 1) El usuario pregunta qué puede consultar el chatbot → lista de parámetros.
+    if _es_pregunta_capacidades(texto_norm):
+        return _mensaje_capacidades()
 
-    pdf_resultados = buscar_pdfs(query=texto_norm)
-    if pdf_resultados["count"] > 0:
-        primer_resultado = pdf_resultados["matches"][0]
-        return (
-            "No pude identificar con claridad el parámetro, el país o el valor. "
-            f"Sí encontré información en PDF: {primer_resultado.get('name')} (página {primer_resultado.get('page')})."
-        )
+    # 2) La pregunta NO trata de calidad del gas (aunque mencione un país) → fuera de ámbito.
+    if not _es_tema_calidad_gas(texto_norm):
+        return _mensaje_fuera_de_ambito()
 
-    return (
-        "El backend está operativo, pero no hay una clave de modelo configurada. "
-        "Envía una consulta con un parámetro de calidad de gas, un país y un valor numérico para obtener una respuesta determinista."
-    )
+    # 3) Es de calidad del gas pero no reconocimos el parámetro → indícalo y ofrece la lista.
+    return _parametro_no_reconocido_message()
 
 
 @app.get("/api/status", response_model=StatusResponse)
