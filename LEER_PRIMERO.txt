@@ -1,0 +1,67 @@
+===========================================================================
+  COMPARADOR REGULATORIO DE CALIDAD DE GAS NATURAL  -  Enagas
+  Instrucciones para arrancar la herramienta
+===========================================================================
+
+QUE ES
+------
+Aplicacion web para consultar y comparar requisitos de calidad de gas
+natural (indice de Wobbe, PCS, densidad, azufre, H2S+COS, O2, CO2, puntos
+de rocio) entre Espana, Portugal, Francia y la UE, con trazabilidad a la
+fuente normativa.
+
+
+REQUISITO PREVIO (una sola vez)
+-------------------------------
+Tener PYTHON 3.11 o superior instalado.
+  - Descarga: https://www.python.org/downloads/
+  - MUY IMPORTANTE: durante la instalacion marca la casilla
+    "Add Python to PATH".
+  - Si ya tienes Python, salta este paso.
+
+
+COMO ARRANCARLO (en tu propio ordenador)
+----------------------------------------
+1. Asegurate de tener la ultima version del proyecto:
+     - Si lo clonaste con Git:   git pull
+     - Si lo bajaste como ZIP:   vuelve a descargarlo desde GitHub
+                                 (boton verde "Code" -> "Download ZIP")
+2. Doble clic en el archivo:   iniciar_chatbot.bat
+     - La PRIMERA vez instalara las librerias necesarias (tarda 1-2 minutos
+       y requiere conexion a internet). Es normal, espera a que termine.
+3. Se abrira el navegador en:   http://localhost:8000/
+     Ya puedes hacer consultas.
+
+Para detener el servidor: cierra la ventana negra o pulsa Ctrl+C en ella.
+Manten esa ventana abierta mientras uses la herramienta.
+
+
+COMPARTIRLO CON COMPANEROS (opcional)
+-------------------------------------
+Si solo una persona tiene Python y quiere que el resto lo use sin instalar
+nada (todos en la MISMA red Wi-Fi / LAN):
+
+  1. En el PC anfitrion, ejecuta UNA VEZ:  permitir_acceso_red.bat
+     (pedira permisos de administrador -> acepta).
+  2. Arranca:  iniciar_chatbot.bat
+     Mostrara una linea "Compartir (misma red): http://10.x.x.x:8000/"
+  3. Los companeros abren ESA direccion en su navegador (NO "localhost").
+
+Nota: algunas redes de empresa aislan los equipos entre si; si es asi, este
+modo no funcionara y habria que desplegarlo en un servidor/nube.
+
+
+PROBLEMAS FRECUENTES
+--------------------
+- "No se encuentra Python":  instala Python (ver requisito previo) y marca
+  "Add Python to PATH".
+- "localhost rechazo la conexion" / "Failed to fetch":  el servidor no esta
+  arrancado. Ejecuta iniciar_chatbot.bat y espera a que termine de instalar.
+- "WinError 10013" / puerto ocupado:  ya hay otra ventana del servidor
+  abierta. Cierrala y vuelve a ejecutar el .bat.
+- La parte de IA es opcional: sin clave de OpenAI la herramienta funciona en
+  modo determinista (igual de fiable para cumplimiento y comparacion). Para
+  activar la IA, define la variable de entorno API_OPENAI con una clave valida
+  (que empiece por "sk-").
+
+===========================================================================
