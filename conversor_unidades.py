@@ -49,6 +49,25 @@ def _normalizar_unidad(unidad: str) -> str:
 # Conjuntos de alias por unidad (tras normalizar)
 _MJ = {"mj/m3", "mj/nm3", "mj"}
 _KWH = {"kwh/m3", "kwh/nm3", "kwh"}
+
+# Energía / densidad de energía: factor a MJ (misma base de volumen).
+# En este proyecto m³ ≡ Nm³ (0 °C) para energía, así que la base de volumen es equivalente.
+_ENERGIA_A_MJ = {
+    "wh": 0.0036, "kwh": 3.6, "mwh": 3600.0, "gwh": 3_600_000.0,
+    "j": 1e-6, "kj": 1e-3, "mj": 1.0, "gj": 1000.0,
+}
+_VOL_ENERGIA = {"", "m3", "nm3"}
+
+
+def _factor_energia(u: str) -> Optional[float]:
+    """Si `u` (ya normalizada) es energía o densidad de energía, devuelve su factor a MJ.
+
+    Acepta Wh/kWh/MWh/GWh/J/kJ/MJ/GJ, opcionalmente por m³ o Nm³ (equivalentes aquí).
+    """
+    num, _, den = u.partition("/")
+    if den not in _VOL_ENERGIA:
+        return None
+    return _ENERGIA_A_MJ.get(num)
 _KELVIN = {"k", "kelvin", "°k"}
 _CELSIUS = {"c", "°c", "celsius", "°gradoscentigrados", "gradoscentigrados"}
 _FAHRENHEIT = {"f", "°f", "fahrenheit"}
@@ -64,7 +83,7 @@ _PPM = {"ppm", "ppmv", "ppm(vol)", "ppmvol", "ppm(mol)", "ppmmol"}
 _FAMILIAS_IDENTIDAD = (_MJ, _KWH, _KELVIN, _CELSIUS, _FAHRENHEIT, _PCT, _PPM, _CONC_NORMAL)
 
 _SOPORTADAS = [
-    "MJ/m³ ↔ kWh/m³",
+    "Energía: Wh · kWh · MWh · GWh · J · kJ · MJ · GJ (por m³/Nm³)",
     "K ↔ °C ↔ °F",
     "mg/m³ ≡ mg/Nm³ (0 °C)",
     "mg/m³(15 °C) ↔ mg/Nm³(0 °C)",
@@ -171,11 +190,22 @@ def convertir_unidades(
             return _ok(valor, valor, unidad_origen, unidad_destino, parametro,
                        "Sin conversión (unidades equivalentes)")
 
-    # --- Energía: MJ/m³ <-> kWh/m³ ---
+    # --- Energía: MJ/m³ <-> kWh/m³ (fórmula explícita para el caso más común) ---
     if o in _MJ and d in _KWH:
         return _ok(valor, valor / 3.6, unidad_origen, unidad_destino, parametro, "kWh/m³ = MJ/m³ / 3.6")
     if o in _KWH and d in _MJ:
         return _ok(valor, valor * 3.6, unidad_origen, unidad_destino, parametro, "MJ/m³ = kWh/m³ × 3.6")
+
+    # --- Energía con cualquier prefijo SI: Wh, kWh, MWh, GWh, J, kJ, MJ, GJ ---
+    # (p. ej. MWh/m³ → kWh/m³ = × 1000). Misma base de volumen (m³ ≡ Nm³ a 0 °C).
+    fo, fd = _factor_energia(o), _factor_energia(d)
+    if fo is not None and fd is not None:
+        factor = fo / fd
+        formula = (
+            "Sin conversión (unidades equivalentes)" if factor == 1
+            else f"{unidad_destino} = {unidad_origen} × {factor:g}"
+        )
+        return _ok(valor, valor * factor, unidad_origen, unidad_destino, parametro, formula)
 
     # --- Temperatura ---
     if o in _KELVIN and d in _CELSIUS:
@@ -246,6 +276,8 @@ if __name__ == "__main__":
         pass
     casos = [
         (47.74, "MJ/m³", "kWh/m³", "PCS"),
+        (0.015, "MWh/m³", "kWh/m³", "PCS"),      # -> 15 kWh/m³
+        (15, "kWh/m³", "MWh/m³", "PCS"),         # -> 0.015 MWh/m³
         (14, "kWh/m³", "MJ/m³", "Wobbe"),
         (288.15, "K", "°C", "Punto de rocío"),
         (59, "°F", "°C", "Punto de rocío"),
