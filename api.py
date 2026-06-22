@@ -787,6 +787,150 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
     return "\n".join(lines)
 
 
+# --- Fuente normativa: ¿de qué reglamento procede cada dato? ----------------
+# Se lee de la ontología validada (data/ontologia/ontologia_enagas.yaml), que
+# guarda la fuente, el artículo y la página verificados por parámetro y país.
+_ONTOLOGIA_CACHE: Dict[str, Any] = {}
+_PARAM_A_ONTO = {
+    "wobbe": "WOBBE", "pcs": "PCS", "densidad relativa": "DENS_REL",
+    "s total": "S_TOTAL", "h2s+cos": "H2S_COS", "rsh": "RSH",
+    "o2": "O2", "co2": "CO2", "h2o(rocío)": "PR_H2O", "hc(rocío)": "PR_HC",
+}
+_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE"}
+_CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE"}
+_PAISES_FUENTE = ["España", "Portugal", "Francia", "UE"]
+
+
+def _cargar_ontologia() -> Dict[str, Any]:
+    """Carga (una sola vez) la ontología validada. Devuelve {} si no es posible."""
+    if "data" in _ONTOLOGIA_CACHE:
+        return _ONTOLOGIA_CACHE["data"]
+    data: Dict[str, Any] = {}
+    try:
+        import yaml  # en requirements.txt
+        ruta = os.path.join(os.path.dirname(__file__), "data", "ontologia", "ontologia_enagas.yaml")
+        if not os.path.exists(ruta):
+            import glob
+            cand = glob.glob(os.path.join(os.path.dirname(__file__), "data", "**", "ontologia_enagas.yaml"), recursive=True)
+            ruta = cand[0] if cand else ruta
+        with open(ruta, encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+    except Exception as exc:  # noqa: BLE001
+        print(f"[fuente] No se pudo cargar la ontología ({exc}).")
+    _ONTOLOGIA_CACHE["data"] = data
+    return data
+
+
+def _glosario_fuentes() -> Dict[str, Dict[str, Any]]:
+    onto = _cargar_ontologia()
+    fuentes = (onto.get("ontologia") or {}).get("fuentes_normativas") or []
+    return {f.get("id"): f for f in fuentes if isinstance(f, dict) and f.get("id")}
+
+
+def _fuentes_de(parametro_slug: str, paises: list) -> list:
+    """Lista de fuentes [{pais, reglamento, ubicacion, estado, publicacion, nota}]."""
+    onto = _cargar_ontologia()
+    params = onto.get("parametros") or {}
+    clave = _PARAM_A_ONTO.get(parametro_slug)
+    if not clave or clave not in params:
+        return []
+    limites = params[clave].get("limites") or {}
+    glos = _glosario_fuentes()
+    salida = []
+    for pais in paises:
+        cod = _PAIS_A_CODIGO.get(_norm_pais(pais))
+        if not cod or cod not in limites:
+            continue
+        lim = limites[cod] or {}
+        info = glos.get(lim.get("fuente"), {})
+        salida.append({
+            "pais": _CODIGO_A_PAIS.get(cod, pais),
+            "reglamento": info.get("nombre") or lim.get("fuente") or "No consta en la fuente",
+            "ubicacion": lim.get("articulo") or info.get("tabla_calidad") or "—",
+            "estado": lim.get("estado_verificacion") or "—",
+            "publicacion": info.get("publicacion") or info.get("referencia_legal") or "",
+            "nota": lim.get("nota") or "",
+        })
+    return salida
+
+
+def _responder_fuente(parametro_slug: str, paises: list) -> str:
+    datos = _fuentes_de(parametro_slug, paises)
+    display = DISPLAY_MAP.get(parametro_slug, parametro_slug)
+    if not datos:
+        return (
+            f"No tengo registrada la fuente normativa de '{display}' en la ontología validada "
+            f"para {', '.join(paises)}."
+        )
+    lines = [
+        f"**Fuente normativa de {display}**",
+        "",
+        "| País | Reglamento / Norma | Ubicación en el documento | Estado |",
+        "| --- | --- | --- | --- |",
+    ]
+    extra = []
+    for d in datos:
+        lines.append(f"| {d['pais']} | {d['reglamento']} | {d['ubicacion']} | {d['estado']} |")
+        if d["publicacion"]:
+            extra.append(f"- **{d['pais']}**: {d['publicacion']}")
+        if d["nota"]:
+            extra.append(f"- **{d['pais']}** (nota): {d['nota']}")
+    if extra:
+        lines += ["", "**Publicación / referencia**", ""] + extra
+    return "\n".join(lines)
+
+
+def _listar_fuentes() -> str:
+    """Lista los reglamentos primarios realmente usados por los parámetros."""
+    onto = _cargar_ontologia()
+    params = onto.get("parametros") or {}
+    glos = _glosario_fuentes()
+    usados: list = []
+    for p in params.values():
+        for lim in (p.get("limites") or {}).values():
+            fc = (lim or {}).get("fuente")
+            if fc and fc not in usados:
+                usados.append(fc)
+    if not usados:
+        return "No pude cargar la lista de reglamentos de la ontología validada."
+    lines = [
+        "**Reglamentos y normas que utiliza el comparador**",
+        "",
+        "| País | Reglamento / Norma | Publicación |",
+        "| --- | --- | --- |",
+    ]
+    for fc in usados:
+        info = glos.get(fc, {})
+        pais = _CODIGO_A_PAIS.get(info.get("pais"), info.get("pais") or "—")
+        nombre = info.get("nombre") or fc
+        pub = info.get("publicacion") or info.get("referencia_legal") or "—"
+        lines.append(f"| {pais} | {nombre} | {pub} |")
+    return "\n".join(lines)
+
+
+def _es_consulta_fuente(texto_norm: str) -> bool:
+    """¿El usuario pregunta de qué reglamento/norma procede la información?"""
+    claves = (
+        "reglament", "normativ", "documento", "fuente", "real decreto", "orden ted",
+        "directiva", "origen normativo", "base legal", "referencia legal", "que norma",
+        "qué norma", "de donde sale", "de dónde sale", "de donde proviene", "de dónde proviene",
+        "de donde procede", "de dónde procede", "procede de", "proviene de", "en que se basa",
+        "en qué se basa", "de que ley", "de qué ley", "que ley regula", "qué ley regula",
+    )
+    return any(k in texto_norm for k in claves)
+
+
+def _pregunta_lista_fuentes(texto_norm: str) -> bool:
+    """Pregunta GENERAL por el conjunto de reglamentos (sin un parámetro concreto)."""
+    patrones = (
+        "que reglamentos", "qué reglamentos", "que normas", "qué normas",
+        "que normativas", "qué normativas", "que fuentes", "qué fuentes",
+        "que documentos", "qué documentos", "reglamentos usa", "normas usa",
+        "fuentes usa", "en que se basa", "en qué se basa", "que reglamento usa",
+    )
+    return any(p in texto_norm for p in patrones)
+
+
 def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     texto_norm = mensaje.lower()
     pending = pending_unit_validations.get(session_id)
@@ -805,8 +949,10 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
 
     parametro = _normalize_parameter(texto_norm)
     paises = _detectar_paises(texto_norm)        # lista de países pedidos (tolera erratas)
-    valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(mensaje)
-    valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(mensaje)
+    # "02" aislado significa O₂ (oxígeno), NO el número 2: normalízalo antes de buscar valores.
+    mensaje_num = re.sub(r"(?<![\w./,])02(?![\w])", "o2", mensaje)
+    valor_con_unidad, unidad_detectada = _extract_numeric_with_unit(mensaje_num)
+    valor = valor_con_unidad if valor_con_unidad is not None else _parse_numeric_value(mensaje_num)
     # Si el número y la unidad venían separados ("0.03de % molar"), busca la unidad aparte.
     if unidad_detectada is None:
         unidad_detectada = _extract_unit_only(mensaje)
@@ -833,6 +979,15 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     # parámetro no se reconoce → indícalo y ofrece la lista de parámetros disponibles.
     if parametro is None and valor is not None and (unidad_detectada is not None or cue_cumplimiento):
         return _parametro_no_reconocido_message()
+
+    # ¿De qué reglamento/norma procede la información? → fuente documental verificada
+    # (ontología). Tiene prioridad sobre comparación/límite (puede mencionar ambos).
+    if valor is None and _es_consulta_fuente(texto_norm):
+        if parametro is not None:
+            paises_f = list(paises) if paises else list(_PAISES_FUENTE)
+            return _responder_fuente(parametro, paises_f)
+        if _pregunta_lista_fuentes(texto_norm):
+            return _listar_fuentes()
 
     # Comparación de NORMATIVA entre países (sin valor del usuario):
     # "compara el Wobbe entre España y Francia", "diferencia de O2 España vs Portugal"…
