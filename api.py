@@ -683,13 +683,13 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         titulo = f"**¿En qué países cumple {parametro} = {valor}{f' {unidad}' if unidad else ''}?**"
     else:
         titulo = f"**Evaluación de cumplimiento — {', '.join(paises)}**"
-    # UNA SOLA TABLA: cumplimiento + límite normativo + comparabilidad en la misma fila.
-    # Origen documental y condiciones van debajo, en "Evidencias" (texto, no segunda tabla).
+    # UNA SOLA TABLA: cumplimiento + límite + condiciones de referencia + comparabilidad
+    # en la misma fila (las condiciones van AL LADO de los valores, no debajo).
     lines = [
         titulo,
         "",
-        "| País | Parámetro | Valor evaluado | Límite normativo | Resultado | Detalle | Comparabilidad |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| País | Parámetro | Valor evaluado | Límite normativo | Condiciones de referencia | Resultado | Detalle | Comparabilidad |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     conversiones: list = []
     evidencias: list = []
@@ -704,8 +704,7 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         sup = _txt(item.get("limite_superior")) or "-"
         unidad_reg = item.get("unidad_registro") or unidad or ""
         condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
-        if not condiciones:
-            condiciones = "No especificadas"
+        condiciones = condiciones.replace("bars", "bar").strip() if condiciones else "—"
         res = "🟢 Cumple" if estado == "Cumple" else ("🔴 No cumple" if estado == "No cumple" else "⚪ No evaluable")
         comp = _celda_es_vs_pais(parametro, pais_fila, unidad_reg, unidad_es)
         # Límite normativo compacto (en la misma fila).
@@ -724,8 +723,8 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
                 conversiones.append(conv)
         else:
             celda = f"{valor_eval} {unidad_reg}".strip()
-        lines.append(f"| {pais_fila} | {nombre} | {celda} | {limite_cell} | {res} | {detalle} | {comp} |")
-        evidencias.append(f"- **{pais_fila}** · {nombre}: {origen}. Condiciones: {condiciones}.")
+        lines.append(f"| {pais_fila} | {nombre} | {celda} | {limite_cell} | {condiciones} | {res} | {detalle} | {comp} |")
+        evidencias.append(f"- **{pais_fila}** · {nombre}: {origen}.")
         if estado == "Cumple":
             cumple_en.append(f"{pais_fila} ({nombre})")
     bloques = list(lines)
