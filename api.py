@@ -678,20 +678,16 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         titulo = f"**¿En qué países cumple {parametro} = {valor}{f' {unidad}' if unidad else ''}?**"
     else:
         titulo = f"**Evaluación de cumplimiento — {', '.join(paises)}**"
+    # UNA SOLA TABLA: cumplimiento + límite normativo + comparabilidad en la misma fila.
+    # Origen documental y condiciones van debajo, en "Evidencias" (texto, no segunda tabla).
     lines = [
         titulo,
         "",
-        "| País | Parámetro | Valor evaluado | Resultado | Detalle | Comparabilidad normativa |",
-        "| --- | --- | --- | --- | --- | --- |",
-    ]
-    norm_lines = [
-        "",
-        "**Información normativa**",
-        "",
-        "| País | Parámetro | Límites aplicables | Condiciones de medición | Origen documental |",
-        "| --- | --- | --- | --- | --- |",
+        "| País | Parámetro | Valor evaluado | Límite normativo | Resultado | Detalle | Comparabilidad |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     conversiones: list = []
+    evidencias: list = []
     cumple_en: list = []
     for item in filas[:12]:
         pais_fila = item.get("pais", "")
@@ -699,14 +695,20 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         estado = item.get("cumple", "No evaluable")
         detalle = item.get("detalle", "")
         origen = item.get("documento") or "Origen no especificado"
-        limite_inf = item.get("limite_inferior", "-")
-        limite_sup = item.get("limite_superior", "-")
+        inf = _txt(item.get("limite_inferior")) or "-"
+        sup = _txt(item.get("limite_superior")) or "-"
         unidad_reg = item.get("unidad_registro") or unidad or ""
         condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
         if not condiciones:
-            condiciones = "No especificadas en el registro"
+            condiciones = "No especificadas"
         res = "🟢 Cumple" if estado == "Cumple" else ("🔴 No cumple" if estado == "No cumple" else "⚪ No evaluable")
         comp = _celda_es_vs_pais(parametro, pais_fila, unidad_reg, unidad_es)
+        # Límite normativo compacto (en la misma fila).
+        if _sin_limite(inf) and _sin_limite(sup):
+            limite_cell = "Sin límite numérico"
+        else:
+            limite_cell = f"{inf} / {sup}" + (f" {unidad_reg}" if unidad_reg else "")
+        # Valor evaluado, con nota de conversión si la hubo.
         valor_eval = item.get("valor_evaluado", valor)
         valor_usr = item.get("valor_usuario", valor)
         unidad_usr = item.get("unidad_usuario", unidad or "")
@@ -717,15 +719,15 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
                 conversiones.append(conv)
         else:
             celda = f"{valor_eval} {unidad_reg}".strip()
-        lines.append(f"| {pais_fila} | {nombre} | {celda} | {res} | {detalle} | {comp} |")
-        norm_lines.append(
-            f"| {pais_fila} | {nombre} | {limite_inf} / {limite_sup}{f' {unidad_reg}' if unidad_reg else ''} | {condiciones} | {origen} |"
-        )
+        lines.append(f"| {pais_fila} | {nombre} | {celda} | {limite_cell} | {res} | {detalle} | {comp} |")
+        evidencias.append(f"- **{pais_fila}** · {nombre}: {origen}. Condiciones: {condiciones}.")
         if estado == "Cumple":
             cumple_en.append(f"{pais_fila} ({nombre})")
-    bloques = lines + norm_lines
+    bloques = list(lines)
     if conversiones:
         bloques += ["", "**Conversión aplicada**", ""] + [f"- {c}" for c in conversiones]
+    if evidencias:
+        bloques += ["", "**Evidencias**", ""] + evidencias
     if todos:
         resumen = ", ".join(cumple_en) if cumple_en else "ninguno de los evaluados"
         bloques += ["", f"**Cumple en:** {resumen}."]
