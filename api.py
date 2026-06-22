@@ -126,7 +126,12 @@ OPENAI_TOOLS = [
         "type": "function",
         "function": {
             "name": "evaluar_cumplimiento",
-            "description": "Evalúa si un valor medido cumple los límites regulatorios para un parámetro y país.",
+            "description": (
+                "Evalúa si un valor MEDIDO (aportado por el usuario) cumple los límites "
+                "regulatorios. ÚSALA SOLO si el usuario da un valor numérico a evaluar. "
+                "Si el usuario solo pregunta por el límite/valor de la normativa (sin dar "
+                "un valor propio), usa `consultar_excel`; NUNCA inventes un valor."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -741,8 +746,12 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
     comparabilidad cruzada (España como referencia).
     """
     unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
+    if len(paises) <= 1:
+        titulo = f"**Límites normativos de {parametro} — {paises[0] if paises else ''}**"
+    else:
+        titulo = f"**Comparación normativa de {parametro} — {' vs '.join(paises)}**"
     lines = [
-        f"**Comparación normativa de {parametro} — {' vs '.join(paises)}**",
+        titulo,
         "",
         "| País | Parámetro | Límites | Unidad | Condiciones | Comparabilidad normativa |",
         "| --- | --- | --- | --- | --- | --- |",
@@ -838,7 +847,26 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
             paises_efectivos = [PAIS_BASE] + paises_efectivos
         return _comparar_normativa(parametro, paises_efectivos)
 
+    # Consulta del LÍMITE/valor de un parámetro SIN que el usuario aporte un valor a
+    # evaluar → mostrar los límites, NUNCA "cumple/no cumple" (sin un valor no hay nada
+    # que cumplir). Cierra el hueco por el que la IA inventaba veredictos de cumplimiento.
+    if parametro is not None and valor is None and _es_consulta_limite(texto_norm):
+        paises_info = list(paises) if paises else list(ALL_COUNTRIES)
+        return _comparar_normativa(parametro, paises_info)
+
     return None
+
+
+def _es_consulta_limite(texto_norm: str) -> bool:
+    """¿El usuario pregunta por el límite/valor de un parámetro (sin dar un valor a evaluar)?"""
+    claves = (
+        "limite", "límite", "limites", "límites", "valor", "valores", "rango",
+        "maximo", "máximo", "minimo", "mínimo", "cuanto", "cuánto", "umbral",
+        "tope", "especificac", "requisito", "requisitos", "que valor", "qué valor",
+        "exige", "permite", "permitido", "admite", "admitido", "establece",
+    )
+    return any(k in texto_norm for k in claves)
+
 
 def _is_info_request(text: str) -> bool:
     lowered = text.lower()
