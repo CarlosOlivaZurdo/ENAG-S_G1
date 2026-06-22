@@ -250,14 +250,21 @@ def evaluar_cumplimiento(parametro: str, pais: str, valor: float, unidad: Option
         ).strip()
         # limpieza para presentación: "(kWh/m^3)" -> "kWh/m³"
         unidad_registro = unidad_registro.strip("()").strip().replace("^3", "³").replace("^2", "²")
+        # En el CSV, una celda vacía llega como "nan": trátala como sin unidad.
+        if unidad_registro.lower() in {"nan", "none", "-"}:
+            unidad_registro = ""
+
+        # ¿Hay realmente un límite numérico que evaluar? (CO2 en PT está "monitorizado").
+        tiene_limite = lower["value"] is not None or upper["value"] is not None
 
         # --- Normalización determinista de unidades ANTES de comparar ---
         # El valor del usuario se convierte a la unidad del registro con el conversor
         # determinista (cero alucinaciones). Ej.: 14 kWh/m³ -> 50,4 MJ/m³.
+        # Solo tiene sentido convertir si hay un límite numérico contra el que comparar.
         valor_comparado = valor
         conversion_formula = ""
         unidades_compatibles = True
-        if unidad and unidad_registro and _normalizar_unidad(unidad) != _normalizar_unidad(unidad_registro):
+        if tiene_limite and unidad and unidad_registro and _normalizar_unidad(unidad) != _normalizar_unidad(unidad_registro):
             conv = convertir_unidades(valor, unidad, unidad_registro, parametro)
             if "valor_convertido" in conv:
                 valor_comparado = conv["valor_convertido"]
@@ -265,36 +272,37 @@ def evaluar_cumplimiento(parametro: str, pais: str, valor: float, unidad: Option
             else:
                 unidades_compatibles = False
 
-        if not unidades_compatibles:
+        if not tiene_limite or not unidades_compatibles:
             estado = "No evaluable"
         else:
             cumple = _compare_value_to_limits(valor_comparado, lower, upper)
-            if lower["value"] is None and upper["value"] is None:
-                estado = "No evaluable"
-            elif cumple is None:
-                estado = "No evaluable"
-            else:
-                estado = "Cumple" if cumple else "No cumple"
+            estado = "No evaluable" if cumple is None else ("Cumple" if cumple else "No cumple")
 
-        # comparable = se pudo evaluar (unidades convertibles a la del registro).
-        # Es INDEPENDIENTE de cumple/no cumple.
-        comparable = unidades_compatibles
-        # detalle: si no cumple, indicar si supera el máximo o no alcanza el mínimo.
-        if not comparable:
+        # detalle: explica el porqué; distingue "sin límite" de "unidades incompatibles".
+        if not tiene_limite:
+            raw_lim = f"{lower['raw']} {upper['raw']}".lower()
+            if "monitor" in raw_lim:
+                detalle = "Parámetro monitorizado: la normativa no fija un límite numérico"
+            else:
+                detalle = "Sin límite numérico definido en la fuente"
+            comparable = False
+        elif not unidades_compatibles:
             detalle = "Unidades incompatibles: no convertibles de forma determinista"
-        elif lower["value"] is None and upper["value"] is None:
-            detalle = "Sin límite numérico que evaluar en la fuente"
+            comparable = False
         elif estado == "Cumple":
             detalle = "Dentro de los límites"
+            comparable = True
         elif estado == "No cumple":
             partes = []
             if upper["value"] is not None and valor_comparado > upper["value"]:
-                partes.append(f"supera el máximo ({upper['raw']} {unidad_registro})")
+                partes.append(f"supera el máximo ({upper['raw']} {unidad_registro})".strip())
             if lower["value"] is not None and valor_comparado < lower["value"]:
-                partes.append(f"no alcanza el mínimo ({lower['raw']} {unidad_registro})")
+                partes.append(f"no alcanza el mínimo ({lower['raw']} {unidad_registro})".strip())
             detalle = "; ".join(partes) if partes else "fuera de los límites"
+            comparable = True
         else:
             detalle = "No hay criterio numérico de evaluación"
+            comparable = True
 
         resultados.append(
             {

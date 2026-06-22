@@ -349,11 +349,29 @@ def _normalize_country(text: str) -> Optional[str]:
     return None
 
 
+# Dígitos en subíndice (H₂S, CO₂, O₂) y superíndice (Nm³) → dígitos ASCII.
+_SUB_SUP_DIGITS = str.maketrans({
+    "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4",
+    "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9",
+    "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+    "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9",
+})
+
+
 def _normalize_parameter(text: str) -> Optional[str]:
     normalized = text.lower()
+    # H₂S, CO₂, O₂… escritos con dígitos en subíndice: pásalos a "h2s", "co2", "o2".
+    normalized = normalized.translate(_SUB_SUP_DIGITS)
     # "02" (cero-dos) escrito como O2 (oxígeno): normalizar el token aislado.
     # No toca "1.02", "2002" ni "co2" (la barrera \w/.,/ lo evita).
     normalized = re.sub(r"(?<![\w./,])02(?![\w])", "o2", normalized)
+    # Punto de rocío: desambiguar HC (hidrocarburos) frente a H2O (agua).
+    # Sin esto, "rocío de HC" caía siempre en H2O por el alias genérico "rocío".
+    na = normalized.translate(str.maketrans("áéíóúü", "aeiouu"))
+    if "rocio" in na or "dew point" in na:
+        if "hc" in na or "hidrocarbur" in na:
+            return "hc(rocío)"
+        return "h2o(rocío)"
     aliases = {
         "o2": "o2",
         "oxigeno": "o2",
@@ -379,9 +397,11 @@ def _normalize_parameter(text: str) -> Optional[str]:
         "azufre total": "s total",
         "azufre": "s total",
     }
-    for key, value in aliases.items():
+    # Del alias más largo al más corto: evita que un alias corto contenido en otro
+    # más largo gane por error (p. ej. "o2" dentro de "co2", o "hc" dentro de "hco").
+    for key in sorted(aliases, key=len, reverse=True):
         if key in normalized:
-            return value
+            return aliases[key]
     return None
 
 
