@@ -1128,13 +1128,14 @@ def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es)
     if est == "sin_limite":
         return {"valor": "Sin límite", "nivel": "sin_limite", "flag": False, "flag_desc": ""}
 
-    # Flag metodológico: solo si hay límite real con unidad/condiciones distintas a España.
+    # Flag metodológico: solo si hay límite real con unidad o condiciones RELEVANTES
+    # distintas a España (la combustión solo cuenta para PCS/Wobbe).
     difs = []
     if not es_base:
         u = _txt(m.get("unidad"))
         if u and unidad_es and _normalize_unit(u) != _normalize_unit(unidad_es):
             difs.append(f"unidad {u}")
-        if m.get("notacion") and notac_es and m.get("notacion") != notac_es:
+        if m.get("notacion") and notac_es and not _condiciones_iguales(slug, m.get("notacion"), notac_es):
             difs.append(f"condiciones {m.get('notacion')}")
     flag = bool(difs)
     flag_desc = (" · ".join(difs) + " → convertido a condiciones de España") if flag else ""
@@ -1554,6 +1555,28 @@ def _redondea_coma(v: Optional[float], dec: int) -> str:
     return f"{round(v, dec):.{dec}f}".replace(".", ",")
 
 
+def _parse_notac(n: Any) -> tuple:
+    """'(25/0)' -> (25.0, 0.0)  [combustión, volumen]."""
+    try:
+        a, b = str(n).strip("()").split("/")
+        return float(a.replace(",", ".")), float(b.replace(",", "."))
+    except Exception:
+        return (0.0, 0.0)
+
+
+def _condiciones_iguales(parametro: str, notac_a: Any, notac_b: Any) -> bool:
+    """¿Las condiciones de referencia son equivalentes PARA ESTE parámetro?
+    Para PCS/Wobbe importan combustión y volumen; para el resto, solo el volumen
+    (la temperatura de combustión no afecta a concentraciones, densidad ni rocíos)."""
+    ca, va = _parse_notac(notac_a)
+    cb, vb = _parse_notac(notac_b)
+    if va != vb:
+        return False
+    if _slug_param_comb(parametro) in {"pcs", "wobbe"} and ca != cb:
+        return False
+    return True
+
+
 def _celda_limite(inf: Any, sup: Any, unidad: str, notac: str) -> str:
     i, s = _txt(inf), _txt(sup)
     if _sin_limite(i) and _sin_limite(s):
@@ -1621,7 +1644,8 @@ def _comparativa_enagas(parametro: str, pais: str) -> str:
         notac_pa = m.get("notacion") or "(0/0)"
         pa_inf, pa_sup = _txt(m.get("limite_inferior")), _txt(m.get("limite_superior"))
         pa_celda = _celda_limite(pa_inf, pa_sup, u_pa, notac_pa)
-        comparable = "Sí" if (_normalize_unit(u_pa) == _normalize_unit(unidad_es) and notac_pa == notac_es) else "No"
+        misma_unidad = _normalize_unit(u_pa) == _normalize_unit(unidad_es)
+        comparable = "Sí" if (misma_unidad and _condiciones_iguales(parametro, notac_pa, notac_es)) else "No"
         conv_celda = _limite_convertido_a_es(parametro, pais, pa_inf, pa_sup, u_pa, unidad_es, notac_es, dec)
         lines.append(f"| {nombre} | {es_celda} | {pa_celda} | {comparable} | {conv_celda} |")
         evidencias.append(f"- **{pais}** · {nombre}: {_cita_oficial(m)}")

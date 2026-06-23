@@ -351,14 +351,14 @@ parametros:
         nota: "Mínimo reducible a 0,4900 con incorporación de H₂ hasta 20 % vol (nota al pie del Anexo I)."
       FR:
         fuente: FR_GRTGAZ
-        articulo: "Annexe 4, tabla (pág. 1)"
+        articulo: "Prescriptions techniques (gas natural convencional)"
         tipo_limite: rango
-        valor_min: 0.500
-        valor_max: 0.70
+        valor_min: 0.555
+        valor_max: 0.700
         unidad: adimensional
-        expresion_original: "Densité — comprise entre 0,500 et 0,70"
+        expresion_original: "Densité — comprise entre 0,555 et 0,700 (gaz naturel conventionnel)"
         estado_verificacion: VERIFICADO
-        nota: "GRDF (inyección, §5.1.2) fija 0,555 – 0,70."
+        nota: "El 0,500 mínimo aparece solo en la Annexe 4 «méthane de synthèse»; para gas natural convencional la banda es 0,555 – 0,700 (research ES-PT-FR)."
       UE:
         fuente: NC_INT
         tipo_limite: rango
@@ -534,11 +534,11 @@ parametros:
         fuente: REG_PT_826_2023
         articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
         tipo_limite: maximo
-        valor: 1.0
+        valor: null
         unidad: pct_mol
-        expresion_original: "O2: 1 % mol (máximo)"
-        estado_verificacion: VERIFICADO
-        nota: "El CSV auxiliar lo daba como «no regulado»; la norma SÍ lo fija (≤ 1 % mol). Además se monitoriza (punto 2.a)."
+        expresion_original: "O2: no fijado como límite (solo monitorizado)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El RQS solo fija límite regulatorio a 5 características (Wobbe, densidad relativa, rocío/agua, H2S+COS y azufre total). El O2 se monitoriza pero NO tiene límite (research ES-PT-FR; informes ERSE/REN)."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, tabla (pág. 1)"
@@ -629,12 +629,12 @@ parametros:
         fuente: REG_PT_826_2023
         articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
         tipo_limite: maximo
-        valor: -8.0
+        valor: null
         unidad: grados_C
         presion_referencia_bar: null
-        expresion_original: "H2O (ponto de orvalho): – / -8 ºC à pressão máxima de operação"
-        estado_verificacion: VERIFICADO
-        nota: "Referido a la presión máxima de operación (no a 70 bar). El CSV auxiliar decía -5; la norma fija -8."
+        expresion_original: "Agua: no se fija como temperatura de rocío, sino como contenido de agua ≤ 88 ppmv"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Portugal NO expresa el rocío del agua como temperatura: lo fija como CONTENIDO DE AGUA ≤ 88 ppmv. No comparable directamente con un °C de rocío (research ES-PT-FR)."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, tabla (pág. 1)"

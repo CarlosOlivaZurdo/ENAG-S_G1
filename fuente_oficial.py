@@ -28,6 +28,9 @@ _PARAM_A_ONTO = {
 }
 _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE"}
 _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE"}
+# Condiciones de referencia (combustión/volumen) de cada país, aplicables a TODOS sus
+# parámetros. España y Francia: 0/0; Portugal: combustión 25 ºC (ISO 13443/96); UE (EN 16726): 15/15.
+_NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(15/15)"}
 
 # Código de unidad de la ontología -> símbolo legible (y convertible por el conversor)
 _UNIDAD_DISPLAY = {
@@ -173,10 +176,14 @@ def _record(slug: str, pais: str, lim: Dict[str, Any]) -> Dict[str, Any]:
     # Condiciones de referencia: si la fuente no las detalla para este parámetro,
     # rige la condición normal del proyecto (0 ºC, 1,01325 bar) para ES/PT/FR.
     condiciones = _cond_txt(lim.get("condiciones_referencia")) or "0 ºC y 1,01325 bar"
-    # Notación compacta (combustión/medición), p. ej. "(0/0)", "(25/0)", "(15/15)".
+    # Notación compacta (combustión/volumen). Si el parámetro no la detalla, rige la
+    # del país (p. ej. Portugal = "(25/0)" en TODOS sus parámetros, no solo PCS/Wobbe).
     cr = lim.get("condiciones_referencia") or {}
     comb, med = cr.get("temperatura_combustion_C"), cr.get("temperatura_volumen_C")
-    notacion = f"({_fmt(comb)}/{_fmt(med)})" if (comb is not None and med is not None) else "(0/0)"
+    if comb is not None and med is not None:
+        notacion = f"({_fmt(comb)}/{_fmt(med)})"
+    else:
+        notacion = _NOTACION_PAIS.get(_PAIS_A_CODIGO.get(_norm(pais)), "(0/0)")
     return {
         "parametro": _nombre_param(slug),
         "pais": _CODIGO_A_PAIS.get(_PAIS_A_CODIGO.get(_norm(pais)), pais),
