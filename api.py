@@ -438,6 +438,9 @@ def _normalize_parameter(text: str) -> Optional[str]:
     for key in sorted(aliases, key=len, reverse=True):
         if key in normalized:
             return aliases[key]
+    # Fallback: "S" suelto = símbolo del azufre total (no la "s" interna de otras palabras).
+    if re.search(r"(?<![\w])s(?![\w])", normalized):
+        return "s total"
     return None
 
 
