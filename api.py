@@ -676,9 +676,13 @@ def _detectar_paises(texto_norm: str) -> list:
     encontrados: list = []
     # 1) coincidencia directa por subcadena (evita falsos positivos con "espan")
     for kw, nombre in [("espan", "España"), ("spain", "España"),
-                       ("portugal", "Portugal"), ("francia", "Francia"), ("france", "Francia")]:
+                       ("portugal", "Portugal"), ("francia", "Francia"), ("france", "Francia"),
+                       ("europa", "UE"), ("union europea", "UE"), ("easee", "UE")]:
         if kw in t and nombre not in encontrados:
             encontrados.append(nombre)
+    # "UE" suelto (no la "ue" interna de "fuente", "que", "pequeño"…)
+    if "UE" not in encontrados and re.search(r"(?<![\w])ue(?![\w])", t):
+        encontrados.append("UE")
     if encontrados:
         return encontrados
     # 2) coincidencia difusa por palabra (tolera erratas: frnacia, portgal, espanha…)
