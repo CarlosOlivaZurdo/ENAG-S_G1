@@ -30,11 +30,19 @@
     background:linear-gradient(135deg,var(--accent),var(--accent-d));display:grid;place-items:center}
   .side-brand .t1{font-size:13.5px;font-weight:600;color:#fff;letter-spacing:.2px;line-height:1.2}
   .side-brand .t2{font-size:11px;color:#7f97ac;margin-top:1px}
-  .side-scroll{flex:1;overflow-y:auto;padding:14px 12px}
+
+  .side-nav{padding:12px 12px 4px;display:flex;flex-direction:column;gap:4px}
+  .nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:0;color:#b7c6d3;
+    padding:10px 11px;border-radius:6px;font:inherit;font-size:13px;cursor:pointer;transition:.12s}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav-item.active{background:var(--accent);color:#fff;font-weight:600}
+  .nav-item svg{flex:0 0 auto}
+
+  .side-scroll{flex:1;overflow-y:auto;padding:8px 12px 14px}
   .side-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:#6f879c;padding:6px 8px;margin-top:12px}
-  .side-new{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);
-    color:#fff;border:0;border-radius:var(--radius);padding:10px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
-  .side-new:hover{background:var(--accent-d)}
+  .side-new{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.08);
+    color:#fff;border:0;border-radius:var(--radius);padding:9px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+  .side-new:hover{background:rgba(255,255,255,.14)}
   #history{list-style:none;margin:4px 0 0;padding:0}
   #history li{font-size:12.5px;color:#b7c6d3;padding:8px 9px;border-radius:5px;cursor:pointer;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.12s}
@@ -66,11 +74,14 @@
   #settings input{flex:1;min-width:240px;padding:7px 10px;border-radius:5px;border:1px solid #234458;background:#0e2538;color:#fff;font:inherit;font-size:12.5px}
   #settings .s-btn{background:var(--accent);color:#fff;border:0;border-radius:5px;padding:7px 14px;font:inherit;font-size:12.5px;cursor:pointer}
 
-  /* ===== Results ===== */
+  /* ===== Views ===== */
+  .view{display:none;flex:1;min-height:0;flex-direction:column}
+  .view.active{display:flex}
+
+  /* ===== Chat results ===== */
   .results{flex:1;overflow-y:auto;padding:22px}
   .stream{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 
-  /* Empty state */
   .empty-state{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:30px}
   .empty-state h2{font-size:17px;margin:0 0 6px;color:var(--navy)}
   .empty-state p{color:var(--muted);margin:0 0 18px;max-width:640px}
@@ -81,14 +92,12 @@
   .ex .ex-ic{color:var(--accent);font-weight:700;flex:0 0 auto}
   @media(max-width:720px){.ex-grid{grid-template-columns:1fr}}
 
-  /* Record (consulta + respuesta) */
   .record{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(16,34,46,.04)}
   .rec-q{display:flex;align-items:baseline;gap:12px;background:var(--panel-2);border-bottom:1px solid var(--line);padding:12px 18px}
   .rec-q .lab{font-size:10px;font-weight:700;letter-spacing:.7px;color:var(--accent-d);text-transform:uppercase;flex:0 0 auto;padding-top:1px}
   .rec-q .qx{font-size:14px;color:var(--ink);font-weight:500;flex:1}
   .rec-q .ts{font-size:11.5px;color:var(--muted-2);flex:0 0 auto}
   .rec-a{padding:16px 18px;font-size:14px}
-
   .rec-a p{margin:0 0 10px} .rec-a p:last-child{margin-bottom:0}
   .rec-a strong{font-weight:600}
   .rec-a p > strong:only-child{display:block;color:var(--navy);font-size:11px;font-weight:700;
@@ -103,15 +112,10 @@
   .rec-a code{background:#eef2f6;padding:1px 6px;border-radius:4px;font-size:12.5px;font-family:Consolas,monospace}
   .rec-a ul{margin:6px 0;padding-left:20px}
   .rec-a a{color:var(--accent-d)}
-  .rec-foot{margin-top:12px;display:flex;justify-content:flex-end}
-  .modo{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;padding:4px 10px;border-radius:4px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
-  .modo.ia{background:var(--green-bg);color:var(--green)} .modo.det{background:var(--amber-bg);color:var(--amber)} .modo.err{background:var(--red-bg);color:var(--red)}
-
   .rec-loading{padding:16px 18px;display:flex;align-items:center;gap:11px;color:var(--muted)}
   .spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
 
-  /* ===== Query dock ===== */
   .dock{flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel);padding:14px 22px}
   .dock-inner{max-width:920px;margin:0 auto}
   .qbar{display:flex;gap:10px;align-items:flex-end;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);padding:8px 8px 8px 14px}
@@ -122,6 +126,43 @@
   .qbar .submit:hover{background:var(--accent-d)} .qbar .submit:disabled{opacity:.5;cursor:default}
   .disclaimer{max-width:920px;margin:9px auto 0;font-size:11px;color:var(--muted-2);text-align:center;line-height:1.5}
   .disclaimer b{color:var(--muted);font-weight:600}
+
+  /* ===== Comparativa ===== */
+  .cmp-wrap{flex:1;overflow-y:auto;padding:22px}
+  .cmp-inner{max-width:920px;margin:0 auto}
+  .cmp-intro{color:var(--muted);margin:0 0 16px;max-width:680px}
+  .cmp-form{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;
+    display:grid;grid-template-columns:1.5fr 1fr;gap:16px 18px;align-items:end}
+  .cmp-field{display:flex;flex-direction:column;gap:6px}
+  .cmp-field > label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)}
+  .cmp-field > label span{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-2)}
+  .cmp-field select{padding:9px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink);cursor:pointer}
+  .cmp-field select:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,139,134,.12)}
+  .cmp-paises{display:flex;gap:8px;flex-wrap:wrap;grid-column:1 / -1}
+  .chk{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel-2);
+    border-radius:6px;padding:8px 13px;font-size:13.5px;color:var(--ink);cursor:pointer;transition:.12s;user-select:none}
+  .chk:hover{border-color:var(--accent)}
+  .chk input{accent-color:var(--accent);width:15px;height:15px}
+  .chk.base{opacity:.85;cursor:default;background:#eef4f4;border-color:#cfe4e2}
+  .cmp-btn{grid-column:1 / -1;justify-self:start;display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;border:0;border-radius:6px;
+    padding:11px 24px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+  .cmp-btn:hover{background:var(--accent-d)}
+  .cmp-result{margin-top:4px}
+  .cmp-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;margin-top:18px;box-shadow:0 1px 2px rgba(16,34,46,.04)}
+  .cmp-card h2{font-size:15.5px;margin:0 0 4px;color:var(--navy)}
+  .cmp-card .csub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .cmp-table{border-collapse:collapse;width:100%;font-size:13px;border:1px solid var(--line)}
+  .cmp-table thead th{background:var(--navy);color:#fff;text-align:left;padding:10px 12px;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
+  .cmp-table td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+  .cmp-table tbody tr:nth-child(even) td{background:var(--panel-2)}
+  .cmp-table td:first-child{font-weight:600;color:var(--navy-2)}
+  .cmp-table .es-col{color:var(--accent-d);font-weight:600}
+  .cmp-table .muted{color:var(--muted-2)}
+  .cmp-iso{margin-top:14px;background:#f0faf9;border:1px solid #bfe4e1;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#0a5b57;line-height:1.6}
+  .cmp-iso b{color:#084c49}
+  .cmp-iso .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--accent-d);padding:2px 7px;border-radius:4px;margin-right:7px}
+  .cmp-empty{color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:24px;text-align:center;margin-top:18px}
+  @media(max-width:720px){.cmp-form{grid-template-columns:1fr}}
 
   @media(max-width:860px){.sidebar{display:none}}
 </style>
@@ -134,26 +175,40 @@
       <div class="mark"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2.6c2.1 3 5.2 4.6 5.2 8.4a5.2 5.2 0 1 1-10.4 0c0-1.6.6-2.9 1.6-4 .5 1 .9 1.5 1.7 2-.2-2.3.7-4.5 1.9-6.4Z" fill="#fff"/></svg></div>
       <div><div class="t1">Comparador Regulatorio</div><div class="t2">Calidad de Gas Natural · Enagás</div></div>
     </div>
-    <div class="side-scroll">
-      <button class="side-new" id="newBtn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        Nueva consulta
+
+    <nav class="side-nav">
+      <button class="nav-item active" data-view="chat">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 3V5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        Consulta libre
       </button>
-      <div class="side-label">Consultas recientes</div>
-      <ul id="history"><li class="empty">Sin consultas todavía</li></ul>
+      <button class="nav-item" data-view="compare">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        Comparativa
+      </button>
+    </nav>
+
+    <div class="side-scroll">
+      <div id="chatSide">
+        <button class="side-new" id="newBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          Nueva consulta
+        </button>
+        <div class="side-label">Consultas recientes</div>
+        <ul id="history"><li class="empty">Sin consultas todavía</li></ul>
+      </div>
       <div class="side-label">Ámbito</div>
       <div class="side-ref">
         <b>Jurisdicciones:</b> España · Portugal · Francia · UE<br>
         <b>Parámetros:</b> Índice de Wobbe, PCS, densidad relativa, azufre total, H₂S+COS, mercaptanos, O₂, CO₂, puntos de rocío (H₂O/HC).
       </div>
     </div>
-    <div class="side-foot"><span>v1.0</span><span id="footStatus">—</span></div>
+    <div class="side-foot"><span>v1.1</span><span id="footStatus">—</span></div>
   </aside>
 
   <!-- Workspace -->
   <div class="workspace">
     <header class="topbar">
-      <h1>Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span></h1>
+      <h1 id="topTitle">Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span></h1>
       <div class="spacer"></div>
       <div class="status"><span id="statusDot" class="dot off"></span><span id="statusText">Comprobando…</span></div>
       <button class="icon-btn" id="gearBtn" title="Configuración">⚙</button>
@@ -165,18 +220,45 @@
       <button class="s-btn" id="saveUrl">Guardar</button>
     </div>
 
-    <main class="results"><div class="stream" id="stream"></div></main>
-
-    <div class="dock">
-      <div class="dock-inner">
-        <div class="qbar">
-          <textarea id="input" rows="1" placeholder="Introduzca una consulta (p. ej. «¿cumple 4 mg/Nm³ de H₂S+COS en Portugal?»)"></textarea>
-          <button class="submit" id="sendBtn">
-            Consultar
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h13M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+    <!-- VIEW: Chat -->
+    <div id="viewChat" class="view active">
+      <main class="results"><div class="stream" id="stream"></div></main>
+      <div class="dock">
+        <div class="dock-inner">
+          <div class="qbar">
+            <textarea id="input" rows="1" placeholder="Introduzca una consulta (p. ej. «¿cumple 4 mg/Nm³ de H₂S+COS en Portugal?»)"></textarea>
+            <button class="submit" id="sendBtn">
+              Consultar
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h13M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <p class="disclaimer">Herramienta de <b>soporte a la decisión</b>. Las cifras proceden de normativa verificada con trazabilidad documental; no sustituye la consulta del texto normativo oficial.</p>
         </div>
-        <p class="disclaimer">Herramienta de <b>soporte a la decisión</b>. Las cifras proceden de normativa verificada con trazabilidad documental; no sustituye la consulta del texto normativo oficial.</p>
+      </div>
+    </div>
+
+    <!-- VIEW: Comparativa -->
+    <div id="viewCompare" class="view">
+      <div class="cmp-wrap">
+        <div class="cmp-inner">
+          <p class="cmp-intro">Compara los requisitos normativos entre jurisdicciones. <b>España</b> es siempre la base de referencia. Cuando un país usa condiciones de combustión distintas (p. ej. Portugal, 25&nbsp;°C), el PCS y el Índice de Wobbe se convierten automáticamente a las condiciones españolas según la <b>ISO&nbsp;13443:2006 (Tabla&nbsp;A.1)</b>.</p>
+          <div class="cmp-form">
+            <div class="cmp-field">
+              <label for="cmpParam">Parámetro</label>
+              <select id="cmpParam"></select>
+            </div>
+            <div class="cmp-field">
+              <label for="cmpUnidad">Unidad</label>
+              <select id="cmpUnidad"></select>
+            </div>
+            <div class="cmp-paises" id="cmpPaises"></div>
+            <button class="cmp-btn" id="cmpBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+              Comparar
+            </button>
+          </div>
+          <div class="cmp-result" id="cmpResult"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -185,7 +267,7 @@
 <script>
   const EJEMPLOS = [
     "¿Cuál es el límite de oxígeno en España y en Portugal? ¿Son comparables?",
-    "Compara el índice de Wobbe entre España y Francia.",
+    "¿De qué reglamento sale el parámetro de O₂?",
     "¿En qué países cumple un PCS de 12 kWh/m³?",
     "El gas tiene 4 mg/Nm³ de H₂S+COS, ¿cumple en Portugal?",
   ];
@@ -197,6 +279,7 @@
   let sessionId = localStorage.getItem("gas_chat_session");
   if(!sessionId){ sessionId = (crypto.randomUUID && crypto.randomUUID()) || ("s-"+Date.now()); localStorage.setItem("gas_chat_session", sessionId); }
   $("backendUrl").value = localStorage.getItem("gas_chat_backend") || backendUrl;
+  const api = (path) => backendUrl.replace(/\/$/,"") + path;
 
   let recCount = 0;
 
@@ -205,8 +288,25 @@
     return {text};
   }
   function hora(){ const d = new Date(); return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
-  function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+  /* ===== View switching ===== */
+  const TITLES = {
+    chat: 'Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span>',
+    compare: 'Comparativa entre jurisdicciones <span class="sub">· España como base · normalización ISO 13443</span>'
+  };
+  function setView(view){
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view===view));
+    $("viewChat").classList.toggle("active", view==="chat");
+    $("viewCompare").classList.toggle("active", view==="compare");
+    $("chatSide").style.display = view==="chat" ? "" : "none";
+    $("topTitle").innerHTML = TITLES[view];
+    if(view==="compare" && !cmpReady) initCompare();
+    if(view==="chat") $("input").focus();
+  }
+  document.querySelectorAll(".nav-item").forEach(b => b.onclick = () => setView(b.dataset.view));
+
+  /* ===== Chat ===== */
   function addRecord(pregunta){
     if(stream.querySelector(".empty-state")) stream.innerHTML = "";
     recCount++;
@@ -221,14 +321,12 @@
     scrollDown();
     return rec;
   }
-  function fillRecord(rec, text, modo){
+  function fillRecord(rec, text){
     const r = md(text);
-    const body = '<div class="rec-a">'+(r.html !== undefined ? r.html : '<div style="white-space:pre-wrap">'+esc(r.text)+'</div>')+
-      '</div>';
+    const body = '<div class="rec-a">'+(r.html !== undefined ? r.html : '<div style="white-space:pre-wrap">'+esc(r.text)+'</div>')+'</div>';
     rec.querySelector(".rec-loading").outerHTML = body;
     scrollDown();
   }
-
   function addHistory(pregunta, recId){
     const ul = $("history");
     const empty = ul.querySelector(".empty"); if(empty) empty.remove();
@@ -237,15 +335,14 @@
     li.onclick = () => { const el = document.getElementById(recId); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); };
     ul.insertBefore(li, ul.firstChild);
   }
-
-  function scrollDown(){ const m = document.querySelector(".results"); m.scrollTop = m.scrollHeight; }
+  function scrollDown(){ const m = document.querySelector("#viewChat .results"); if(m) m.scrollTop = m.scrollHeight; }
 
   function showEmpty(){
     stream.innerHTML = "";
     const es = document.createElement("div");
     es.className = "empty-state";
     es.innerHTML = '<h2>Consulta de calidad de gas natural</h2>'+
-      '<p>Evalúe el cumplimiento de un valor frente a la normativa de un país y compare requisitos entre jurisdicciones, con trazabilidad a la fuente. Seleccione un ejemplo o redacte su consulta.</p>'+
+      '<p>Pregunte libremente: cumplimiento de un valor, de qué reglamento procede un parámetro, comparación entre jurisdicciones… con trazabilidad a la fuente. Seleccione un ejemplo o redacte su consulta.</p>'+
       '<div class="ex-grid"></div>';
     const grid = es.querySelector(".ex-grid");
     EJEMPLOS.forEach(q => {
@@ -260,11 +357,9 @@
   async function checkStatus(){
     const dot = $("statusDot"), txt = $("statusText"), foot = $("footStatus");
     try{
-      const r = await fetch(backendUrl.replace(/\/$/,"")+"/api/status");
+      const r = await fetch(api("/api/status"));
       await r.json();
-      dot.className = "dot ok";
-      txt.textContent = "Operativo";
-      foot.textContent = "En línea";
+      dot.className = "dot ok"; txt.textContent = "Operativo"; foot.textContent = "En línea";
     }catch(e){
       dot.className = "dot off"; txt.textContent = "Sin conexión"; foot.textContent = "Desconectado";
     }
@@ -278,15 +373,15 @@
     const rec = addRecord(mensaje);
     input.value = ""; input.style.height = "auto";
     try{
-      const r = await fetch(backendUrl.replace(/\/$/,"")+"/api/chat",{
+      const r = await fetch(api("/api/chat"),{
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ session_id: sessionId, mensaje })
       });
       if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
-      fillRecord(rec, d.respuesta || "No se recibió respuesta.", d.modo || "ia");
+      fillRecord(rec, d.respuesta || "No se recibió respuesta.");
     }catch(e){
-      fillRecord(rec, "No se pudo conectar con el servidor en `"+backendUrl+"`. Verifique que el backend está en marcha (ejecute `iniciar_chatbot.bat`).\n\nDetalle: "+e.message, "error");
+      fillRecord(rec, "No se pudo conectar con el servidor en `"+backendUrl+"`. Verifique que el backend está en marcha (ejecute `iniciar_chatbot.bat`).\n\nDetalle: "+e.message);
     }finally{ enviando = false; $("sendBtn").disabled = false; $("input").focus(); }
   }
 
@@ -301,6 +396,87 @@
     $("history").innerHTML = '<li class="empty">Sin consultas todavía</li>';
     showEmpty(); $("input").focus();
   };
+
+  /* ===== Comparativa ===== */
+  let cmpReady = false;
+  let PARAMS = [];
+  async function initCompare(){
+    try{
+      const r = await fetch(api("/api/parametros"));
+      const d = await r.json();
+      PARAMS = d.parametros || [];
+      const selP = $("cmpParam");
+      selP.innerHTML = PARAMS.map(p => '<option value="'+p.slug+'">'+esc(p.label)+'</option>').join("");
+      const cont = $("cmpPaises");
+      cont.innerHTML =
+        '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
+        (d.paises||[]).map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'" checked> '+esc(p)+'</label>').join("");
+      selP.onchange = fillUnidades;
+      fillUnidades();
+      cmpReady = true;
+    }catch(e){
+      $("cmpResult").innerHTML = '<div class="cmp-empty">No se pudo cargar la configuración del comparador. ¿Está el servidor en marcha?</div>';
+    }
+  }
+  function fillUnidades(){
+    const p = PARAMS.find(x => x.slug === $("cmpParam").value);
+    const u = (p && p.unidades) || ["—"];
+    $("cmpUnidad").innerHTML = u.map(x => '<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+  }
+
+  async function comparar(){
+    const parametro = $("cmpParam").value;
+    const unidad = $("cmpUnidad").value;
+    const paises = Array.from(document.querySelectorAll('#cmpPaises input:not([disabled]):checked')).map(c => c.value);
+    const res = $("cmpResult");
+    res.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Calculando comparativa…</div></div>';
+    try{
+      const r = await fetch(api("/api/comparar"),{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ parametro, paises, unidad })
+      });
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const d = await r.json();
+      res.innerHTML = renderComparativa(d);
+    }catch(e){
+      res.innerHTML = '<div class="cmp-empty">No se pudo realizar la comparativa.<br>Detalle: '+esc(e.message)+'</div>';
+    }
+  }
+
+  function renderComparativa(d){
+    const filas = d.filas || [];
+    if(!filas.length) return '<div class="cmp-empty">No hay datos normativos para esa combinación.</div>';
+    const showES = d.es_combustion && filas.some(f => f.limite_espana);
+    let head = '<tr><th>País</th><th>Límite normativo</th><th>Unidad</th><th>Condiciones de referencia</th>';
+    if(showES) head += '<th>En condiciones de España</th>';
+    head += '</tr>';
+    let rows = "";
+    filas.forEach(f => {
+      let r = '<tr>';
+      r += '<td>'+esc(f.pais)+(f.es_base?' <span class="muted">(base)</span>':'')+'</td>';
+      r += '<td>'+esc(f.limite)+'</td>';
+      r += '<td>'+esc(f.unidad)+'</td>';
+      r += '<td>'+esc(f.condiciones)+'</td>';
+      if(showES){
+        if(f.es_base) r += '<td class="muted">— (referencia)</td>';
+        else if(f.limite_espana) r += '<td class="es-col">'+esc(f.limite_espana)+' '+esc(d.unidad||'')+'</td>';
+        else r += '<td class="muted">= (sin ajuste)</td>';
+      }
+      r += '</tr>';
+      rows += r;
+    });
+    let html = '<div class="cmp-card">'+
+      '<h2>Comparativa de '+esc(d.parametro)+'</h2>'+
+      '<p class="csub">España como base de referencia'+(d.unidad?' · unidad: '+esc(d.unidad):'')+'</p>'+
+      '<table class="cmp-table"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table>';
+    if((d.notas_iso||[]).length){
+      html += '<div class="cmp-iso"><span class="tag">ISO 13443</span><b>Normalización de condiciones de combustión a la base española (Tabla A.1):</b><br>'+
+        d.notas_iso.map(n => '· '+esc(n)).join("<br>")+'</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+  $("cmpBtn").onclick = comparar;
 
   showEmpty(); checkStatus(); setInterval(checkStatus, 15000);
 </script>

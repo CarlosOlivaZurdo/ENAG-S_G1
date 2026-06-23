@@ -921,6 +921,96 @@ def _responder_condiciones(parametro: str, valor, unidad, pais_origen: str) -> s
     ])
 
 
+# --- Comparativa estructurada (sección de la web con desplegables) ----------
+# Unidades ofrecidas por parámetro (la 1.ª es la base normativa española).
+PARAMETROS_UI = [
+    {"slug": "wobbe", "label": "Índice de Wobbe", "unidades": ["kWh/m³", "MJ/m³"]},
+    {"slug": "pcs", "label": "PCS (Poder Calorífico Superior)", "unidades": ["kWh/m³", "MJ/m³"]},
+    {"slug": "densidad relativa", "label": "Densidad relativa", "unidades": ["adimensional"]},
+    {"slug": "s total", "label": "Azufre total (S)", "unidades": ["mg/m³", "mg/Nm³", "ppm"]},
+    {"slug": "h2s+cos", "label": "H₂S + COS", "unidades": ["mg/m³", "mg/Nm³", "ppm"]},
+    {"slug": "rsh", "label": "Mercaptanos (RSH)", "unidades": ["mg/m³", "mg/Nm³", "ppm"]},
+    {"slug": "o2", "label": "O₂ (oxígeno)", "unidades": ["% molar", "ppm"]},
+    {"slug": "co2", "label": "CO₂", "unidades": ["% molar", "ppm"]},
+    {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"]},
+    {"slug": "hc(rocío)", "label": "Punto de rocío de HC", "unidades": ["°C", "K", "°F"]},
+]
+PAISES_UI = ["Portugal", "Francia"]  # España es siempre la base de referencia
+
+
+def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str = "") -> Dict[str, Any]:
+    """Comparativa para la sección con desplegables. Devuelve filas estructuradas y,
+    para PCS/Wobbe de países con distinta temperatura de combustión, el equivalente
+    en condiciones de España (ISO 13443, Tabla A.1)."""
+    orden = [PAIS_BASE] + [p for p in (paises or []) if _norm_pais(p) != _norm_pais(PAIS_BASE)]
+    display = DISPLAY_MAP.get(parametro_slug, parametro_slug)
+    es_combustion = _slug_param_comb(parametro_slug) in {"pcs", "wobbe"}
+    filas: list = []
+    notas: list = []
+    for pais in orden:
+        try:
+            matches = consultar_excel(parametro_slug, pais).get("matches", [])
+        except Exception:
+            matches = []
+        for m in matches:
+            nombre = str(m.get("parametro") or parametro_slug).strip()
+            inf_raw = _txt(m.get("limite_inferior")) or "-"
+            sup_raw = _txt(m.get("limite_superior")) or "-"
+            unidad_reg = _txt(m.get("unidad")).strip("()").replace("^3", "³").replace("^2", "²")
+            cond = _COND_PAIS.get(_norm_pais(pais))
+            cond_txt = f"comb. {cond[0]} °C · med. {cond[1]} °C" if cond else "—"
+            sin_lim = _sin_limite(inf_raw) and _sin_limite(sup_raw)
+            es_base = _norm_pais(pais) == _norm_pais(PAIS_BASE)
+
+            def a_unidad(raw):
+                v = _num_limite(raw)
+                if v is None:
+                    return None
+                if unidad_destino and unidad_destino != "adimensional" and unidad_reg \
+                        and _normalize_unit(unidad_destino) != _normalize_unit(unidad_reg):
+                    cu = convertir_unidades(v, unidad_reg, unidad_destino, parametro_slug)
+                    return cu.get("valor_convertido") if "valor_convertido" in cu else None
+                return v
+
+            vi, vs = a_unidad(inf_raw), a_unidad(sup_raw)
+            unidad_out = (unidad_destino or unidad_reg or "—")
+
+            vi_es = vs_es = None
+            factor = 1.0
+            if es_combustion and not es_base:
+                if vi is not None:
+                    cr = convertir_a_condiciones_espana(vi, parametro_slug, pais)
+                    vi_es, factor = cr["valor_convertido"], cr["factor"]
+                if vs is not None:
+                    cr = convertir_a_condiciones_espana(vs, parametro_slug, pais)
+                    vs_es, factor = cr["valor_convertido"], cr["factor"]
+                if factor and factor != 1.0:
+                    notas.append(f"{pais}: combustión {cond[0]} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
+
+            def rng(a, b):
+                if sin_lim:
+                    return "Sin límite numérico"
+                return f"{_coma(a) if a is not None else '—'} / {_coma(b) if b is not None else '—'}"
+
+            filas.append({
+                "pais": pais,
+                "parametro": nombre,
+                "limite": rng(vi, vs),
+                "unidad": "—" if sin_lim else unidad_out,
+                "condiciones": cond_txt,
+                "es_base": es_base,
+                "limite_espana": (rng(vi_es, vs_es) if (es_combustion and not es_base and (vi_es is not None or vs_es is not None)) else None),
+                "factor_iso": (factor if (es_combustion and not es_base and factor != 1.0) else None),
+            })
+    return {
+        "parametro": display,
+        "unidad": unidad_destino,
+        "es_combustion": es_combustion,
+        "filas": filas,
+        "notas_iso": list(dict.fromkeys(notas)),
+    }
+
+
 # --- Fuente normativa: ¿de qué reglamento procede cada dato? ----------------
 # Se lee de la ontología validada (data/ontologia/ontologia_enagas.yaml), que
 # guarda la fuente, el artículo y la página verificados por parámetro y país.
@@ -1321,3 +1411,24 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
         print(f"[chat] OpenAI no disponible ({exc}); usando motor determinista.")
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
+
+
+# --- Sección de COMPARATIVA (desplegables) ---------------------------------
+class PeticionComparar(BaseModel):
+    parametro: str
+    paises: List[str] = []
+    unidad: Optional[str] = None
+
+
+@app.get("/api/parametros")
+@gestionar_errores
+async def parametros_endpoint() -> Dict[str, Any]:
+    """Lista de parámetros y unidades para poblar los desplegables del frontend."""
+    return {"parametros": PARAMETROS_UI, "paises": PAISES_UI, "base": PAIS_BASE}
+
+
+@app.post("/api/comparar")
+@gestionar_errores
+async def comparar_endpoint(req: PeticionComparar) -> Dict[str, Any]:
+    slug = _normalize_parameter((req.parametro or "").lower()) or (req.parametro or "").lower()
+    return comparar_estructurado(slug, req.paises, req.unidad or "")
