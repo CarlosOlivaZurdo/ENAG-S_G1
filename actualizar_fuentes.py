@@ -25,14 +25,19 @@ from typing import Dict, Optional
 # URLs DIRECTAS al PDF oficial por código de fuente. BOE y EUR-Lex son estables.
 # Deja "" en las que aún no tengas la URL directa (se omitirán con aviso).
 URLS_PDF: Dict[str, str] = {
+    # España — BOE (texto consolidado, estable):
     "ORDEN_TED_181_2025": "https://www.boe.es/buscar/pdf/2025/BOE-A-2025-3873-consolidado.pdf",
     "RD919": "https://www.boe.es/buscar/pdf/2006/BOE-A-2006-15345-consolidado.pdf",
+    # UE — EUR-Lex (PDF en español por CELEX):
     "NC_INT": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:32015R0703",
     "NC_CAM": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:32017R0459",
-    # Pendientes de URL directa (descarga manual o añade la URL aquí):
-    "REG_PT_826_2023": "",
-    "FR_GRTGAZ": "",
-    "FR_GRDF": "",
+    # Portugal — ERSE (regulador). Versión CONSOLIDADA vigente del RQS (incluye
+    # modificaciones posteriores). Nota: la paginación difiere del boletín original
+    # del Diário da República; las citas por artículo (art. 39.º) siguen siendo válidas.
+    "REG_PT_826_2023": "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf",
+    # Francia — GRTgaz (hoy Natran) y GRDF, prescripciones técnicas oficiales:
+    "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
+    "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
 }
 
 _RAIZ = os.path.dirname(os.path.abspath(__file__))
