@@ -25,6 +25,7 @@ from condiciones_referencia import (
     _slug_parametro as _slug_param_comb,
     CONDICIONES_PAIS as _COND_PAIS,
 )
+import fuente_oficial
 
 try:
     from src.llm.prompts import SYSTEM_PROMPT
@@ -211,8 +212,10 @@ OPENAI_TOOLS = [
 ]
 
 TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
-    "consultar_excel": consultar_excel,
-    "evaluar_cumplimiento": evaluar_cumplimiento,
+    # Las consultas normativas usan la FUENTE OFICIAL (ontología) como primaria; el Excel
+    # solo como respaldo. Lambdas con enlace tardío (los wrappers se definen más abajo).
+    "consultar_excel": lambda **kw: _consultar_norma(kw.get("parametro", ""), kw.get("pais", "")),
+    "evaluar_cumplimiento": lambda **kw: _evaluar_norma(kw.get("parametro", ""), kw.get("pais", ""), kw.get("valor"), kw.get("unidad")),
     "convertir_condiciones_referencia": convertir_a_condiciones_espana,
     "buscar_pdfs": buscar_pdfs,
     "convertir_unidades": convertir_unidades,
@@ -599,6 +602,79 @@ ALL_COUNTRIES = ["España", "Portugal", "Francia"]
 PAIS_BASE = "España"
 
 
+def _num_simple(x: Any) -> Optional[float]:
+    s = str(x).replace(",", ".")
+    m = re.search(r"[-+]?[0-9]*\.?[0-9]+", s)
+    return float(m.group(0)) if m else None
+
+
+def _detectar_discrepancia(rec_oficial: Dict[str, Any], excel: Optional[Dict[str, Any]]) -> str:
+    """Compara el límite OFICIAL con el del Excel (mismo parámetro/país). Nota si difieren
+    (solo si las unidades coinciden y ambos son numéricos)."""
+    if not excel or not excel.get("matches"):
+        return ""
+    m = excel["matches"][0]
+    u_excel = _normalize_unit(_txt(m.get("unidad")).strip("()"))
+    u_ofi = _normalize_unit(rec_oficial.get("unidad") or "")
+    if u_excel and u_ofi and u_excel != u_ofi:
+        return ""  # unidades distintas: no comparamos crudo
+    difs = []
+    for campo, etiqueta in (("limite_superior", "máximo"), ("limite_inferior", "mínimo")):
+        o = _num_simple(rec_oficial.get(campo)); e = _num_simple(_txt(m.get(campo)))
+        if o is not None and e is not None and abs(o - e) > 1e-6:
+            difs.append(f"{etiqueta}: oficial {rec_oficial.get(campo)} vs Excel {_txt(m.get(campo))}")
+    return "; ".join(difs)
+
+
+def _consultar_norma(parametro: str, pais: str) -> Dict[str, Any]:
+    """Consulta normativa. FUENTE PRIMARIA: documentación oficial (ontología verificada
+    de los PDFs en data/raw). El Excel solo como índice/respaldo. Si hay dato oficial y
+    el Excel discrepa, prevalece el oficial y se marca la discrepancia."""
+    oficial = fuente_oficial.consultar(parametro, pais)
+    try:
+        excel = consultar_excel(parametro, pais)
+    except Exception:
+        excel = {"count": 0, "matches": []}
+    if oficial.get("count"):
+        disc = _detectar_discrepancia(oficial["matches"][0], excel)
+        if disc:
+            oficial["matches"][0]["discrepancia"] = disc
+        return oficial
+    return excel  # el oficial no cubre este caso → respaldo del Excel
+
+
+def _evaluar_norma(parametro: str, pais: str, valor: float, unidad: Optional[str] = None) -> Dict[str, Any]:
+    """Evaluación de cumplimiento contra el límite OFICIAL; Excel solo como respaldo."""
+    oficial = fuente_oficial.evaluar(parametro, pais, valor, unidad)
+    if oficial.get("count"):
+        try:
+            disc = _detectar_discrepancia(oficial["matches"][0], consultar_excel(parametro, pais))
+            if disc:
+                oficial["matches"][0]["discrepancia"] = disc
+        except Exception:
+            pass
+        return oficial
+    return evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
+
+
+def _cita_oficial(item: Dict[str, Any]) -> str:
+    """Cita completa de un registro: norma · organismo · fecha · artículo/página — URL."""
+    doc = item.get("documento") or "Fuente no especificada"
+    partes = [f"**{doc}**"]
+    for campo in ("organismo", "fecha", "articulo"):
+        v = (item.get(campo) or "").strip()
+        if v:
+            partes.append(v)
+    linea = " · ".join(partes)
+    url = (item.get("url") or item.get("pdf") or "").strip()
+    if url:
+        linea += f" — {url}"
+    estado = item.get("estado") or ""
+    if estado and estado != "VERIFICADO":
+        linea += f" _({estado})_"
+    return linea
+
+
 def _norm_pais(p: Any) -> str:
     s = str(p).strip().lower()
     for a, b in (("á", "a"), ("é", "e"), ("í", "i"), ("ó", "o"), ("ú", "u"), ("ñ", "n")):
@@ -625,7 +701,7 @@ def _sin_limite(s: str) -> bool:
 def _unidad_de_pais(parametro: str, pais: str) -> Optional[str]:
     """Devuelve la unidad que exige la normativa de `pais` para `parametro`."""
     try:
-        resp = consultar_excel(parametro, pais)
+        resp = _consultar_norma(parametro, pais)
     except Exception:
         return None
     for m in resp.get("matches", []):
@@ -697,7 +773,7 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
     unidad_es = _unidad_de_pais(parametro, PAIS_BASE)  # background: solo para comparar
     filas: list = []
     for pais in paises:
-        resp = evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
+        resp = _evaluar_norma(parametro, pais, valor, unidad=unidad)
         if resp.get("error"):
             continue
         filas.extend(resp.get("matches", []))
@@ -727,7 +803,6 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         nombre = str(item.get("parametro") or parametro).strip()
         estado = item.get("cumple", "No evaluable")
         detalle = item.get("detalle", "")
-        origen = item.get("documento") or "Origen no especificado"
         inf = _txt(item.get("limite_inferior")) or "-"
         sup = _txt(item.get("limite_superior")) or "-"
         unidad_reg = item.get("unidad_registro") or unidad or ""
@@ -752,7 +827,9 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         else:
             celda = f"{valor_eval} {unidad_reg}".strip()
         lines.append(f"| {pais_fila} | {nombre} | {celda} | {limite_cell} | {condiciones} | {res} | {detalle} | {comp} |")
-        evidencias.append(f"- **{pais_fila}** · {nombre}: {origen}.")
+        evidencias.append(f"- **{pais_fila}** · {nombre}: {_cita_oficial(item)}")
+        if item.get("discrepancia"):
+            evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la fuente oficial): {item['discrepancia']}")
         if estado == "Cumple":
             cumple_en.append(f"{pais_fila} ({nombre})")
     bloques = list(lines)
@@ -786,9 +863,10 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
     hubo = False
     estados: list = []
     normalizaciones: list = []  # PCS/Wobbe llevados a condiciones de España (Tabla A.1)
+    evidencias: list = []
     for pais in paises:
         try:
-            resp = consultar_excel(parametro, pais)
+            resp = _consultar_norma(parametro, pais)
         except Exception:
             continue
         for m in resp.get("matches", []):
@@ -809,6 +887,9 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
                 if nota:
                     normalizaciones.append(nota)
             lines.append(f"| {pais} | {nombre} | {limite} | {unidad_reg or '—'} | {cond} | {comp} |")
+            evidencias.append(f"- **{pais}** · {nombre}: {_cita_oficial(m)}")
+            if m.get("discrepancia"):
+                evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la oficial): {m['discrepancia']}")
     if not hubo:
         return f"No encontré datos normativos de '{parametro}' en {', '.join(paises)}."
     if normalizaciones:
@@ -817,6 +898,8 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
             "**Normalización a condiciones de España** (combustión 0 °C; ISO 13443, Tabla A.1)",
             "",
         ] + normalizaciones
+    if evidencias:
+        lines += ["", "**Evidencias (fuente oficial)**", ""] + evidencias
     if estados:
         estados_u = list(dict.fromkeys(estados))  # dedup (un país puede tener varias filas)
         sint = "; ".join(f"España vs {p}: {e}" for p, e in estados_u)
@@ -949,7 +1032,7 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
     notas: list = []
     for pais in orden:
         try:
-            matches = consultar_excel(parametro_slug, pais).get("matches", [])
+            matches = _consultar_norma(parametro_slug, pais).get("matches", [])
         except Exception:
             matches = []
         for m in matches:
@@ -1001,6 +1084,14 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
                 "es_base": es_base,
                 "limite_espana": (rng(vi_es, vs_es) if (es_combustion and not es_base and (vi_es is not None or vs_es is not None)) else None),
                 "factor_iso": (factor if (es_combustion and not es_base and factor != 1.0) else None),
+                # Cita de la fuente oficial (para mostrar en el frontend).
+                "fuente": m.get("documento") or "",
+                "organismo": m.get("organismo") or "",
+                "fecha": m.get("fecha") or "",
+                "articulo": m.get("articulo") or "",
+                "url": m.get("url") or m.get("pdf") or "",
+                "estado": m.get("estado") or "",
+                "discrepancia": m.get("discrepancia") or "",
             })
     return {
         "parametro": display,
@@ -1286,11 +1377,12 @@ def _format_info_response(
         return f"No encontré información determinista para '{parametro}' en '{pais}'."
 
     lines = [
-        f"*Consulta sobre {parametro} en {pais}*",
+        f"**Consulta sobre {parametro} en {pais}**",
         "",
-        "| Parámetro | Límites aplicables | Condiciones de medición | Origen documental | Enlace |",
-        "| --- | --- | --- | --- | --- |",
+        "| Parámetro | Límites aplicables | Condiciones de medición |",
+        "| --- | --- | --- |",
     ]
+    evidencias = []
     for item in matches[:8]:
         parametro_name = item.get("parametro", parametro)
         inferior = item.get("limite_inferior", "-")
@@ -1300,14 +1392,18 @@ def _format_info_response(
         condiciones = _normalize_condition_text(item.get("condiciones") or item.get("condiciones de medicion") or item.get("condiciones de medición"))
         if not condiciones:
             condiciones = "No especificadas en el registro"
-        origen = item.get("documento") or "Origen no especificado"
         if inferior == "-" and superior == "-":
             rango = "Sin límites numéricos definidos"
         else:
             rango = f"{inferior} / {superior}"
             if unidad_reg:
                 rango = f"{rango} ({unidad_reg})"
-        lines.append(f"| {parametro_name} | {rango} | {condiciones} | {origen} | {item.get('url') or 'No disponible en el Excel'} |")
+        lines.append(f"| {parametro_name} | {rango} | {condiciones} |")
+        evidencias.append(f"- **{parametro_name}**: {_cita_oficial(item)}")
+        if item.get("discrepancia"):
+            evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la oficial): {item['discrepancia']}")
+    if evidencias:
+        lines += ["", "**Evidencias (fuente oficial)**", ""] + evidencias
     return "\n".join(lines)
 
 
@@ -1353,13 +1449,13 @@ def _fallback_deterministic_response(mensaje: str, session_id: str = "default") 
         # We'll just fall through to default handling (maybe ask for country/param etc.)
 
     if parametro and pais_formateado and _is_info_request(texto_norm):
-        respuesta = consultar_excel(parametro, pais_formateado)
+        respuesta = _consultar_norma(parametro, pais_formateado)
         if respuesta.get("count", 0) == 0:
             return f"No encontré información específica para '{parametro}' en '{pais_formateado}'."
         return _format_info_response(parametro, pais_formateado, respuesta)
 
     if parametro and pais_formateado:
-        respuesta = consultar_excel(parametro, pais_formateado)
+        respuesta = _consultar_norma(parametro, pais_formateado)
         if respuesta.get("count", 0) == 0:
             pdf_resultados = buscar_pdfs(query=texto_norm)
             if pdf_resultados["count"] > 0:

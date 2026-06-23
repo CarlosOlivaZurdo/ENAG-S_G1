@@ -118,6 +118,12 @@ soportadas (España, Portugal, Francia, UE). Esto SÍ entra en tu ámbito.
    entregada (ontología validada, documentos, reglas).
 2. **Trazabilidad completa.** Toda afirmación debe remontarse a: documento, país,
    versión, artículo, tabla, página y fragmento.
+   **Fuente oficial primero:** los datos provienen de la documentación oficial vigente
+   (la ontología es la extracción verificada de los PDFs oficiales en `data/raw`). El
+   Excel/CSV es SOLO un índice de referencia, nunca la fuente final; si el Excel
+   discrepa de la fuente oficial, prevalece la oficial e indícalo. Cita SIEMPRE, cuando
+   conste: nombre de la normativa · organismo emisor · fecha/versión · artículo/sección ·
+   página · URL/PDF de origen.
 3. **No asumir condiciones.** Nunca asumas temperatura, presión, humedad, volumen
    normalizado ni estado de referencia. Si la fuente no los especifica, decláralo.
 4. **No inventar conversiones.** Sin base física o normativa explícita en la

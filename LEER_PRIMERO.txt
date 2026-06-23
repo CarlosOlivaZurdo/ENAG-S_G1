@@ -51,6 +51,16 @@ Nota: algunas redes de empresa aislan los equipos entre si; si es asi, este
 modo no funcionara y habria que desplegarlo en un servidor/nube.
 
 
+ACTUALIZAR LAS NORMATIVAS OFICIALES (opcional)
+----------------------------------------------
+La informacion procede de los documentos OFICIALES (BOE, EUR-Lex, ERSE, GRTgaz)
+descargados en data\raw\; el Excel solo sirve de indice. Para refrescar los PDFs a
+su ultima version publicada, ejecuta (requiere internet):
+   - Doble clic en:  actualizar_fuentes.bat
+Descarga BOE y EUR-Lex automaticamente; para Portugal/Francia, anade la URL directa
+del PDF en actualizar_fuentes.py cuando la tengas. Conserva el PDF anterior como .bak.
+
+
 PROBLEMAS FRECUENTES
 --------------------
 - "No se encuentra Python":  instala Python (ver requisito previo) y marca

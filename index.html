@@ -158,6 +158,13 @@
   .cmp-table td:first-child{font-weight:600;color:var(--navy-2)}
   .cmp-table .es-col{color:var(--accent-d);font-weight:600}
   .cmp-table .muted{color:var(--muted-2)}
+  .cmp-ev{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .cmp-ev-h{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);margin-bottom:6px}
+  .cmp-ev ul{margin:0;padding-left:18px}
+  .cmp-ev li{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:4px}
+  .cmp-ev li b{color:var(--navy-2)}
+  .cmp-ev a{color:var(--accent-d);word-break:break-all}
+  .cmp-ev code{background:#eef2f6;padding:1px 5px;border-radius:4px;font-size:11px}
   .cmp-iso{margin-top:14px;background:#f0faf9;border:1px solid #bfe4e1;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#0a5b57;line-height:1.6}
   .cmp-iso b{color:#084c49}
   .cmp-iso .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--accent-d);padding:2px 7px;border-radius:4px;margin-right:7px}
@@ -484,6 +491,24 @@
     if((d.notas_iso||[]).length){
       html += '<div class="cmp-iso"><span class="tag">ISO 13443</span><b>Normalización de condiciones de combustión a la base española (Tabla A.1):</b><br>'+
         d.notas_iso.map(n => '· '+esc(n)).join("<br>")+'</div>';
+    }
+    // Evidencias: cita de la fuente oficial por país (norma, organismo, fecha, artículo/página, URL/PDF).
+    const evs = filas.filter(f => f.fuente).map(f => {
+      let partes = ['<b>'+esc(f.pais)+'</b>', esc(f.fuente)];
+      if(f.organismo) partes.push(esc(f.organismo));
+      if(f.fecha) partes.push(esc(f.fecha));
+      if(f.articulo) partes.push(esc(f.articulo));
+      let linea = partes.join(' · ');
+      if(f.url){
+        const href = /^https?:/i.test(f.url) ? f.url : null;
+        linea += ' — ' + (href ? '<a href="'+esc(href)+'" target="_blank" rel="noopener">'+esc(f.url)+'</a>' : '<code>'+esc(f.url)+'</code>');
+      }
+      if(f.estado && f.estado!=='VERIFICADO') linea += ' <span class="muted">('+esc(f.estado)+')</span>';
+      if(f.discrepancia) linea += '<br><span style="color:#9a6400">⚠ Discrepancia con el Excel (prevalece la oficial): '+esc(f.discrepancia)+'</span>';
+      return '<li>'+linea+'</li>';
+    });
+    if(evs.length){
+      html += '<div class="cmp-ev"><div class="cmp-ev-h">Evidencias · fuente oficial</div><ul>'+evs.join("")+'</ul></div>';
     }
     html += '</div>';
     return html;
