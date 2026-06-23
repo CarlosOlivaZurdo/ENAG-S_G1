@@ -1264,6 +1264,112 @@ def _normativa_de_pais(paises: list) -> str:
     return "\n\n".join(bloques) if bloques else "No encontré normativa para el país indicado."
 
 
+def _rango_en_condiciones_es(parametro: str, pais: str, unidad_es: Optional[str]) -> Dict[str, Any]:
+    """Rango de límites de `pais` para `parametro`, llevado a la UNIDAD y CONDICIONES de
+    España (combustión, ISO 13443). Devuelve {estado, lo, hi} con estado:
+    'ok' | 'sin_limite' (no fija el parámetro) | 'sin_datos' | 'incomparable'."""
+    resp = _consultar_norma(parametro, pais)
+    if not resp.get("matches"):
+        return {"estado": "sin_datos"}
+    m = resp["matches"][0]
+    inf = _num_limite(_txt(m.get("limite_inferior")))
+    sup = _num_limite(_txt(m.get("limite_superior")))
+    if inf is None and sup is None:
+        return {"estado": "sin_limite"}
+    ureg = _txt(m.get("unidad")).strip("()").replace("^3", "³").replace("^2", "²")
+    es_combustion = _slug_param_comb(parametro) in {"pcs", "wobbe"}
+    base_es = _norm_pais(pais) == _norm_pais(PAIS_BASE)
+
+    def conv(v):
+        if v is None:
+            return None
+        if unidad_es and ureg and _normalize_unit(unidad_es) != _normalize_unit(ureg):
+            c = convertir_unidades(v, ureg, unidad_es, parametro)
+            if "valor_convertido" not in c:
+                return "incomparable"
+            v = c["valor_convertido"]
+        if es_combustion and not base_es:
+            v = convertir_a_condiciones_espana(v, parametro, pais)["valor_convertido"]
+        return v
+
+    lo, hi = conv(inf), conv(sup)
+    if lo == "incomparable" or hi == "incomparable":
+        return {"estado": "incomparable"}
+    return {"estado": "ok", "lo": lo, "hi": hi}
+
+
+def _intercambiabilidad(parametro: str, paises: Optional[list] = None) -> str:
+    """#2 — «Teniendo en cuenta los límites de España de [parámetro], ¿con qué país
+    podría intercambiar gas?» Compara el rango español con el de cada país (en
+    condiciones de España) y decide si son intercambiables (solape de rangos)."""
+    paises = paises or [p for p in ALL_COUNTRIES if _norm_pais(p) != _norm_pais(PAIS_BASE)]
+    display = DISPLAY_MAP.get(parametro, parametro)
+    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
+    es = _rango_en_condiciones_es(parametro, PAIS_BASE, unidad_es)
+    if es.get("estado") != "ok":
+        return f"No tengo un límite numérico de España para {display}, así que no puedo evaluar la intercambiabilidad."
+    es_lo = es["lo"] if es["lo"] is not None else float("-inf")
+    es_hi = es["hi"] if es["hi"] is not None else float("inf")
+
+    def fr(lo, hi):
+        a = _coma(lo) if lo is not None else "—"
+        b = _coma(hi) if hi is not None else "—"
+        return f"{a} / {b}"
+
+    lines = [
+        f"**Intercambiabilidad de gas según {display}** (base España: {fr(es['lo'], es['hi'])} {unidad_es or ''})",
+        "",
+        "| País | Límite (en condiciones de España) | ¿Intercambiable? | Detalle |",
+        "| --- | --- | --- | --- |",
+    ]
+    compatibles = []
+    for pais in paises:
+        r = _rango_en_condiciones_es(parametro, pais, unidad_es)
+        est = r.get("estado")
+        if est == "sin_datos":
+            lines.append(f"| {pais} | — | ⚪ Sin datos | No consta el parámetro en su normativa |")
+            continue
+        if est == "incomparable":
+            lines.append(f"| {pais} | (no convertible) | 🔴 No | Unidades/magnitud no comparables con España |")
+            continue
+        if est == "sin_limite":
+            lines.append(f"| {pais} | Sin límite | 🟢 Sí | {pais} no fija este parámetro: admite el gas español |")
+            compatibles.append(pais)
+            continue
+        lo = r["lo"] if r["lo"] is not None else float("-inf")
+        hi = r["hi"] if r["hi"] is not None else float("inf")
+        solapan = max(es_lo, lo) <= min(es_hi, hi) + 1e-9
+        es_subset = (lo - 1e-9) <= es_lo and es_hi <= (hi + 1e-9)
+        if not solapan:
+            detalle = "Rangos sin solape: el gas español no cumpliría su norma"
+            verdict = "🔴 No"
+        elif es_subset:
+            detalle = "Todo gas que cumple en España cumple también aquí"
+            verdict = "🟢 Sí"
+            compatibles.append(pais)
+        else:
+            detalle = "Solape parcial: parte del gas español cumple (revisar valor concreto)"
+            verdict = "🟡 Parcial"
+            compatibles.append(pais + " (parcial)")
+        lines.append(f"| {pais} | {fr(r['lo'], r['hi'])} {unidad_es or ''} | {verdict} | {detalle} |")
+
+    resumen = ", ".join(compatibles) if compatibles else "ninguno de los evaluados"
+    lines += ["", f"**Intercambio posible con:** {resumen}.",
+              "", "_Nota: evaluación por solape de límites del parámetro indicado; el intercambio real exige cumplir TODOS los parámetros a la vez._"]
+    return "\n".join(lines)
+
+
+def _es_consulta_intercambio(texto_norm: str) -> bool:
+    """¿Pregunta con qué país se puede intercambiar/compatibilizar el gas?"""
+    if "intercambi" in texto_norm or "intercanvi" in texto_norm:
+        return True
+    pistas_pais = any(p in texto_norm for p in (
+        "con que pais", "con qué país", "con que paises", "con qué países",
+        "con quien", "con quién", "que pais podria", "qué país podría",
+    ))
+    return pistas_pais and ("gas" in texto_norm or "compatible" in texto_norm or "intercambi" in texto_norm)
+
+
 def _es_consulta_fuente(texto_norm: str) -> bool:
     """¿El usuario pregunta de qué reglamento/norma procede la información?"""
     claves = (
@@ -1353,6 +1459,11 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
             return _normativa_de_pais(paises)
         if _pregunta_lista_fuentes(texto_norm):
             return _listar_fuentes()
+
+    # #2 «Teniendo en cuenta los límites de España de [parámetro], ¿con qué país
+    # podría intercambiar gas?» → intercambiabilidad (solape de rangos vs España).
+    if parametro is not None and valor is None and _es_consulta_intercambio(texto_norm):
+        return _intercambiabilidad(parametro)
 
     # Comparación de NORMATIVA entre países (sin valor del usuario):
     # "compara el Wobbe entre España y Francia", "diferencia de O2 España vs Portugal"…
