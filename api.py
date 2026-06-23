@@ -1450,6 +1450,101 @@ def _restriccion_vs_espana(parametro: str, texto_norm: str) -> str:
     return "\n".join(lines)
 
 
+def _decimales(s: Any) -> int:
+    """Nº de decimales de un valor escrito ('10,26' -> 2, '50' -> 0)."""
+    t = str(s)
+    for sep in (",", "."):
+        if sep in t:
+            return len(t.split(sep)[-1].strip())
+    return 0
+
+
+def _redondea_coma(v: Optional[float], dec: int) -> str:
+    if v is None:
+        return "—"
+    if dec <= 0:
+        return str(int(round(v)))
+    return f"{round(v, dec):.{dec}f}".replace(".", ",")
+
+
+def _celda_limite(inf: Any, sup: Any, unidad: str, notac: str) -> str:
+    i, s = _txt(inf), _txt(sup)
+    if _sin_limite(i) and _sin_limite(s):
+        return "Sin límite numérico"
+    rango = f"{i if not _sin_limite(i) else '—'} - {s if not _sin_limite(s) else '—'}"
+    return f"{rango} {unidad}{(' ' + notac) if notac else ''}".strip()
+
+
+def _limite_convertido_a_es(parametro, pais, inf, sup, u_pa, unidad_es, notac_es, dec):
+    """Convierte el límite del país a unidad+condiciones de España (ISO 13443) y lo
+    redondea a las cifras de España (Nota 1)."""
+    vi, vs = _num_limite(inf), _num_limite(sup)
+    if vi is None and vs is None:
+        return "Sin límite numérico"
+
+    def conv(v):
+        if v is None:
+            return None
+        if u_pa and unidad_es and _normalize_unit(u_pa) != _normalize_unit(unidad_es):
+            c = convertir_unidades(v, u_pa, unidad_es, parametro)
+            if "valor_convertido" not in c:
+                return "incompat"
+            v = c["valor_convertido"]
+        if _slug_param_comb(parametro) in {"pcs", "wobbe"} and _norm_pais(pais) != _norm_pais(PAIS_BASE):
+            v = convertir_a_condiciones_espana(v, parametro, pais)["valor_convertido"]
+        return v
+
+    ci, cs = conv(vi), conv(vs)
+    if ci == "incompat" or cs == "incompat":
+        return "No convertible de forma determinista"
+    a = _redondea_coma(ci, dec) if ci is not None else "—"
+    b = _redondea_coma(cs, dec) if cs is not None else "—"
+    return f"{a} - {b} {unidad_es} {notac_es}".strip()
+
+
+def _comparativa_enagas(parametro: str, pais: str) -> str:
+    """Módulo 2 (formato Enagás): «¿Cuál es el límite de [parámetro] en [país]
+    comparado con España?». Tabla de 5 columnas con el límite del país convertido a
+    unidad y condiciones de España (ISO 13443), redondeado a las cifras de España."""
+    display = DISPLAY_MAP.get(parametro, parametro)
+    es_resp = _consultar_norma(parametro, PAIS_BASE)
+    pa_resp = _consultar_norma(parametro, pais)
+    if not es_resp.get("matches"):
+        return f"No tengo el límite oficial de España para {display}."
+    if not pa_resp.get("matches"):
+        return f"No tengo el límite oficial de {pais} para {display}."
+    es = es_resp["matches"][0]
+    unidad_es = es.get("unidad") or ""
+    notac_es = es.get("notacion") or "(0/0)"
+    es_inf, es_sup = _txt(es.get("limite_inferior")), _txt(es.get("limite_superior"))
+    es_celda = _celda_limite(es_inf, es_sup, unidad_es, notac_es)
+    ref = es_inf if not _sin_limite(es_inf) else es_sup
+    dec = _decimales(ref)
+
+    lines = [
+        f"**¿Cuál es el límite de {display} en {pais} comparado con España?**",
+        "",
+        f"| Parámetro | Límite en España | Límite en {pais} | ¿Unidades y condiciones comparables? | Límite {pais} en condiciones comparables |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    evidencias = [f"- **España** · {es.get('parametro') or display}: {_cita_oficial(es)}"]
+    for m in pa_resp["matches"]:  # Nota 3: una fila por límite (tipos de gas H/L…)
+        nombre = str(m.get("parametro") or display).strip()
+        u_pa = _txt(m.get("unidad")).strip("()").replace("^3", "³").replace("^2", "²")
+        notac_pa = m.get("notacion") or "(0/0)"
+        pa_inf, pa_sup = _txt(m.get("limite_inferior")), _txt(m.get("limite_superior"))
+        pa_celda = _celda_limite(pa_inf, pa_sup, u_pa, notac_pa)
+        comparable = "Sí" if (_normalize_unit(u_pa) == _normalize_unit(unidad_es) and notac_pa == notac_es) else "No"
+        conv_celda = _limite_convertido_a_es(parametro, pais, pa_inf, pa_sup, u_pa, unidad_es, notac_es, dec)
+        lines.append(f"| {nombre} | {es_celda} | {pa_celda} | {comparable} | {conv_celda} |")
+        evidencias.append(f"- **{pais}** · {nombre}: {_cita_oficial(m)}")
+    lines += ["", "**Fuente consultada**", ""] + evidencias
+    if _slug_param_comb(parametro) in {"pcs", "wobbe"}:
+        lines += ["", "_Conversión de unidad y de condiciones de referencia según ISO 13443:1996; "
+                  "valor convertido redondeado a las cifras significativas del límite de España._"]
+    return "\n".join(lines)
+
+
 def _es_consulta_fuente(texto_norm: str) -> bool:
     """¿El usuario pregunta de qué reglamento/norma procede la información?"""
     claves = (
@@ -1556,10 +1651,12 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
         "frente a", "versus", " vs ", "enfrenta", "respecto",
     ])
     if parametro is not None and valor is None and (len(paises) >= 2 or (cue_comparar and len(paises) >= 1)):
-        paises_efectivos = list(paises)
-        # En comparaciones de un solo país, añadir España como referencia visual.
-        if len(paises_efectivos) == 1 and _norm_pais(paises_efectivos[0]) != _norm_pais(PAIS_BASE):
-            paises_efectivos = [PAIS_BASE] + paises_efectivos
+        otros = [p for p in paises if _norm_pais(p) != _norm_pais(PAIS_BASE)]
+        # España vs UN país → formato Enagás (módulo 2): tabla con conversión a condiciones ES.
+        if len(otros) == 1:
+            return _comparativa_enagas(parametro, otros[0])
+        # Varios países → tabla comparativa multi-país.
+        paises_efectivos = list(paises) if otros else [PAIS_BASE]
         return _comparar_normativa(parametro, paises_efectivos)
 
     # Consulta del LÍMITE/valor de un parámetro SIN que el usuario aporte un valor a

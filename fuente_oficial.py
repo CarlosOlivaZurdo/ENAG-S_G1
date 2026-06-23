@@ -95,9 +95,23 @@ def _pagina(*textos: str) -> str:
     return ""
 
 
+# URL web oficial por fuente (Nota 4: enlace a la fuente consultada). Se usa cuando la
+# ontología no trae una URL explícita. Verificadas (descargan el PDF/documento oficial).
+_URL_OFICIAL = {
+    "ORDEN_TED_181_2025": "https://www.boe.es/buscar/pdf/2025/BOE-A-2025-3873-consolidado.pdf",
+    "RD919": "https://www.boe.es/buscar/pdf/2006/BOE-A-2006-15345-consolidado.pdf",
+    "NC_INT": "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703",
+    "NC_CAM": "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459",
+    "REG_PT_826_2023": "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf",
+    "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
+    "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
+    "PD01": "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/",
+}
+
+
 def _cita(fuente_code: Optional[str], articulo: Optional[str]) -> Dict[str, str]:
     g = _glosario().get(fuente_code, {})
-    url = g.get("url_eurlex") or g.get("url_enagas") or ""
+    url = g.get("url_eurlex") or g.get("url_enagas") or _URL_OFICIAL.get(fuente_code, "")
     return {
         "documento": g.get("nombre") or fuente_code or "No consta",
         "organismo": g.get("organismo") or "",
@@ -159,6 +173,10 @@ def _record(slug: str, pais: str, lim: Dict[str, Any]) -> Dict[str, Any]:
     # Condiciones de referencia: si la fuente no las detalla para este parámetro,
     # rige la condición normal del proyecto (0 ºC, 1,01325 bar) para ES/PT/FR.
     condiciones = _cond_txt(lim.get("condiciones_referencia")) or "0 ºC y 1,01325 bar"
+    # Notación compacta (combustión/medición), p. ej. "(0/0)", "(25/0)", "(15/15)".
+    cr = lim.get("condiciones_referencia") or {}
+    comb, med = cr.get("temperatura_combustion_C"), cr.get("temperatura_volumen_C")
+    notacion = f"({_fmt(comb)}/{_fmt(med)})" if (comb is not None and med is not None) else "(0/0)"
     return {
         "parametro": _nombre_param(slug),
         "pais": _CODIGO_A_PAIS.get(_PAIS_A_CODIGO.get(_norm(pais)), pais),
@@ -166,6 +184,7 @@ def _record(slug: str, pais: str, lim: Dict[str, Any]) -> Dict[str, Any]:
         "limite_superior": _fmt(sup) if sup is not None else "-",
         "unidad": udisp,
         "condiciones": condiciones,
+        "notacion": notacion,
         "documento": cita["documento"],
         "organismo": cita["organismo"],
         "fecha": cita["fecha"],
