@@ -399,24 +399,30 @@
 
   /* ===== Comparativa ===== */
   let cmpReady = false;
-  let PARAMS = [];
-  async function initCompare(){
-    try{
-      const r = await fetch(api("/api/parametros"));
-      const d = await r.json();
-      PARAMS = d.parametros || [];
-      const selP = $("cmpParam");
-      selP.innerHTML = PARAMS.map(p => '<option value="'+p.slug+'">'+esc(p.label)+'</option>').join("");
-      const cont = $("cmpPaises");
-      cont.innerHTML =
-        '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
-        (d.paises||[]).map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'" checked> '+esc(p)+'</label>').join("");
-      selP.onchange = fillUnidades;
-      fillUnidades();
-      cmpReady = true;
-    }catch(e){
-      $("cmpResult").innerHTML = '<div class="cmp-empty">No se pudo cargar la configuración del comparador. ¿Está el servidor en marcha?</div>';
-    }
+  // Lista incluida en el propio HTML: los desplegables se rellenan SIEMPRE,
+  // aunque el servidor aún no tenga los endpoints nuevos (basta reiniciarlo para comparar).
+  const PARAMS = [
+    {slug:"wobbe", label:"Índice de Wobbe", unidades:["kWh/m³","MJ/m³"]},
+    {slug:"pcs", label:"PCS (Poder Calorífico Superior)", unidades:["kWh/m³","MJ/m³"]},
+    {slug:"densidad relativa", label:"Densidad relativa", unidades:["adimensional"]},
+    {slug:"s total", label:"Azufre total (S)", unidades:["mg/m³","mg/Nm³","ppm"]},
+    {slug:"h2s+cos", label:"H₂S + COS", unidades:["mg/m³","mg/Nm³","ppm"]},
+    {slug:"rsh", label:"Mercaptanos (RSH)", unidades:["mg/m³","mg/Nm³","ppm"]},
+    {slug:"o2", label:"O₂ (oxígeno)", unidades:["% molar","ppm"]},
+    {slug:"co2", label:"CO₂", unidades:["% molar","ppm"]},
+    {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
+    {slug:"hc(rocío)", label:"Punto de rocío de HC", unidades:["°C","K","°F"]},
+  ];
+  const PAISES_OPC = ["Portugal","Francia"];
+  function initCompare(){
+    const selP = $("cmpParam");
+    selP.innerHTML = PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("");
+    $("cmpPaises").innerHTML =
+      '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
+      PAISES_OPC.map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'" checked> '+esc(p)+'</label>').join("");
+    selP.onchange = fillUnidades;
+    fillUnidades();
+    cmpReady = true;
   }
   function fillUnidades(){
     const p = PARAMS.find(x => x.slug === $("cmpParam").value);
@@ -435,6 +441,12 @@
         method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ parametro, paises, unidad })
       });
+      if(r.status===404){
+        res.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar la comparativa.<br>'+
+          'Cierra la ventana negra del servidor y vuelve a ejecutar <code>iniciar_chatbot.bat</code> '+
+          '(haz antes <code>git pull</code> si todavía no lo has hecho).</div>';
+        return;
+      }
       if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
       res.innerHTML = renderComparativa(d);
