@@ -20,6 +20,11 @@ from motor_determinista import (
     evaluar_cumplimiento,
 )
 from conversor_unidades import convertir_unidades
+from condiciones_referencia import (
+    convertir_a_condiciones_espana,
+    _slug_parametro as _slug_param_comb,
+    CONDICIONES_PAIS as _COND_PAIS,
+)
 
 try:
     from src.llm.prompts import SYSTEM_PROMPT
@@ -181,11 +186,34 @@ OPENAI_TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "convertir_condiciones_referencia",
+            "description": (
+                "Lleva un PCS o Índice de Wobbe desde las condiciones de referencia (temperatura "
+                "de combustión) de un país a las de España, con los factores de la Tabla A.1 de la "
+                "ISO 13443. Portugal usa combustión 25 °C y España 0 °C, por lo que su PCS/Wobbe se "
+                "multiplica por 1,0026 para compararlos. Úsala para comparar PCS/Wobbe entre países "
+                "con distinta temperatura de combustión. NO la uses para otros parámetros."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "valor": {"type": "number", "description": "Valor a convertir (en kWh/m³; convierte antes la unidad si hace falta)."},
+                    "parametro": {"type": "string", "description": "PCS o Wobbe."},
+                    "pais_origen": {"type": "string", "description": "País de origen (España, Portugal, Francia, UE)."},
+                },
+                "required": ["valor", "parametro", "pais_origen"],
+            },
+        },
+    },
 ]
 
 TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
     "consultar_excel": consultar_excel,
     "evaluar_cumplimiento": evaluar_cumplimiento,
+    "convertir_condiciones_referencia": convertir_a_condiciones_espana,
     "buscar_pdfs": buscar_pdfs,
     "convertir_unidades": convertir_unidades,
 }
@@ -757,6 +785,7 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
     ]
     hubo = False
     estados: list = []
+    normalizaciones: list = []  # PCS/Wobbe llevados a condiciones de España (Tabla A.1)
     for pais in paises:
         try:
             resp = consultar_excel(parametro, pais)
@@ -776,14 +805,120 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
             comp = _celda_es_vs_pais(parametro, pais, unidad_reg, unidad_es)
             if _norm_pais(pais) != _norm_pais(PAIS_BASE):
                 estados.append((pais, _estado_comparabilidad(parametro, unidad_es, unidad_reg)))
+                nota = _limites_en_condiciones_espana(parametro, pais, inf, sup, unidad_reg, nombre)
+                if nota:
+                    normalizaciones.append(nota)
             lines.append(f"| {pais} | {nombre} | {limite} | {unidad_reg or '—'} | {cond} | {comp} |")
     if not hubo:
         return f"No encontré datos normativos de '{parametro}' en {', '.join(paises)}."
+    if normalizaciones:
+        lines += [
+            "",
+            "**Normalización a condiciones de España** (combustión 0 °C; ISO 13443, Tabla A.1)",
+            "",
+        ] + normalizaciones
     if estados:
         estados_u = list(dict.fromkeys(estados))  # dedup (un país puede tener varias filas)
         sint = "; ".join(f"España vs {p}: {e}" for p, e in estados_u)
         lines += ["", f"**Síntesis:** {sint}."]
     return "\n".join(lines)
+
+
+def _num_limite(x: Any) -> Optional[float]:
+    """Extrae el primer número de un límite ('48,17', 'no especificado'…)."""
+    s = str(x).strip().replace(",", ".")
+    m = re.search(r"[-+]?[0-9]*\.?[0-9]+", s)
+    return float(m.group(0)) if m else None
+
+
+def _limites_en_condiciones_espana(
+    parametro: str, pais: str, inf: Any, sup: Any, unidad_reg: str, nombre: str
+) -> Optional[str]:
+    """Para PCS/Wobbe de un país no-España: devuelve sus límites llevados a las
+    condiciones españolas (unidad kWh/m³ + combustión 0 °C, Tabla A.1). None si no aplica."""
+    if _slug_param_comb(parametro) not in {"pcs", "wobbe"}:
+        return None
+    cond = _COND_PAIS.get(_norm_pais(pais))
+    misma_unidad = _normalize_unit(unidad_reg or "kwh/m3") == _normalize_unit("kWh/m³")
+    # Si el país ya está en base española (combustión 0 °C) y misma unidad, no hay nada que cambiar.
+    if cond == (0, 0) and misma_unidad:
+        return None
+    vi, vs = _num_limite(inf), _num_limite(sup)
+    if vi is None and vs is None:
+        return None
+    factor = 1.0
+    partes = []
+    for v in (vi, vs):
+        if v is None:
+            partes.append("—")
+            continue
+        # 1) Unidad -> kWh/m³ (si hace falta), de forma determinista.
+        if unidad_reg and not misma_unidad:
+            cu = convertir_unidades(v, unidad_reg, "kWh/m³", parametro)
+            if "valor_convertido" in cu:
+                v = cu["valor_convertido"]
+        # 2) Condición de combustión del país -> España (Tabla A.1).
+        cr = convertir_a_condiciones_espana(v, parametro, pais)
+        factor = cr.get("factor", 1.0)
+        partes.append(f"{cr['valor_convertido']:.2f}".replace(".", ","))
+    return f"- **{pais}** · {nombre}: {partes[0]} / {partes[1]} kWh/m³ (de {unidad_reg or 'kWh/m³'}, combustión {cond[0] if cond else '?'} → 0 °C, factor {factor:g})"
+
+
+def _coma(x: Any) -> str:
+    try:
+        return f"{round(float(x), 4):g}".replace(".", ",")
+    except (TypeError, ValueError):
+        return str(x)
+
+
+def _es_consulta_condiciones(texto_norm: str) -> bool:
+    """¿Pide llevar un valor a las condiciones de referencia (combustión) de España?"""
+    claves = (
+        "condiciones de españa", "condiciones de espana", "condiciones espanola",
+        "condiciones española", "condiciones espanolas", "condiciones españolas",
+        "condicion de combustion", "condiciones de combustion", "temperatura de combustion",
+        "tabla a1", "tabla a.1", "iso 13443", "base espanola", "base española",
+        "referencia espanola", "referencia española", "a condiciones espanola",
+        "normalizar a espana", "normalizar a españa", "pasar a espana", "pasar a españa",
+    )
+    return any(k in texto_norm for k in claves)
+
+
+def _responder_condiciones(parametro: str, valor, unidad, pais_origen: str) -> str:
+    """Convierte un PCS/Wobbe de `pais_origen` a las condiciones de combustión de España."""
+    display = DISPLAY_MAP.get(parametro, parametro)
+    if _slug_param_comb(parametro) not in {"pcs", "wobbe"}:
+        return (
+            f"El parámetro **{display}** se mide a 0 °C y no depende de la temperatura de "
+            f"combustión, así que es directamente comparable entre {pais_origen} y España "
+            "sin ajustar las condiciones de referencia."
+        )
+    if valor is None:
+        # Sin valor del usuario: muestra los límites del país ya normalizados a España.
+        return _comparar_normativa(parametro, [PAIS_BASE, pais_origen])
+
+    pasos = []
+    v = float(valor)
+    u = unidad or ""
+    if u and _normalize_unit(u) != _normalize_unit("kWh/m³"):
+        cu = convertir_unidades(v, u, "kWh/m³", parametro)
+        if "valor_convertido" in cu:
+            pasos.append(f"- Unidad: {_coma(v)} {u} → {_coma(cu['valor_convertido'])} kWh/m³  ({cu.get('formula','')})")
+            v = cu["valor_convertido"]
+    cr = convertir_a_condiciones_espana(v, parametro, pais_origen)
+    pasos.append(
+        f"- Combustión: {cr['condiciones_origen']} → {cr['condiciones_destino']}  "
+        f"(Tabla A.1, factor {cr['factor']:g})"
+    )
+    return "\n".join([
+        f"**{display} de {pais_origen} en condiciones de España**",
+        "",
+        f"**{_coma(valor)} {unidad or ''}** ({pais_origen}) → **{_coma(cr['valor_convertido'])} kWh/m³** (España)",
+        "",
+        *pasos,
+        "",
+        f"_Fuente del factor: {cr['fuente']}._",
+    ])
 
 
 # --- Fuente normativa: ¿de qué reglamento procede cada dato? ----------------
@@ -955,6 +1090,13 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     # Si el número y la unidad venían separados ("0.03de % molar"), busca la unidad aparte.
     if unidad_detectada is None:
         unidad_detectada = _extract_unit_only(mensaje)
+
+    # Conversión a CONDICIONES DE REFERENCIA de España (temperatura de combustión),
+    # con los factores de la Tabla A.1 de la ISO 13443. Requiere lenguaje explícito de
+    # condiciones, así que no interfiere con cumplimiento/límite normales.
+    if parametro is not None and _es_consulta_condiciones(texto_norm):
+        pais_origen = next((p for p in paises if _norm_pais(p) != _norm_pais(PAIS_BASE)), "Portugal")
+        return _responder_condiciones(parametro, valor, unidad_detectada, pais_origen)
 
     # Compliance: hay parámetro + valor, y se menciona país(es) o hay señal de cumplimiento.
     cue_cumplimiento = any(c in texto_norm for c in [
