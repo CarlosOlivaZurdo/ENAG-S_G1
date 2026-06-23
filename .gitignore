@@ -4,3 +4,6 @@ __pycache__/
 *.sqlite3-shm
 *.sqlite3-wal
 
+
+# Excel/CSV normativo retirado: la fuente primaria es la ontologia (data/ontologia)
+data/raw/NORM_17_06.csv

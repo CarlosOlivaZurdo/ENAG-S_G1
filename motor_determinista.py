@@ -152,9 +152,14 @@ def _detect_header_row(df: pd.DataFrame) -> Optional[int]:
     return None
 
 
-def _load_all_records() -> Tuple[List[Dict[str, Any]], Path]:
+def _load_all_records() -> Tuple[List[Dict[str, Any]], Optional[Path]]:
     project_root = Path(__file__).resolve().parent
-    excel_path = _find_excel_path(project_root)
+    # El Excel/CSV es un índice OPCIONAL (la fuente primaria es la ontología). Si no
+    # existe, se degrada con elegancia (sin datos) en vez de lanzar una excepción.
+    try:
+        excel_path = _find_excel_path(project_root)
+    except FileNotFoundError:
+        return [], None
     all_records: List[Dict[str, Any]] = []
 
     if excel_path.suffix.lower() == ".csv":
