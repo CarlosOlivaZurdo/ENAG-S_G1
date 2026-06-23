@@ -1223,6 +1223,47 @@ def _listar_fuentes() -> str:
     return "\n".join(lines)
 
 
+def _normativa_de_pais(paises: list) -> str:
+    """#1 — «¿Qué normativa aplican en [país]?» Lista las normas oficiales que ese país
+    aplica a la calidad del gas (fuentes distintas usadas en sus parámetros)."""
+    onto = _cargar_ontologia()
+    params = onto.get("parametros") or {}
+    glos = _glosario_fuentes()
+    bloques: list = []
+    for pais in paises:
+        cod = _PAIS_A_CODIGO.get(_norm_pais(pais))
+        if not cod:
+            continue
+        usados: list = []
+        for p in params.values():
+            fc = ((p.get("limites") or {}).get(cod) or {}).get("fuente")
+            if fc and fc not in usados:
+                usados.append(fc)
+        nombre_pais = _CODIGO_A_PAIS.get(cod, pais)
+        if not usados:
+            bloques.append(f"No tengo registrada la normativa de calidad del gas de {nombre_pais}.")
+            continue
+        lineas = [f"**Normativa de calidad del gas aplicable en {nombre_pais}**", ""]
+        for fc in usados:
+            info = glos.get(fc, {})
+            partes = [f"- **{info.get('nombre') or fc}**"]
+            if info.get("organismo"):
+                partes.append(info["organismo"])
+            pub = info.get("publicacion") or info.get("referencia_legal") or ""
+            if pub:
+                partes.append(pub)
+            linea = " · ".join(partes)
+            url = info.get("url_eurlex") or info.get("url_enagas") or ""
+            if url:
+                linea += f" — {url}"
+            lineas.append(linea)
+            ambito = info.get("tabla_calidad") or info.get("ambito") or ""
+            if ambito:
+                lineas.append(f"  - {ambito}")
+        bloques.append("\n".join(lineas))
+    return "\n\n".join(bloques) if bloques else "No encontré normativa para el país indicado."
+
+
 def _es_consulta_fuente(texto_norm: str) -> bool:
     """¿El usuario pregunta de qué reglamento/norma procede la información?"""
     claves = (
@@ -1308,6 +1349,8 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
         if parametro is not None:
             paises_f = list(paises) if paises else list(_PAISES_FUENTE)
             return _responder_fuente(parametro, paises_f)
+        if paises:  # #1 «¿qué normativa aplican en [país]?» (sin parámetro concreto)
+            return _normativa_de_pais(paises)
         if _pregunta_lista_fuentes(texto_norm):
             return _listar_fuentes()
 
