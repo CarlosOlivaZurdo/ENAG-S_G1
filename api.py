@@ -1102,6 +1102,90 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
     }
 
 
+# --- Matriz comparativa avanzada (heatmap) ----------------------------------
+# Filas = países, columnas = parámetros. Cada celda: rango normalizado a condiciones
+# de España, un NIVEL frente a España (para el color) y un FLAG si hubo diferencia
+# metodológica (unidad o condiciones distintas → se aplicó conversión).
+PAISES_MATRIZ = ["España", "Portugal", "Francia", "UE"]
+
+
+def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
+    es_base = _norm_pais(pais) == _norm_pais(PAIS_BASE)
+    resp = fuente_oficial.consultar(slug, pais)
+    if not resp.get("matches"):
+        return {"valor": "—", "nivel": "sin_dato", "flag": False, "flag_desc": ""}
+    m = resp["matches"][0]
+    r = _rango_de_match(m, slug, pais, unidad_es)
+    est = r.get("estado")
+
+    def fr(lo, hi):
+        return f"{_coma(lo) if lo is not None else '—'} / {_coma(hi) if hi is not None else '—'}"
+
+    if est in ("sin_datos", "sin_dato"):
+        return {"valor": "—", "nivel": "sin_dato", "flag": False, "flag_desc": ""}
+    if est == "incomparable":
+        return {"valor": "≠ unidades", "nivel": "incomparable", "flag": True, "flag_desc": "No comparable de forma determinista"}
+    if est == "sin_limite":
+        return {"valor": "Sin límite", "nivel": "sin_limite", "flag": False, "flag_desc": ""}
+
+    # Flag metodológico: solo si hay límite real con unidad/condiciones distintas a España.
+    difs = []
+    if not es_base:
+        u = _txt(m.get("unidad"))
+        if u and unidad_es and _normalize_unit(u) != _normalize_unit(unidad_es):
+            difs.append(f"unidad {u}")
+        if m.get("notacion") and notac_es and m.get("notacion") != notac_es:
+            difs.append(f"condiciones {m.get('notacion')}")
+    flag = bool(difs)
+    flag_desc = (" · ".join(difs) + " → convertido a condiciones de España") if flag else ""
+
+    if es_base:
+        nivel = "base"
+    elif es_rng.get("estado") != "ok":
+        nivel = "sin_ref"
+    else:
+        lo = r["lo"] if r["lo"] is not None else float("-inf")
+        hi = r["hi"] if r["hi"] is not None else float("inf")
+        if es_maximo:
+            es_hi = es_rng["hi"] if es_rng["hi"] is not None else float("inf")
+            nivel = "restrictivo" if hi < es_hi - 1e-9 else ("amplio" if hi > es_hi + 1e-9 else "igual")
+        else:
+            ancho = hi - lo
+            if ancho_es is None:
+                nivel = "igual"
+            else:
+                nivel = "restrictivo" if ancho < ancho_es - 1e-9 else ("amplio" if ancho > ancho_es + 1e-9 else "igual")
+    return {"valor": fr(r["lo"], r["hi"]), "nivel": nivel, "flag": flag, "flag_desc": flag_desc}
+
+
+def matriz_comparativa() -> Dict[str, Any]:
+    """Heatmap: filas=países, columnas=parámetros, celdas con nivel (color) y flag."""
+    cols = []
+    filas = {p: {} for p in PAISES_MATRIZ}
+    for pinfo in PARAMETROS_UI:
+        slug = pinfo["slug"]
+        cols.append({"slug": slug, "label": pinfo["label"]})
+        es = fuente_oficial.consultar(slug, PAIS_BASE)
+        esm = es["matches"][0] if es.get("matches") else None
+        unidad_es = (esm.get("unidad") if esm else "") or ""
+        notac_es = esm.get("notacion") if esm else None
+        es_rng = _rango_de_match(esm, slug, PAIS_BASE, unidad_es) if esm else {"estado": "sin_datos"}
+        es_maximo = es_rng.get("estado") == "ok" and es_rng.get("lo") is None
+        ancho_es = None
+        if es_rng.get("estado") == "ok":
+            lo = es_rng["lo"] if es_rng["lo"] is not None else float("-inf")
+            hi = es_rng["hi"] if es_rng["hi"] is not None else float("inf")
+            ancho_es = hi - lo
+        for pais in PAISES_MATRIZ:
+            filas[pais][slug] = _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es)
+    return {
+        "paises": PAISES_MATRIZ,
+        "parametros": cols,
+        "filas": [{"pais": p, "celdas": filas[p]} for p in PAISES_MATRIZ],
+        "unidad_nota": "Valores normalizados a unidad y condiciones de España (ISO 13443 para PCS/Wobbe).",
+    }
+
+
 # --- Fuente normativa: ¿de qué reglamento procede cada dato? ----------------
 # Se lee de la ontología validada (data/ontologia/ontologia_enagas.yaml), que
 # guarda la fuente, el artículo y la página verificados por parámetro y país.
@@ -1264,14 +1348,8 @@ def _normativa_de_pais(paises: list) -> str:
     return "\n\n".join(bloques) if bloques else "No encontré normativa para el país indicado."
 
 
-def _rango_en_condiciones_es(parametro: str, pais: str, unidad_es: Optional[str]) -> Dict[str, Any]:
-    """Rango de límites de `pais` para `parametro`, llevado a la UNIDAD y CONDICIONES de
-    España (combustión, ISO 13443). Devuelve {estado, lo, hi} con estado:
-    'ok' | 'sin_limite' (no fija el parámetro) | 'sin_datos' | 'incomparable'."""
-    resp = _consultar_norma(parametro, pais)
-    if not resp.get("matches"):
-        return {"estado": "sin_datos"}
-    m = resp["matches"][0]
+def _rango_de_match(m: Dict[str, Any], parametro: str, pais: str, unidad_es: Optional[str]) -> Dict[str, Any]:
+    """Lleva el rango de un registro `m` a la UNIDAD y CONDICIONES de España (ISO 13443)."""
     inf = _num_limite(_txt(m.get("limite_inferior")))
     sup = _num_limite(_txt(m.get("limite_superior")))
     if inf is None and sup is None:
@@ -1296,6 +1374,15 @@ def _rango_en_condiciones_es(parametro: str, pais: str, unidad_es: Optional[str]
     if lo == "incomparable" or hi == "incomparable":
         return {"estado": "incomparable"}
     return {"estado": "ok", "lo": lo, "hi": hi}
+
+
+def _rango_en_condiciones_es(parametro: str, pais: str, unidad_es: Optional[str]) -> Dict[str, Any]:
+    """Rango de límites de `pais` para `parametro`, llevado a la UNIDAD y CONDICIONES de
+    España. Devuelve {estado, lo, hi} con estado: 'ok' | 'sin_limite' | 'sin_datos' | 'incomparable'."""
+    resp = _consultar_norma(parametro, pais)
+    if not resp.get("matches"):
+        return {"estado": "sin_datos"}
+    return _rango_de_match(resp["matches"][0], parametro, pais, unidad_es)
 
 
 def _intercambiabilidad(parametro: str, paises: Optional[list] = None) -> str:
@@ -1863,3 +1950,10 @@ async def parametros_endpoint() -> Dict[str, Any]:
 async def comparar_endpoint(req: PeticionComparar) -> Dict[str, Any]:
     slug = _normalize_parameter((req.parametro or "").lower()) or (req.parametro or "").lower()
     return comparar_estructurado(slug, req.paises, req.unidad or "")
+
+
+@app.get("/api/matriz")
+@gestionar_errores
+async def matriz_endpoint() -> Dict[str, Any]:
+    """Matriz comparativa (heatmap): países × parámetros, normalizado a condiciones de España."""
+    return matriz_comparativa()

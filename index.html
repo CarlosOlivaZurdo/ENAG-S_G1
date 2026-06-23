@@ -165,6 +165,29 @@
   .cmp-ev li b{color:var(--navy-2)}
   .cmp-ev a{color:var(--accent-d);word-break:break-all}
   .cmp-ev code{background:#eef2f6;padding:1px 5px;border-radius:4px;font-size:11px}
+  .cmp-subnav{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .sub-item{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--muted);
+    padding:9px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-1px}
+  .sub-item:hover{color:var(--ink)}
+  .sub-item.active{color:var(--accent-d);border-bottom-color:var(--accent)}
+
+  /* Heatmap */
+  .hm-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+  .hm{border-collapse:separate;border-spacing:3px;width:100%;font-size:12px}
+  .hm th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--navy);padding:6px 8px;text-align:center;vertical-align:bottom}
+  .hm th.hm-corner{text-align:left}
+  .hm td.hm-pais{font-weight:700;color:var(--navy-2);white-space:nowrap;padding:6px 10px;background:var(--panel-2);border-radius:5px}
+  .hm td.cell{padding:7px 8px;border-radius:5px;text-align:center;min-width:78px;position:relative;border:1px solid transparent}
+  .hm .cv{font-weight:600;color:var(--ink)} .hm .cu{font-size:9.5px;color:var(--muted);display:block}
+  .hm .warn{position:absolute;top:2px;right:4px;font-size:10px;cursor:help}
+  .lv-base{background:#ffffff;border-color:var(--line)!important}
+  .lv-igual{background:#e7f4ec} .lv-restrictivo{background:#e2edfb} .lv-amplio{background:#fbeedd}
+  .lv-sin_limite{background:#f1f3f5} .lv-sin_limite .cv{color:var(--muted-2);font-weight:500}
+  .lv-sin_dato{background:#f8f9fa} .lv-sin_dato .cv{color:var(--muted-2)}
+  .lv-incomparable{background:#fbe7e6} .lv-sin_ref{background:#f8f9fa}
+  .hm-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:11.5px;color:var(--muted)}
+  .hm-legend span{display:inline-flex;align-items:center;gap:6px}
+  .hm-legend i{width:13px;height:13px;border-radius:3px;border:1px solid var(--line);display:inline-block}
   .cmp-iso{margin-top:14px;background:#f0faf9;border:1px solid #bfe4e1;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#0a5b57;line-height:1.6}
   .cmp-iso b{color:#084c49}
   .cmp-iso .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--accent-d);padding:2px 7px;border-radius:4px;margin-right:7px}
@@ -248,23 +271,35 @@
     <div id="viewCompare" class="view">
       <div class="cmp-wrap">
         <div class="cmp-inner">
-          <p class="cmp-intro">Compara los requisitos normativos entre jurisdicciones. <b>España</b> es siempre la base de referencia. Cuando un país usa condiciones de combustión distintas (p. ej. Portugal, 25&nbsp;°C), el PCS y el Índice de Wobbe se convierten automáticamente a las condiciones españolas según la <b>ISO&nbsp;13443:2006 (Tabla&nbsp;A.1)</b>.</p>
-          <div class="cmp-form">
-            <div class="cmp-field">
-              <label for="cmpParam">Parámetro</label>
-              <select id="cmpParam"></select>
-            </div>
-            <div class="cmp-field">
-              <label for="cmpUnidad">Unidad</label>
-              <select id="cmpUnidad"></select>
-            </div>
-            <div class="cmp-paises" id="cmpPaises"></div>
-            <button class="cmp-btn" id="cmpBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-              Comparar
-            </button>
+          <div class="cmp-subnav">
+            <button class="sub-item active" data-sub="puntual">Comparativa puntual</button>
+            <button class="sub-item" data-sub="matriz">Matriz general (heatmap)</button>
           </div>
-          <div class="cmp-result" id="cmpResult"></div>
+
+          <div id="subPuntual">
+            <p class="cmp-intro">Compara un parámetro entre <b>España</b> (base) y otro país. Cuando el país usa condiciones de combustión distintas (p. ej. Portugal, 25&nbsp;°C), el PCS y el Índice de Wobbe se convierten a condiciones españolas según la <b>ISO&nbsp;13443</b>.</p>
+            <div class="cmp-form">
+              <div class="cmp-field">
+                <label for="cmpParam">Parámetro</label>
+                <select id="cmpParam"></select>
+              </div>
+              <div class="cmp-field">
+                <label for="cmpUnidad">Unidad</label>
+                <select id="cmpUnidad"></select>
+              </div>
+              <div class="cmp-paises" id="cmpPaises"></div>
+              <button class="cmp-btn" id="cmpBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                Comparar
+              </button>
+            </div>
+            <div class="cmp-result" id="cmpResult"></div>
+          </div>
+
+          <div id="subMatriz" style="display:none">
+            <p class="cmp-intro">Visión de conjunto: <b>países × parámetros</b>. Cada celda muestra el límite normalizado a las <b>condiciones de España</b> (ISO&nbsp;13443 para PCS/Wobbe). El color indica si el país es más restrictivo o más amplio que España; el icono ⚠ marca que hubo una <b>diferencia metodológica</b> (unidad o condiciones distintas).</p>
+            <div id="matrizResult"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -514,6 +549,65 @@
     return html;
   }
   $("cmpBtn").onclick = comparar;
+
+  /* ===== Sub-tabs Comparativa: puntual / matriz ===== */
+  let matrizCargada = false;
+  document.querySelectorAll(".sub-item").forEach(b => b.onclick = () => {
+    const sub = b.dataset.sub;
+    document.querySelectorAll(".sub-item").forEach(x => x.classList.toggle("active", x===b));
+    $("subPuntual").style.display = sub==="puntual" ? "" : "none";
+    $("subMatriz").style.display = sub==="matriz" ? "" : "none";
+    if(sub==="matriz" && !matrizCargada) cargarMatriz();
+  });
+
+  const NIVEL_LABEL = {base:"España (base)", igual:"Igual de exigente", restrictivo:"Más restrictivo",
+    amplio:"Más amplio", sin_limite:"Sin límite", sin_dato:"Sin dato", incomparable:"No comparable", sin_ref:"Sin referencia"};
+
+  async function cargarMatriz(){
+    const cont = $("matrizResult");
+    cont.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Cargando matriz…</div></div>';
+    try{
+      const r = await fetch(api("/api/matriz"));
+      if(r.status===404){
+        cont.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar la matriz. Cierra la ventana del servidor y vuelve a ejecutar <code>iniciar_chatbot.bat</code>.</div>';
+        return;
+      }
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      matrizCargada = true;
+      cont.innerHTML = renderMatriz(await r.json());
+    }catch(e){
+      cont.innerHTML = '<div class="cmp-empty">No se pudo cargar la matriz.<br>Detalle: '+esc(e.message)+'</div>';
+    }
+  }
+
+  function renderMatriz(d){
+    const params = d.parametros||[], filas = d.filas||[];
+    if(!params.length || !filas.length) return '<div class="cmp-empty">Sin datos para la matriz.</div>';
+    let head = '<tr><th class="hm-corner">País \\ Parámetro</th>';
+    params.forEach(p => head += '<th>'+esc(p.label)+'</th>');
+    head += '</tr>';
+    let body = '';
+    filas.forEach(f => {
+      let r = '<tr><td class="hm-pais">'+esc(f.pais)+'</td>';
+      params.forEach(p => {
+        const c = f.celdas[p.slug] || {valor:"—",nivel:"sin_dato",flag:false};
+        const warn = c.flag ? '<span class="warn" title="'+esc(c.flag_desc||"Diferencia metodológica")+'">⚠</span>' : '';
+        const title = (NIVEL_LABEL[c.nivel]||c.nivel) + (c.flag_desc ? " · "+c.flag_desc : "");
+        r += '<td class="cell lv-'+esc(c.nivel)+'" title="'+esc(title)+'">'+warn+
+             '<span class="cv">'+esc(c.valor)+'</span>'+(c.unidad?'<span class="cu">'+esc(c.unidad)+'</span>':'')+'</td>';
+      });
+      r += '</tr>';
+      body += r;
+    });
+    const leyenda = [["lv-base","España (base)"],["lv-igual","Igual"],["lv-restrictivo","Más restrictivo"],
+      ["lv-amplio","Más amplio"],["lv-sin_limite","Sin límite"],["lv-incomparable","No comparable"],["lv-sin_dato","Sin dato"]];
+    let leg = '<div class="hm-legend">'+leyenda.map(l => '<span><i class="'+l[0]+'"></i>'+l[1]+'</span>').join("")+
+      '<span>⚠ diferencia metodológica (convertido a condiciones de España)</span></div>';
+    return '<div class="cmp-card"><h2>Matriz comparativa</h2>'+
+      '<p class="csub">'+esc(d.unidad_nota||"")+'</p>'+
+      '<div class="hm-wrap"><table class="hm"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
+      leg+'</div>';
+  }
 
   showEmpty(); checkStatus(); setInterval(checkStatus, 15000);
 </script>
