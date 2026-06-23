@@ -1370,6 +1370,86 @@ def _es_consulta_intercambio(texto_norm: str) -> bool:
     return pistas_pais and ("gas" in texto_norm or "compatible" in texto_norm or "intercambi" in texto_norm)
 
 
+def _es_consulta_restriccion(texto_norm: str) -> bool:
+    """¿Pregunta qué país es más restrictivo/amplio que España en un parámetro?"""
+    return any(k in texto_norm for k in (
+        "restrictiv", "estrict", "exigent", "mas amplio", "más amplio", "mas amplia",
+        "más amplia", "permisiv", "laxo", "laxa", "flexible", "menos exigent",
+    ))
+
+
+def _restriccion_vs_espana(parametro: str, texto_norm: str) -> str:
+    """#4 — «¿Qué país de la UE tiene un límite de [parámetro] más restrictivo/amplio
+    que España?» Clasifica cada país frente a España (en condiciones de España)."""
+    display = DISPLAY_MAP.get(parametro, parametro)
+    unidad_es = _unidad_de_pais(parametro, PAIS_BASE)
+    es = _rango_en_condiciones_es(parametro, PAIS_BASE, unidad_es)
+    if es.get("estado") != "ok":
+        return f"No tengo un límite numérico de España para {display}, así que no puedo compararlo."
+    es_maximo = es.get("lo") is None  # solo cota superior (contaminantes) vs rango
+    es_lo = es["lo"] if es["lo"] is not None else float("-inf")
+    es_hi = es["hi"] if es["hi"] is not None else float("inf")
+    ancho_es = es_hi - es_lo
+
+    quiere_amplio = any(k in texto_norm for k in ("amplio", "amplia", "permisiv", "laxo", "laxa", "flexible", "menos exigent"))
+    quiere_restr = any(k in texto_norm for k in ("restrictiv", "estrict", "exigent")) and not quiere_amplio
+
+    def fr(lo, hi):
+        return f"{_coma(lo) if lo is not None else '—'} / {_coma(hi) if hi is not None else '—'}"
+
+    paises = [p for p in ALL_COUNTRIES if _norm_pais(p) != _norm_pais(PAIS_BASE)]
+    lines = [
+        f"**{display}: ¿qué país es más restrictivo/amplio que España?** (base España: {fr(es['lo'], es['hi'])} {unidad_es or ''})",
+        "",
+        "| País | Límite (en condiciones de España) | Frente a España |",
+        "| --- | --- | --- |",
+    ]
+    mas_restr, mas_amplio = [], []
+    for pais in paises:
+        r = _rango_en_condiciones_es(parametro, pais, unidad_es)
+        est = r.get("estado")
+        if est == "sin_datos":
+            lines.append(f"| {pais} | — | ⚪ No consta el parámetro |")
+            continue
+        if est == "incomparable":
+            lines.append(f"| {pais} | (no convertible) | ⚪ No comparable |")
+            continue
+        if est == "sin_limite":
+            lines.append(f"| {pais} | Sin límite | 🔼 Más amplio (no lo regula) |")
+            mas_amplio.append(pais)
+            continue
+        lo = r["lo"] if r["lo"] is not None else float("-inf")
+        hi = r["hi"] if r["hi"] is not None else float("inf")
+        if es_maximo:
+            if hi < es_hi - 1e-9:
+                verd, lst = "🔽 Más restrictivo (máximo más bajo)", mas_restr
+            elif hi > es_hi + 1e-9:
+                verd, lst = "🔼 Más amplio (máximo más alto)", mas_amplio
+            else:
+                verd, lst = "➖ Igual de exigente", None
+        else:
+            ancho = hi - lo
+            if ancho < ancho_es - 1e-9:
+                verd, lst = "🔽 Más restrictivo (rango más estrecho)", mas_restr
+            elif ancho > ancho_es + 1e-9:
+                verd, lst = "🔼 Más amplio (rango más ancho)", mas_amplio
+            else:
+                verd, lst = "➖ Rango equivalente", None
+        if lst is not None:
+            lst.append(pais)
+        lines.append(f"| {pais} | {fr(r['lo'], r['hi'])} {unidad_es or ''} | {verd} |")
+
+    if quiere_restr:
+        foco = f"**Más restrictivos que España:** {', '.join(mas_restr) if mas_restr else 'ninguno'}."
+    elif quiere_amplio:
+        foco = f"**Más amplios que España:** {', '.join(mas_amplio) if mas_amplio else 'ninguno'}."
+    else:
+        foco = (f"**Más restrictivos:** {', '.join(mas_restr) or 'ninguno'}. "
+                f"**Más amplios:** {', '.join(mas_amplio) or 'ninguno'}.")
+    lines += ["", foco]
+    return "\n".join(lines)
+
+
 def _es_consulta_fuente(texto_norm: str) -> bool:
     """¿El usuario pregunta de qué reglamento/norma procede la información?"""
     claves = (
@@ -1464,6 +1544,10 @@ def _validate_measurement_gate(session_id: str, mensaje: str) -> Optional[str]:
     # podría intercambiar gas?» → intercambiabilidad (solape de rangos vs España).
     if parametro is not None and valor is None and _es_consulta_intercambio(texto_norm):
         return _intercambiabilidad(parametro)
+
+    # #4 «¿Qué país tiene un límite de [parámetro] más restrictivo/amplio que España?»
+    if parametro is not None and valor is None and _es_consulta_restriccion(texto_norm):
+        return _restriccion_vs_espana(parametro, texto_norm)
 
     # Comparación de NORMATIVA entre países (sin valor del usuario):
     # "compara el Wobbe entre España y Francia", "diferencia de O2 España vs Portugal"…
