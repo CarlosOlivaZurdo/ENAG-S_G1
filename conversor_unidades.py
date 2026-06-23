@@ -225,10 +225,12 @@ def convertir_unidades(
     # --- Concentración: estándar 15 °C <-> normal 0 °C ---
     if o in _CONC_STD15 and d in _CONC_NORMAL:
         return _ok(valor, valor * FACTOR_SM3_A_NM3, unidad_origen, unidad_destino, parametro,
-                   "mg/Nm³(0 °C) = mg/m³(15 °C) × (288,15/273,15) ≈ × 1,0549")
+                   "mg/Nm³(0 °C) = mg/m³(15 °C) × (288,15/273,15) ≈ × 1,0549 "
+                   "(UNE-EN ISO 13443, Tabla A.1, base de volumen)")
     if o in _CONC_NORMAL and d in _CONC_STD15:
         return _ok(valor, valor / FACTOR_SM3_A_NM3, unidad_origen, unidad_destino, parametro,
-                   "mg/m³(15 °C) = mg/Nm³(0 °C) × (273,15/288,15) ≈ × 0,9479")
+                   "mg/m³(15 °C) = mg/Nm³(0 °C) × (273,15/288,15) ≈ × 0,9479 "
+                   "(UNE-EN ISO 13443, Tabla A.1, base de volumen)")
 
     # --- Concentración másica <-> ppm(vol) (requiere masa molar) ---
     if (o in _CONC_NORMAL or o in _CONC_STD15) and d in _PPM:
@@ -255,6 +257,183 @@ def convertir_unidades(
 
     # --- No soportada: NO se inventa ningún resultado ---
     return _error_no_soportada(valor, unidad_origen, unidad_destino)
+
+
+# ---------------------------------------------------------------------------
+# Condiciones de referencia normalizadas — UNE-EN ISO 13443:2006 (ISO 13443:1996)
+#
+# El PCS, el PCI y el Índice de Wobbe dependen de la temperatura de COMBUSTIÓN
+# (t1) y de la de MEDICIÓN/volumen (t2); el volumen y la densidad solo de t2
+# (Anexo C, símbolos). Cada país fija sus propias condiciones (Anexo E, Tabla
+# E.1), así que para comparar valores hay que llevarlos a una base común.
+#
+# Implementación: ecuaciones del Anexo B (B.5–B.21), que convierten cualquier
+# condición (t1, t2, p) a las condiciones de referencia normalizadas ISO
+# (15 °C, 101,325 kPa). VERIFICADAS de forma exacta contra los ejemplos
+# resueltos de la propia norma (cero alucinaciones):
+#   • Anexo D, Ejemplo 4 (PCS real volum., B.19):  38,57 → 38,56 MJ/m³
+#   • Anexo D, Ejemplo 5 (PCI real volum., B.20):  37,35 × 0,9477 = 35,40 MJ/m³
+# El Índice de Wobbe se obtiene de su definición W = PCS / √(densidad relativa),
+# usando B.19 y B.7; esto reproduce la línea 21 de la Tabla A.1.
+#
+# FUENTE ÚNICA: para los pares de condiciones TABULADOS se devuelve el factor
+# LITERAL de la Tabla A.1 (Anexo A, NORMATIVO; p. ej. Portugal → España = 1,0026);
+# para cualquier otra condición se usan las ecuaciones del Anexo B (informativo).
+# `condiciones_referencia.py` (comparador de países) delega aquí, de modo que el
+# factor normativo vive en UN SOLO sitio (`_TABLA_A1`). El campo `base_normativa`
+# del resultado indica qué anexo se aplicó. Las ecuaciones del Anexo B pueden
+# diferir de la tabla en la última cifra (1,0025 vs 1,0026), dentro de la precisión
+# declarada por la norma (±0,05 % en propiedades de combustión); por eso la tabla
+# tiene prioridad.
+# ---------------------------------------------------------------------------
+
+ISO13443_T_REF_K = 288.15      # 15 °C — temperatura de referencia normalizada ISO
+ISO13443_P_REF_KPA = 101.325   # presión de referencia normalizada ISO
+
+_FUENTE_ISO13443 = "UNE-EN ISO 13443:2006 (ISO 13443:1996)"
+
+# Parámetros admitidos: dependen de la combustión (t1) o solo de la medición (t2).
+_PARAMS_COMBUSTION_13443 = {"pcs", "pci", "wobbe"}
+_PARAMS_MEDICION_13443 = {"volumen", "densidad", "densidad_relativa"}
+
+# FUENTE ÚNICA de los factores NORMATIVOS. Valores LITERALES de la Tabla A.1 (Anexo A,
+# normativo; gas real, base volumétrica), para los pares de condiciones tabulados a
+# 101,325 kPa. Tienen PRIORIDAD sobre las ecuaciones del Anexo B (informativo). Clave:
+# (cond_origen, cond_destino), con cond = (t_combustión, t_medición) en °C.
+# Cubren los países del proyecto: España (0,0), Portugal (25,0), Francia (0,0), UE (15,15).
+_TABLA_A1 = {
+    ((25, 0), (0, 0)): {"pcs": 1.0026, "wobbe": 1.0026, "pci": 1.0003},
+    ((15, 15), (0, 0)): {"pcs": 1.0570, "wobbe": 1.0569, "pci": 1.0555},
+}
+
+
+def _factor_tabla_a1(slug: str, cond_o, cond_d) -> Optional[float]:
+    """Factor LITERAL de la Tabla A.1 para el par tabulado (o su inverso), o None."""
+    directo = _TABLA_A1.get((cond_o, cond_d))
+    if directo and slug in directo:
+        return directo[slug]
+    inverso = _TABLA_A1.get((cond_d, cond_o))
+    if inverso and slug in inverso:
+        return 1.0 / inverso[slug]
+    return None
+
+
+def _slug_param_13443(parametro: str) -> str:
+    """Reduce el nombre del parámetro al slug ISO 13443 (pcs/pci/wobbe/volumen/…)."""
+    p = _norm_txt(parametro)
+    if "wobbe" in p:
+        return "wobbe"
+    if "pci" in p or "inferior" in p:
+        return "pci"
+    if "pcs" in p or "superior" in p or "calorific" in p or "podercalor" in p:
+        return "pcs"
+    if "densidadrelativa" in p or p in ("d", "dr"):
+        return "densidad_relativa"
+    if "densidad" in p or "rho" in p:
+        return "densidad"
+    if "volumen" in p or "volume" in p or p == "v":
+        return "volumen"
+    return p
+
+
+def _factor_a_iso_13443(slug: str, t_comb_c: float, t_med_c: float, p_kpa: float) -> Optional[float]:
+    """Factor que lleva una propiedad desde (t1, t2, p) a las condiciones ISO.
+
+    Devuelve f tal que  valor(ISO) = valor(t1, t2, p) × f  (gas real).
+    None si el parámetro no está soportado. Ecuaciones del Anexo B de ISO 13443.
+    """
+    T1 = t_comb_c + 273.15   # temperatura de combustión (K)
+    T2 = t_med_c + 273.15    # temperatura de medición/volumen (K)
+    p = p_kpa
+    cP = 1 + 0.000020 * (p - 101.325)       # corrección de presión (gas real)
+    cT2 = 1 + 0.000025 * (T2 - 288.15)      # corrección de T de medición (gas real)
+    vol_H = (101.325 * T2) / (288.15 * p)   # parte volumétrica de H!/Wobbe (B.16/B.19)
+    if slug == "volumen":
+        return ((288.15 * p) / (101.325 * T2)) * cP / cT2           # B.5
+    if slug == "densidad":
+        return vol_H * cT2 / cP                                     # B.6
+    if slug == "densidad_relativa":
+        return (1 + 0.000014 * (T2 - 288.15)) / cP                  # B.7
+    if slug == "pcs":
+        return vol_H * (1 + 0.00010 * (T1 - 288.15)) * cT2 / cP     # B.19
+    if slug == "pci":
+        return vol_H * (1 + 0.00001 * (T1 - 288.15)) * cT2 / cP     # B.20
+    if slug == "wobbe":                                             # W = PCS / √d
+        f_pcs = vol_H * (1 + 0.00010 * (T1 - 288.15)) * cT2 / cP
+        f_d = (1 + 0.000014 * (T2 - 288.15)) / cP
+        return f_pcs / (f_d ** 0.5)
+    return None
+
+
+def convertir_condiciones_referencia(
+    valor: float,
+    parametro: str,
+    comb_origen: float,
+    med_origen: float,
+    comb_destino: float,
+    med_destino: float,
+    p_origen: float = 101.325,
+    p_destino: float = 101.325,
+) -> Dict[str, Any]:
+    """Convierte una propiedad del gas entre dos CONDICIONES DE REFERENCIA (ISO 13443).
+
+    Lleva `valor` (de `parametro`, en las condiciones de origen — temperatura de
+    combustión `comb_origen` y de medición `med_origen`, en °C) a las condiciones de
+    destino, aplicando las ecuaciones del Anexo B de la UNE-EN ISO 13443. No realiza
+    ninguna conversión de UNIDAD (convierte antes con `convertir_unidades` si hace falta).
+
+    Soporta PCS, PCI e Índice de Wobbe (dependen de combustión y medición) y volumen,
+    densidad y densidad relativa (solo medición). Las presiones de referencia son
+    101,325 kPa salvo que se indique otra cosa.
+
+    Devuelve dict con valor_convertido, factor, formula y fuente; o {error, ...} si el
+    parámetro no está cubierto por la norma (no se inventa ningún resultado).
+    """
+    slug = _slug_param_13443(parametro)
+    if slug not in _PARAMS_COMBUSTION_13443 and slug not in _PARAMS_MEDICION_13443:
+        return {
+            "error": (
+                f"Parámetro '{parametro}' no soportado para conversión de condiciones de "
+                "referencia ISO 13443. Soportados: PCS, PCI, Wobbe, volumen, densidad, "
+                "densidad relativa. No se realiza ninguna conversión."
+            ),
+            "valor_original": valor,
+            "parametros_soportados": sorted(_PARAMS_COMBUSTION_13443 | _PARAMS_MEDICION_13443),
+        }
+
+    cond_o_t = (comb_origen, med_origen)
+    cond_d_t = (comb_destino, med_destino)
+    presion_iso = (p_origen == ISO13443_P_REF_KPA and p_destino == ISO13443_P_REF_KPA)
+    factor_tabla = _factor_tabla_a1(slug, cond_o_t, cond_d_t) if presion_iso else None
+
+    if cond_o_t == cond_d_t and p_origen == p_destino:
+        # Mismas condiciones: sin conversión (factor exacto 1).
+        factor = 1.0
+        base = "Identidad (mismas condiciones de referencia)"
+    elif factor_tabla is not None:
+        # Par tabulado: factor LITERAL de la Tabla A.1 (Anexo A, normativo). Prioritario.
+        factor = factor_tabla
+        base = "UNE-EN ISO 13443, Anexo A, Tabla A.1 (normativo)"
+    else:
+        # Resto de condiciones: ecuaciones del Anexo B (informativo, verificadas vs. Anexo D).
+        f_o = _factor_a_iso_13443(slug, comb_origen, med_origen, p_origen)
+        f_d = _factor_a_iso_13443(slug, comb_destino, med_destino, p_destino)
+        factor = f_o / f_d
+        base = "UNE-EN ISO 13443, Anexo B (ecuaciones B.5–B.21)"
+
+    cond_o = f"combustión {comb_origen:g} °C, medición {med_origen:g} °C, {p_origen:g} kPa"
+    cond_d = f"combustión {comb_destino:g} °C, medición {med_destino:g} °C, {p_destino:g} kPa"
+    return {
+        "valor_original": valor,
+        "valor_convertido": round(float(valor) * factor, 6),
+        "factor": round(factor, 6),
+        "parametro": slug,
+        "condiciones_origen": cond_o,
+        "condiciones_destino": cond_d,
+        "formula": f"valor(destino) = valor(origen) × {factor:.6g}",
+        "base_normativa": base,
+        "fuente": _FUENTE_ISO13443,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -375,3 +554,18 @@ if __name__ == "__main__":
     ]
     for c in casos:
         print(c, "->", convertir_unidades(*c))
+
+    print("\n--- Condiciones de referencia (UNE-EN ISO 13443) ---")
+    # Validación contra los ejemplos resueltos de la propia norma (Anexo D):
+    #   Ejemplo 4: PCS real vol. 38,57 MJ/m³ (60 °F ≈ 15,556 °C) -> ISO (15 °C) = 38,56
+    #   Ejemplo 5: PCI real vol. 37,35 MJ/m³ (comb 25 °C, med 0 °C) -> ISO   = 35,40
+    ref = [
+        (38.57, "PCS", 15.5556, 15.5556, 15, 15, 101.560, 101.325),  # Ej. 4 -> 38,56
+        (37.35, "PCI", 25, 0, 15, 15),                               # Ej. 5 -> 35,40
+        (13.381, "Wobbe", 25, 0, 0, 0),     # Portugal -> España (cf. Tabla A.1 ≈ 1,0026)
+        (57.66, "PCS", 25, 0, 0, 0),        # Portugal -> España
+        (40.0, "PCS", 15, 15, 0, 0),        # UE/ISO -> España (Tabla A.1 ≈ 1,0570)
+        (15.0, "O2", 25, 0, 0, 0),          # no cubierto por la norma -> error explícito
+    ]
+    for c in ref:
+        print(c, "->", convertir_condiciones_referencia(*c))

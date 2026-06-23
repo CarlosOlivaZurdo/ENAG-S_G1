@@ -20,11 +20,15 @@ cambian las propiedades que dependen de la combustión: PCS, PCI e Índice de Wo
 El resto (concentraciones en mg/Nm³, % mol, ppm; densidad relativa; puntos de rocío)
 se mide a 0 °C en ambos países y NO necesita ajuste.
 
-Cero alucinaciones: los factores son los de la Tabla A.1 (gas real, base volumétrica),
-copiados literalmente de la norma. No se calcula nada "de memoria".
+Cero alucinaciones: los factores normativos (Tabla A.1) viven en un ÚNICO sitio,
+`conversor_unidades._TABLA_A1`. Este módulo solo resuelve País -> condiciones y
+DELEGA el cálculo del factor en `conversor_unidades.convertir_condiciones_referencia`.
+No se calcula ni se copia nada "de memoria".
 """
 import unicodedata
 from typing import Any, Dict
+
+from conversor_unidades import convertir_condiciones_referencia as _conv_cond_ref
 
 # (t1 combustión, t2 medición) en °C, por país (clave normalizada sin acentos).
 CONDICIONES_PAIS = {
@@ -33,17 +37,6 @@ CONDICIONES_PAIS = {
     "francia": (0, 0),
     "ue": (15, 15),
     "europa": (15, 15),
-}
-
-# Factores de la Tabla A.1 (gas REAL, base volumétrica) para llevar el valor desde
-# [condición de origen] -> [condición de España (combustión 0 °C, medición 0 °C)].
-#   - (25, 0) -> (0, 0): columna (25:00)->(00:00)  [Portugal -> España]
-#   - (15,15) -> (0, 0): columna (15:15)->(00:00)  [UE/ISO   -> España]
-#   - (0, 0)  -> (0, 0): misma base (Francia/España)
-_FACTOR_A_ESPANA = {
-    (25, 0): {"pcs": 1.0026, "wobbe": 1.0026, "pci": 1.0003},
-    (15, 15): {"pcs": 1.0570, "wobbe": 1.0569, "pci": 1.0555},
-    (0, 0): {"pcs": 1.0, "wobbe": 1.0, "pci": 1.0},
 }
 
 # Parámetros que dependen de la temperatura de COMBUSTIÓN (los únicos que cambian).
@@ -107,10 +100,13 @@ def convertir_a_condiciones_espana(valor: float, parametro: str, pais_origen: st
             "fuente": _FUENTE,
         }
 
-    factor = _FACTOR_A_ESPANA.get(cond, {}).get(slug, 1.0)
+    # Delega en el motor unificado: para estos pares devuelve el factor LITERAL de la
+    # Tabla A.1 (normativo). La fuente normativa vive en un único sitio (_TABLA_A1).
+    res = _conv_cond_ref(valor, slug, cond[0], cond[1], 0, 0)
+    factor = res["factor"]
     return {
         "valor_original": valor,
-        "valor_convertido": round(float(valor) * factor, 6),
+        "valor_convertido": res["valor_convertido"],
         "factor": factor,
         "parametro": slug,
         "pais_origen": pais_origen,
@@ -118,7 +114,7 @@ def convertir_a_condiciones_espana(valor: float, parametro: str, pais_origen: st
         "condiciones_destino": cond_es_txt,
         "sin_cambio": False,
         "formula": f"valor(España) = valor({pais_origen}) × {factor}",
-        "fuente": _FUENTE,
+        "fuente": res.get("base_normativa", _FUENTE),
     }
 
 

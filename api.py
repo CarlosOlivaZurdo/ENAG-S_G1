@@ -21,6 +21,7 @@ from motor_determinista import (
 )
 from conversor_unidades import (
     convertir_unidades,
+    convertir_condiciones_referencia,
     _parse_numeric_value,
     _extract_numeric_with_unit,
     _extract_unit_only,
@@ -215,6 +216,32 @@ OPENAI_TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "convertir_condiciones_iso13443",
+            "description": (
+                "Convierte PCS, PCI, Índice de Wobbe (o volumen/densidad/densidad relativa) entre DOS "
+                "condiciones de referencia ARBITRARIAS según la UNE-EN ISO 13443. A diferencia de "
+                "convertir_condiciones_referencia (que solo lleva a España), aquí indicas explícitamente "
+                "las temperaturas de combustión y medición de origen y destino. Para los pares tabulados "
+                "usa los factores literales de la Tabla A.1 (normativos); para el resto, las ecuaciones del "
+                "Anexo B. Úsala cuando las condiciones no sean las de un país conocido. No convierte unidades."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "valor": {"type": "number", "description": "Valor a convertir (ya en la unidad correcta)."},
+                    "parametro": {"type": "string", "description": "PCS, PCI, Wobbe, volumen, densidad o densidad relativa."},
+                    "comb_origen": {"type": "number", "description": "Temperatura de combustión de origen (°C)."},
+                    "med_origen": {"type": "number", "description": "Temperatura de medición/volumen de origen (°C)."},
+                    "comb_destino": {"type": "number", "description": "Temperatura de combustión de destino (°C)."},
+                    "med_destino": {"type": "number", "description": "Temperatura de medición/volumen de destino (°C)."},
+                },
+                "required": ["valor", "parametro", "comb_origen", "med_origen", "comb_destino", "med_destino"],
+            },
+        },
+    },
 ]
 
 TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
@@ -223,6 +250,7 @@ TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
     "consultar_excel": lambda **kw: _consultar_norma(kw.get("parametro", ""), kw.get("pais", "")),
     "evaluar_cumplimiento": lambda **kw: _evaluar_norma(kw.get("parametro", ""), kw.get("pais", ""), kw.get("valor"), kw.get("unidad")),
     "convertir_condiciones_referencia": convertir_a_condiciones_espana,
+    "convertir_condiciones_iso13443": convertir_condiciones_referencia,
     "buscar_pdfs": buscar_pdfs,
     "convertir_unidades": convertir_unidades,
 }
