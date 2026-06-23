@@ -35,8 +35,8 @@ CONDICIONES_PAIS = {
     "espana": (0, 0),
     "portugal": (25, 0),
     "francia": (0, 0),
-    "ue": (15, 15),
-    "europa": (15, 15),
+    "ue": (25, 0),       # EASEE-gas CBP: combustión 25 ºC, volumen 0 ºC
+    "europa": (25, 0),
 }
 
 # Parámetros que dependen de la temperatura de COMBUSTIÓN (los únicos que cambian).
