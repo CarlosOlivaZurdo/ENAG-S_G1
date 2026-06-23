@@ -8,8 +8,9 @@ Convención de este proyecto (las tablas normativas están a 0 °C y 1,01325 bar
   • `mg/m³` ≡ `mg/Nm³`  → condiciones NORMALES (0 °C). Son equivalentes.
   • `mg/sm³`, `mg/m³(15)`, `mg/m³@15` → condiciones ESTÁNDAR (15 °C), solo si se marca.
 """
+import re
 import unicodedata
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 # Volumen molar de un gas ideal a 0 °C y 1,01325 bar (Nm³): 22,414 L/mol.
 VOLUMEN_MOLAR_NM3 = 22.414
@@ -254,6 +255,90 @@ def convertir_unidades(
 
     # --- No soportada: NO se inventa ningún resultado ---
     return _error_no_soportada(valor, unidad_origen, unidad_destino)
+
+
+# ---------------------------------------------------------------------------
+# Parseo y normalización de unidades a partir de texto libre del usuario.
+#
+# Estas funciones NO realizan ninguna conversión: solo extraen el valor numérico
+# y/o la cadena de unidad de un mensaje, y normalizan unidades para poder
+# compararlas. Viven aquí (junto a `convertir_unidades`) para centralizar toda
+# la lógica de unidades en un único módulo analizable; el chat (api.py) las
+# importa en lugar de tener su propia copia.
+# ---------------------------------------------------------------------------
+
+# Tokens de unidad que reconocemos al extraer "valor + unidad" de un mensaje.
+_TOKENS_UNIDAD = (
+    "kwh", "mj", "mg", "ppm", "kg", "g", "bar", "%",
+    "m^3", "nm^3", "m3", "nm3", "m³", "nm³", "°c", "ºc", "c",
+)
+
+
+def _parse_numeric_value(text: str) -> Optional[float]:
+    """Extrae el número más "informativo" de un texto (admite coma decimal).
+
+    Tolera puntuación/letra justo después ("15," , "0.03de" -> 0.03). El
+    lookbehind evita capturar el "2" de "o2"/"co2" como número.
+    """
+    pattern = r"(?<![A-Za-z0-9])([-+]?[0-9]+(?:[\.,][0-9]+)?)"
+    matches = re.findall(pattern, text)
+    if not matches:
+        return None
+    best_match = max(matches, key=lambda m: ('.' in m, len(m)))
+    raw = best_match.replace(",", ".")
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
+def _extract_numeric_with_unit(text: str) -> Tuple[Optional[float], Optional[str]]:
+    """Devuelve (valor, unidad) si el texto contiene un número seguido de unidad."""
+    patterns = [
+        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*(kwh\s*/\s*[a-z0-9^³°]+|mj\s*/\s*[a-z0-9^³°]+|mg\s*/\s*[a-z0-9^³°]+|ppm\s*/\s*[a-z0-9^³°]+|%\s*(?:molar|mol)?|kwh|mj|mg|ppm|kg|g|bar|m\^3|nm\^3|m3|nm3|m³|nm³|°c|ºc|c\b)",
+        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*([a-z0-9^°]+\s*/\s*[a-z0-9^°]+)",
+    ]
+    for pattern in patterns:
+        for match in re.finditer(pattern, text):
+            value = match.group(1).replace(",", ".")
+            unit_raw = match.group(2) if match.lastindex and match.lastindex >= 2 else match.group(0)
+            unit_clean = re.sub(r"\s+", "", unit_raw)
+            unit_norm = unit_clean.lower()
+            if any(
+                unit_norm.startswith(token) or token in unit_norm
+                for token in _TOKENS_UNIDAD
+            ):
+                try:
+                    return float(value), unit_clean
+                except ValueError:
+                    return None, None
+    return None, None
+
+
+def _extract_unit_only(text: str) -> Optional[str]:
+    """Devuelve solo la unidad mencionada en el texto (sin número), o None."""
+    match = re.search(
+        r"(?i)(%\s*(?:molar|mol)?|kwh\s*/\s*[a-z0-9^³°]+|mj\s*/\s*[a-z0-9^³°]+|mg\s*/\s*[a-z0-9^³°]+|ppm\s*/\s*[a-z0-9^³°]+|°c|ºc|\bc\b)",
+        text,
+    )
+    if not match:
+        return None
+    return re.sub(r"\s+", "", match.group(0))
+
+
+def _normalize_unit(unit: Optional[str]) -> str:
+    """Normaliza una unidad para comparaciones robustas (m³→m3, °→o, sin espacios)."""
+    if not unit:
+        return ""
+    text = str(unit)
+    text = text.replace("^", "")
+    text = text.replace("³", "3").replace("²", "2")
+    text = text.replace("º", "°")
+    text = re.sub(r"\s+", "", text)
+    text = text.replace("°", "o")
+    text = text.replace("m³", "m3").replace("nm³", "nm3")
+    text = text.lower()
+    return text
 
 
 # ---------------------------------------------------------------------------

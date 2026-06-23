@@ -19,7 +19,13 @@ from motor_determinista import (
     consultar_excel,
     evaluar_cumplimiento,
 )
-from conversor_unidades import convertir_unidades
+from conversor_unidades import (
+    convertir_unidades,
+    _parse_numeric_value,
+    _extract_numeric_with_unit,
+    _extract_unit_only,
+    _normalize_unit,
+)
 from condiciones_referencia import (
     convertir_a_condiciones_espana,
     _slug_parametro as _slug_param_comb,
@@ -303,73 +309,6 @@ async def servir_chat() -> FileResponse:
     return FileResponse(_INDEX_HTML)
 
 
-def _parse_numeric_value(text: str) -> Optional[float]:
-    import re
-
-    # Tolera puntuación/letra justo después ("15,", "0.03de" -> 0.03). El lookbehind
-    # evita capturar el "2" de "o2"/"co2" como número.
-    pattern = r"(?<![A-Za-z0-9])([-+]?[0-9]+(?:[\.,][0-9]+)?)"
-    matches = re.findall(pattern, text)
-    if not matches:
-        return None
-    best_match = max(matches, key=lambda m: ('.' in m, len(m)))
-    raw = best_match.replace(",", ".")
-    try:
-        return float(raw)
-    except ValueError:
-        return None
-
-
-def _extract_numeric_with_unit(text: str) -> tuple[Optional[float], Optional[str]]:
-    patterns = [
-        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*(kwh\s*/\s*[a-z0-9^³°]+|mj\s*/\s*[a-z0-9^³°]+|mg\s*/\s*[a-z0-9^³°]+|ppm\s*/\s*[a-z0-9^³°]+|%\s*(?:molar|mol)?|kwh|mj|mg|ppm|kg|g|bar|m\^3|nm\^3|m3|nm3|m³|nm³|°c|ºc|c\b)",
-        r"(?i)([-+]?[0-9]+(?:[\.,][0-9]+)?)\s*([a-z0-9^°]+\s*/\s*[a-z0-9^°]+)",
-    ]
-    for pattern in patterns:
-        for match in re.finditer(pattern, text):
-            value = match.group(1).replace(",", ".")
-            unit_raw = match.group(2) if match.lastindex and match.lastindex >= 2 else match.group(0)
-            unit_clean = re.sub(r"\s+", "", unit_raw)
-            unit_norm = unit_clean.lower()
-            if any(
-                unit_norm.startswith(token) or token in unit_norm
-                for token in (
-                    "kwh",
-                    "mj",
-                    "mg",
-                    "ppm",
-                    "kg",
-                    "g",
-                    "bar",
-                    "%",
-                    "m^3",
-                    "nm^3",
-                    "m3",
-                    "nm3",
-                    "m³",
-                    "nm³",
-                    "°c",
-                    "ºc",
-                    "c",
-                )
-            ):
-                try:
-                    return float(value), unit_clean
-                except ValueError:
-                    return None, None
-    return None, None
-
-
-def _extract_unit_only(text: str) -> Optional[str]:
-    match = re.search(
-        r"(?i)(%\s*(?:molar|mol)?|kwh\s*/\s*[a-z0-9^³°]+|mj\s*/\s*[a-z0-9^³°]+|mg\s*/\s*[a-z0-9^³°]+|ppm\s*/\s*[a-z0-9^³°]+|°c|ºc|\bc\b)",
-        text,
-    )
-    if not match:
-        return None
-    return re.sub(r"\s+", "", match.group(0))
-
-
 def _normalize_country(text: str) -> Optional[str]:
     normalized = text.lower()
     aliases = {
@@ -442,20 +381,6 @@ def _normalize_parameter(text: str) -> Optional[str]:
     if re.search(r"(?<![\w])s(?![\w])", normalized):
         return "s total"
     return None
-
-
-def _normalize_unit(unit: Optional[str]) -> str:
-    if not unit:
-        return ""
-    text = str(unit)
-    text = text.replace("^", "")
-    text = text.replace("³", "3").replace("²", "2")
-    text = text.replace("º", "°")
-    text = re.sub(r"\s+", "", text)
-    text = text.replace("°", "o")
-    text = text.replace("m³", "m3").replace("nm³", "nm3")
-    text = text.lower()
-    return text
 
 
 def _normalize_condition_text(text: Optional[str]) -> str:
