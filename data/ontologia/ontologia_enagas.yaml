@@ -174,7 +174,7 @@ ontologia:
       publicacion: "Common Business Practice nº 2005-001/01, aprobada 3-feb-2005, publicada 7-feb-2005 (revisión /02 posterior, borrador)"
       url_eurlex: "https://www.naesb.org/pdf2/wgq_bps100605w1.pdf"
       pdf: "data/raw/EASEE-gas_CBP_2005-001-01.pdf"
-      tabla_calidad: "§4 «Parameter ranges and values». Condiciones: energía kWh con combustión 25 ºC; volumen m³ a 0 ºC, 1,01325 bar"
+      tabla_calidad: "§4 «Parameter ranges and values» (pág. 4). Condiciones: energía kWh con combustión 25 ºC; volumen m³ a 0 ºC, 1,01325 bar"
       ambito: "Recomendación de armonización de calidad para puntos transfronterizos de la UE (gas grupo H, sin odorizar). NO vinculante; base de la EN 16726."
 
     - id: EN_16726
@@ -250,7 +250,7 @@ parametros:
         nota: "Gas tipo H. Gas tipo B: 12,50 – 13,06 kWh/m³(n) (GRDF gas B general: 12,01–13,06)."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: rango
         valor_min: 13.60
         valor_max: 15.81
@@ -310,7 +310,7 @@ parametros:
         nota_comparabilidad: "Misma unidad (kWh/m³) y condiciones (@0/0) que ES → comparable directamente con el motor."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (GCV solo para facturación)"
+        articulo: "CBP 2005-001/01, §4 (pág. 4): GCV solo para facturación, sin rango"
         tipo_limite: rango
         valor_min: null
         valor_max: null
@@ -357,18 +357,18 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Mínimo reducible a 0,4900 con incorporación de H₂ hasta 20 % vol (nota al pie del Anexo I)."
       FR:
-        fuente: FR_GRTGAZ
-        articulo: "Prescriptions techniques (gas natural convencional)"
+        fuente: FR_GRDF
+        articulo: "Prescriptions techniques du distributeur GRDF (pág. 11)"
         tipo_limite: rango
         valor_min: 0.555
         valor_max: 0.700
         unidad: adimensional
-        expresion_original: "Densité — comprise entre 0,555 et 0,700 (gaz naturel conventionnel)"
+        expresion_original: "Densité — comprise entre 0,555 et 0,70"
         estado_verificacion: VERIFICADO
-        nota: "El 0,500 mínimo aparece solo en la Annexe 4 «méthane de synthèse»; para gas natural convencional la banda es 0,555 – 0,700 (research ES-PT-FR)."
+        nota: "Valor del gas natural convencional (GRDF, pág. 11). La Annexe 4 de GRTgaz da 0,500–0,70, pero es específico del «méthane de synthèse»."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: rango
         valor_min: 0.555
         valor_max: 0.700
@@ -415,7 +415,7 @@ parametros:
         nota: "GRTgaz (inyección transporte). GRDF gas natural distribución: ≤ 150 mg/m³(n)."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: 30.0
         unidad: mg_per_nm3
@@ -464,7 +464,7 @@ parametros:
         nota: "GRDF gas natural distribución fija H₂S (no la suma): instantáneo < 15 mg/m³(n), media 8 días < 7."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: 5.0
         unidad: mg_per_nm3
@@ -517,7 +517,7 @@ parametros:
         estado_verificacion: VERIFICADO
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: 6.0
         unidad: mg_per_nm3
@@ -565,7 +565,7 @@ parametros:
         nota: "GRDF (inyección, §5.1.2) fija O₂ 15-40 mg/m³(n), con tolerancia hasta 0,75 % (3 % en red gas B). Spec distinta."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: 0.01
         unidad: pct_mol
@@ -614,7 +614,7 @@ parametros:
         nota: "GRDF tolera por excepción hasta 3,5 % (11,7 % en red gas B)."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: 2.5
         unidad: pct_mol
@@ -664,7 +664,7 @@ parametros:
         estado_verificacion: VERIFICADO
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: -8.0
         unidad: grados_C
@@ -715,7 +715,7 @@ parametros:
         nota: "Rango 1-70 bar coincidente con ES → comparable. Cubre sólo hidrocarburos, no aceites."
       UE:
         fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (tabla de rangos)"
+        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
         tipo_limite: maximo
         valor: -2.0
         unidad: grados_C
