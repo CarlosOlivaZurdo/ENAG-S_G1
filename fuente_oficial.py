@@ -228,12 +228,14 @@ def evaluar(slug: str, pais: str, valor: float, unidad: Optional[str] = None) ->
     valor_comp = valor
     conversion = ""
     compat = True
-    if tiene and unidad and ureg and _normalizar_unidad(unidad) != _normalizar_unidad(ureg):
+    # Convierte SIEMPRE a la unidad del registro (aunque no haya límite), para que el
+    # valor mostrado lleve el prefijo correcto (p. ej. 0,0123 MWh/m³ → 12,3 kWh/m³).
+    if unidad and ureg and _normalizar_unidad(unidad) != _normalizar_unidad(ureg):
         conv = convertir_unidades(valor, unidad, ureg, slug)
         if "valor_convertido" in conv:
             valor_comp = conv["valor_convertido"]
             conversion = conv.get("formula", "")
-        else:
+        elif tiene:
             compat = False
 
     if not tiene or not compat:
