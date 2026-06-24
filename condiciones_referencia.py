@@ -35,8 +35,8 @@ CONDICIONES_PAIS = {
     "espana": (0, 0),
     "portugal": (25, 0),
     "francia": (0, 0),
-    "ue": (25, 0),       # EASEE-gas CBP: combustión 25 ºC, volumen 0 ºC
-    "europa": (25, 0),
+    "ue": (15, 15),      # EN 16726: Wobbe en condiciones estándar 15 ºC / 15 ºC
+    "europa": (15, 15),
 }
 
 # Parámetros que dependen de la temperatura de COMBUSTIÓN (los únicos que cambian).

@@ -38,8 +38,10 @@ URLS_PDF: Dict[str, str] = {
     # Francia — GRTgaz (hoy Natran) y GRDF, prescripciones técnicas oficiales:
     "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
     "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
-    # UE — EASEE-gas Common Business Practice 2005-001/01 (calidad de gas armonizada):
+    # UE — EASEE-gas Common Business Practice 2005-001/01 (referencia histórica):
     "EASEE_GAS": "https://www.naesb.org/pdf2/wgq_bps100605w1.pdf",
+    # UE — EN 16726:2025 (norma de pago): presentación oficial CEN/ENTSOG con los valores:
+    "EN_16726": "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf",
 }
 
 _RAIZ = os.path.dirname(os.path.abspath(__file__))

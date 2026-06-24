@@ -1000,8 +1000,10 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
             inf_raw = _txt(m.get("limite_inferior")) or "-"
             sup_raw = _txt(m.get("limite_superior")) or "-"
             unidad_reg = _txt(m.get("unidad")).strip("()").replace("^3", "³").replace("^2", "²")
-            cond = _COND_PAIS.get(_norm_pais(pais))
-            cond_txt = f"comb. {cond[0]} °C · med. {cond[1]} °C" if cond else "—"
+            # Condiciones POR PARÁMETRO (de la notación del registro), no del país:
+            # en la UE el Wobbe es 15/15 pero las concentraciones se expresan a 0/0.
+            ccomb, cmed = _parse_notac(m.get("notacion") or "(0/0)")
+            cond_txt = f"comb. {_coma(ccomb)} °C · med. {_coma(cmed)} °C"
             sin_lim = _sin_limite(inf_raw) and _sin_limite(sup_raw)
             es_base = _norm_pais(pais) == _norm_pais(PAIS_BASE)
 
@@ -1029,7 +1031,7 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
                         cr = convertir_a_condiciones_espana(vs, parametro_slug, pais)
                         vs_es, factor = cr["valor_convertido"], cr["factor"]
                     if factor and factor != 1.0:
-                        notas.append(f"{pais}: combustión {cond[0]} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
+                        notas.append(f"{pais}: combustión {_coma(ccomb)} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
                 else:
                     # No depende de la temperatura de combustión: mismo valor, referido a 0/0.
                     vi_es, vs_es = vi, vs

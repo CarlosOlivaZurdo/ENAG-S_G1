@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.entsog.eu)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
+      "Bash(git commit -q -m 'Europa: usar EN 16726:2025 \\(norma vigente\\) en lugar del EASEE-gas CBP *)"
+    ]
+  }
+}

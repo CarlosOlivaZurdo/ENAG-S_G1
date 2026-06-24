@@ -30,7 +30,9 @@ _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE",
 _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE"}
 # Condiciones de referencia (combustión/volumen) de cada país, aplicables a TODOS sus
 # parámetros. España y Francia: 0/0; Portugal: combustión 25 ºC (ISO 13443/96); UE (EN 16726): 15/15.
-_NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(25/0)"}
+# UE = EN 16726. El Wobbe se expresa a 15/15 (lo lleva su propia condicion_referencia);
+# concentraciones y fracciones molares: equivalentes a 0/0 (comparables directamente).
+_NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(0/0)"}
 
 # Código de unidad de la ontología -> símbolo legible (y convertible por el conversor)
 _UNIDAD_DISPLAY = {

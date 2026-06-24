@@ -180,8 +180,14 @@ ontologia:
     - id: EN_16726
       tipo: norma_tecnica
       pais: UE
-      nombre: "EN 16726 — Calidad del gas, grupo H"
-      ambito: "Referencia técnica no vinculante para límites de calidad en interconexión."
+      nombre: "EN 16726:2025 — Gas infrastructure - Quality of gas - Group H"
+      organismo: "CEN — Comité Europeo de Normalización (TC 234 / WG 11)"
+      publicacion: "Septiembre 2025 (aprobada 20-jul-2025; supersede EN 16726:2015+A1:2018, ya derogada)"
+      url_eurlex: "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf"
+      pdf: "data/raw/EN16726-2025_CEN-ENTSOG.pdf"
+      tabla_calidad: "§5 (Wobbe entrada/salida, O₂, densidad, H₂) + Tabla 1. Condiciones del Wobbe: 15 ºC/15 ºC"
+      nota: "Norma de PAGO (CEN/AENOR): valores principales (Wobbe, densidad, O₂) verificados en la presentación oficial CEN/ENTSOG (nov-2025); el resto, sin cambios desde 2015+A1:2018, de fuente secundaria. Aún NO publicada como UNE-EN: en España rige todavía la UNE-EN 16726:2016+A1:2019."
+      ambito: "Norma europea armonizada de calidad de gas grupo H. Alineada con Directiva (UE) 2024/1788 y Reglamento (UE) 2024/1789."
 
     - id: EN_ISO_6976
       tipo: norma_tecnica
@@ -249,16 +255,16 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Gas tipo H. Gas tipo B: 12,50 – 13,06 kWh/m³(n) (GRDF gas B general: 12,01–13,06)."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5.2 Tabla 2 (Wobbe entrada)"
         tipo_limite: rango
-        valor_min: 13.60
-        valor_max: 15.81
-        unidad: kWh_per_nm3
-        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
-        expresion_original: "WI: 13,60 — 15,81 kWh/m³ (combustión 25 ºC, volumen 0 ºC)"
+        valor_min: 46.44
+        valor_max: 54.00
+        unidad: MJ_per_nm3
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        expresion_original: "Wobbe index entry range: 46,44 — 54,00 MJ/m³ [15 ºC/15 ºC]"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante). Arranque de implantación con mínimo 13,76. Condiciones 25/0 → requiere ISO 13443 para comparar con España (0/0)."
+        nota: "EN 16726:2025 (verificado en presentación CEN/ENTSOG, nov-2025). Rango recomendado en puntos de ENTRADA; en SALIDA «Class Specified» 46,44–53,00 MJ/m³. Condiciones 15/15 → requiere ISO 13443 para comparar con España (0/0)."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -309,14 +315,14 @@ parametros:
         nota: "Gas tipo H. Gas tipo B: 9,5 – 10,5 kWh/m³(n) (idéntico en GRDF y GRTgaz)."
         nota_comparabilidad: "Misma unidad (kWh/m³) y condiciones (@0/0) que ES → comparable directamente con el motor."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 (pág. 4): GCV solo para facturación, sin rango"
+        fuente: EN_16726
+        articulo: "EN 16726:2025 (no fija rango de PCS/GCV)"
         tipo_limite: rango
         valor_min: null
         valor_max: null
         unidad: kWh_per_nm3
-        expresion_original: "El CBP EASEE-gas NO fija rango de PCS: solo retiene Wobbe y densidad (el PCS/GCV queda para facturación)"
-        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        expresion_original: "La EN 16726 NO fija un rango de PCS: la propiedad energética se controla vía el Índice de Wobbe"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
@@ -367,15 +373,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Valor del gas natural convencional (GRDF, pág. 11). La Annexe 4 de GRTgaz da 0,500–0,70, pero es específico del «méthane de synthèse»."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: rango
-        valor_min: 0.555
-        valor_max: 0.700
+        valor_min: 0.45
+        valor_max: 0.70
         unidad: adimensional
-        expresion_original: "d: 0,555 — 0,700"
+        expresion_original: "Relative density: 0,45 — 0,70"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante). Adimensional: comparable directamente."
+        nota: "EN 16726:2025 (verificado en presentación CEN/ENTSOG). El mínimo bajó de 0,555 a 0,45 para admitir hidrógeno (hasta 2 % mol). Adimensional: comparable directamente."
 
   # ---------------------------------------------------------------------------
   S_TOTAL:
@@ -414,14 +420,14 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "GRTgaz (inyección transporte). GRDF gas natural distribución: ≤ 150 mg/m³(n)."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: maximo
-        valor: 30.0
+        valor: 20.0
         unidad: mg_per_nm3
-        expresion_original: "Total S: – / 30 mg/m³"
+        expresion_original: "Total sulphur: – / 20 mg/m³ (sin odorizar; 30 con odorizante)"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante)."
+        nota: "EN 16726 (ed. 2015+A1:2018, sin cambios en 2025): 20 mg/m³ sin odorizante (30 con odorizante). Fuente técnica secundaria (norma de pago)."
 
   # ---------------------------------------------------------------------------
   H2S_COS:
@@ -463,14 +469,14 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "GRDF gas natural distribución fija H₂S (no la suma): instantáneo < 15 mg/m³(n), media 8 días < 7."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: maximo
         valor: 5.0
         unidad: mg_per_nm3
         expresion_original: "H2S + COS (as S): – / 5 mg/m³"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante)."
+        nota: "EN 16726:2025 (norma europea, pendiente de publicar como UNE-EN). Valor sin cambios desde la ed. 2015+A1:2018; fuente técnica secundaria (la norma es de pago)."
     conversion:
       tipo: masa_molar
       formula_mg_nm3_a_ppm_vol: "ppm_vol = mg/Nm³ × 22.414 / 34.08 = mg/Nm³ × 0.6577  (H₂S puro)"
@@ -516,14 +522,14 @@ parametros:
         expresion_original: "Teneur en soufre mercaptique < 6 mgS/m³(n)"
         estado_verificacion: VERIFICADO
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: maximo
         valor: 6.0
         unidad: mg_per_nm3
         expresion_original: "RSH (as S): – / 6 mg/m³"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante)."
+        nota: "EN 16726:2025 (norma europea, pendiente de publicar como UNE-EN). Valor sin cambios desde la ed. 2015+A1:2018; fuente técnica secundaria (la norma es de pago)."
 
   # ---------------------------------------------------------------------------
   O2:
@@ -564,14 +570,14 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "GRDF (inyección, §5.1.2) fija O₂ 15-40 mg/m³(n), con tolerancia hasta 0,75 % (3 % en red gas B). Spec distinta."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5.4 (Oxígeno)"
         tipo_limite: maximo
-        valor: 0.01
+        valor: 1.0
         unidad: pct_mol
-        expresion_original: "O2: – / 0,01 % mol"
+        expresion_original: "O2: – / 1 % mol (en la red); proceso de evaluación lo baja a 0,01 % o 0,001 % para instalaciones sensibles"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante). Valor entre corchetes [0,01]: provisional, sujeto a un estudio de medición de O₂."
+        nota: "EN 16726:2025 (verificado en presentación CEN/ENTSOG). Subió de 0,01 %/0,001 % a 1 % mol para facilitar el biometano; un proceso de evaluación lo rebaja a 0,01 % (100 ppm) o 0,001 % (10 ppm) en instalaciones sensibles (p. ej. almacenamiento subterráneo)."
     conversion:
       formula_pct_a_ppm: "ppm_vol = pct_vol × 10000"
       ejemplo: "0,01 % = 100 ppm(vol)"
@@ -613,14 +619,14 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "GRDF tolera por excepción hasta 3,5 % (11,7 % en red gas B)."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: maximo
         valor: 2.5
         unidad: pct_mol
         expresion_original: "CO2: – / 2,5 % mol"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante)."
+        nota: "EN 16726:2025 (norma europea, pendiente de publicar como UNE-EN). Valor sin cambios desde la ed. 2015+A1:2018; fuente técnica secundaria (la norma es de pago)."
 
   # ---------------------------------------------------------------------------
   PR_H2O:
@@ -663,15 +669,15 @@ parametros:
         expresion_original: "Point de rosée eau < -5 ºC à la Pression Maximale de Service du Réseau en aval du Raccordement"
         estado_verificacion: VERIFICADO
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: maximo
         valor: -8.0
         unidad: grados_C
         presion_referencia_bar: 70
         expresion_original: "H2O DP: – / -8 ºC a 70 bar"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante). Referido a 70 bar, igual que España."
+        nota: "EN 16726 (ed. 2015+A1:2018, sin cambios en 2025): –8 ºC a 70 bar, igual presión que España. Fuente técnica secundaria (norma de pago)."
 
   # ---------------------------------------------------------------------------
   PR_HC:
@@ -714,15 +720,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Rango 1-70 bar coincidente con ES → comparable. Cubre sólo hidrocarburos, no aceites."
       UE:
-        fuente: EASEE_GAS
-        articulo: "CBP 2005-001/01, §4 «Parameter ranges and values» (pág. 4)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H)"
         tipo_limite: maximo
         valor: -2.0
         unidad: grados_C
         presion_referencia_bar: null
         expresion_original: "HC DP: – / -2 ºC a 1-70 bar"
         estado_verificacion: VERIFICADO
-        nota: "Recomendación EASEE-gas (no vinculante). Rango 1-70 bar."
+        nota: "EN 16726 (ed. 2015+A1:2018, sin cambios en 2025): –2 ºC en 1-70 bar. Fuente técnica secundaria (norma de pago)."
 
   # NOTA: Polvo / Partículas queda EXCLUIDO del alcance del proyecto.
   #   ES (Tabla 3) lo recoge como «Técnicamente puro» (sin cifra). FR (GRTgaz): < 5 mg/m³(n).
