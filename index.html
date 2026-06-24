@@ -90,6 +90,10 @@
     border-radius:6px;padding:12px 13px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;transition:.15s}
   .ex:hover{border-color:var(--accent);background:#f0faf9}
   .ex .ex-ic{color:var(--accent);font-weight:700;flex:0 0 auto}
+  .ex-cats{display:flex;flex-direction:column;gap:16px}
+  .ex-cat-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);
+    margin:0 0 9px;display:flex;align-items:center;gap:8px}
+  .ex-cat-h svg{color:var(--accent);flex:0 0 auto}
   @media(max-width:720px){.ex-grid{grid-template-columns:1fr}}
 
   .record{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(16,34,46,.04)}
@@ -232,7 +236,7 @@
         <b>Parámetros:</b> Índice de Wobbe, PCS, densidad relativa, azufre total, H₂S+COS, mercaptanos, O₂, CO₂, puntos de rocío (H₂O/HC).
       </div>
     </div>
-    <div class="side-foot"><span>v1.1</span><span id="footStatus">—</span></div>
+    <div class="side-foot"><span>v1.2</span><span id="footStatus">—</span></div>
   </aside>
 
   <!-- Workspace -->
@@ -277,7 +281,7 @@
           </div>
 
           <div id="subPuntual">
-            <p class="cmp-intro">Compara un parámetro entre <b>España</b> (base) y otro país. Cuando el país usa condiciones de combustión distintas (p. ej. Portugal, 25&nbsp;°C), el PCS y el Índice de Wobbe se convierten a condiciones españolas según la <b>ISO&nbsp;13443</b>.</p>
+            <p class="cmp-intro">Elige el <b>parámetro</b>, la <b>unidad</b> y los <b>países</b>. España es la base; la tabla incluye una columna con cada límite <b>normalizado a las condiciones de España</b> (con la <b>ISO&nbsp;13443</b> para PCS e Índice de Wobbe).</p>
             <div class="cmp-form">
               <div class="cmp-field">
                 <label for="cmpParam">Parámetro</label>
@@ -307,11 +311,24 @@
 </div>
 
 <script>
-  const EJEMPLOS = [
-    "¿Cuál es el límite de oxígeno en España y en Portugal? ¿Son comparables?",
-    "¿De qué reglamento sale el parámetro de O₂?",
-    "¿En qué países cumple un PCS de 12 kWh/m³?",
-    "El gas tiene 4 mg/Nm³ de H₂S+COS, ¿cumple en Portugal?",
+  // Ejemplos agrupados por tipo de pregunta (para que se vea de un vistazo qué se puede consultar).
+  const EJEMPLOS_CAT = [
+    { cat:"Comprobar si un valor cumple",
+      ic:'<path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+      qs:["El gas tiene 4 mg/Nm³ de H₂S+COS, ¿cumple en Portugal?",
+          "¿En qué países cumple un PCS de 12 kWh/m³?"] },
+    { cat:"Comparar límites entre países",
+      ic:'<path d="M5 19V9m7 10V5m7 14v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      qs:["¿Cuál es el límite de Wobbe en Portugal comparado con España?",
+          "Compara el O₂ entre España y la UE"] },
+    { cat:"Saber de qué reglamento sale el dato",
+      ic:'<path d="M7 4h7l4 4v12H7V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12h6M9 15h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+      qs:["¿De qué reglamento sale el límite de O₂?",
+          "¿Qué normativa aplican en Francia?"] },
+    { cat:"Análisis avanzado",
+      ic:'<circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+      qs:["¿Con qué país puedo intercambiar gas según el azufre?",
+          "¿Qué país es más restrictivo que España en CO₂?"] },
   ];
   const $ = (id) => document.getElementById(id);
   const stream = $("stream");
@@ -383,15 +400,21 @@
     stream.innerHTML = "";
     const es = document.createElement("div");
     es.className = "empty-state";
-    es.innerHTML = '<h2>Consulta de calidad de gas natural</h2>'+
-      '<p>Pregunte libremente: cumplimiento de un valor, de qué reglamento procede un parámetro, comparación entre jurisdicciones… con trazabilidad a la fuente. Seleccione un ejemplo o redacte su consulta.</p>'+
-      '<div class="ex-grid"></div>';
-    const grid = es.querySelector(".ex-grid");
-    EJEMPLOS.forEach(q => {
-      const b = document.createElement("button");
-      b.className = "ex"; b.innerHTML = '<span class="ex-ic">›</span><span>'+esc(q)+'</span>';
-      b.onclick = () => { $("input").value = q; enviar(); };
-      grid.appendChild(b);
+    let cats = '';
+    EJEMPLOS_CAT.forEach((c, ci) => {
+      const chips = c.qs.map((q,qi) =>
+        '<button class="ex" data-c="'+ci+'" data-q="'+qi+'"><span class="ex-ic">›</span><span>'+esc(q)+'</span></button>'
+      ).join('');
+      cats += '<div class="ex-cat"><div class="ex-cat-h">'+
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none">'+c.ic+'</svg>'+esc(c.cat)+'</div>'+
+        '<div class="ex-grid">'+chips+'</div></div>';
+    });
+    es.innerHTML = '<h2>¿Qué quieres consultar?</h2>'+
+      '<p>Pregunta en lenguaje natural sobre calidad del gas (España, Portugal, Francia y UE). Las cifras proceden de normativa oficial verificada, con enlace a la fuente. Elige un ejemplo para empezar:</p>'+
+      '<div class="ex-cats">'+cats+'</div>';
+    es.querySelectorAll(".ex").forEach(b => b.onclick = () => {
+      const q = EJEMPLOS_CAT[+b.dataset.c].qs[+b.dataset.q];
+      $("input").value = q; enviar();
     });
     stream.appendChild(es);
   }
