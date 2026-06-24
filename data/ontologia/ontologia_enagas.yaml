@@ -22,7 +22,7 @@
 # COBERTURA ACTUAL (revisión 2026-06)
 # ES: 10/10 parámetros VERIFICADOS contra la Orden TED/181/2025 (BOE-A-2025-3873),
 #     Tabla 3 (apartado 2.5.2.1), págs. 26-27. Condiciones @0/0.
-# PT: Regulamento 826/2023 (RQS, ERSE), Anexo I Secc. X, art. 39.º, pág. 371.
+# PT: Regulamento 826/2023 (RQS, ERSE), art. 39.º; valores en Anexo I (pág. 144 del consolidado).
 #     Fija Wobbe, densidad, S total, H₂S+COS, O₂ y rocío de agua (@25/0, MJ/m³).
 #     NO fija PCS, mercaptanos RSH, CO₂ ni rocío de hidrocarburos del gas natural.
 # FR: GRTgaz «Annexe 4 — méthane de synthèse pour injection» (@0/0, kWh/m³). Fija los
@@ -122,7 +122,7 @@ ontologia:
       organismo: "ERSE — Entidade Reguladora dos Serviços Energéticos"
       publicacion: "Diário da República, 2.ª série, N.º 146, de 28 de julho de 2023"
       pdf: "data/raw/regulacion_portugal_826-2023.pdf"
-      tabla_calidad: "Anexo I, Secção X «Características do gás (art. 39.º)», pág. 371"
+      tabla_calidad: "Anexo I «Características do gás» (art. 39.º): valores en pág. 144 del PDF consolidado de ERSE (pág. 371 del Diário da República original N.º 146)"
       condiciones_referencia: "0 ºC, 1,01325 bar, combustión inicial 25 ºC (ISO 13443/96); volumen en m³(n)"
       nota: "Deroga el RQS n.º 406/2021. PCS, mercaptanos RSH, CO₂ y rocío de HC del gas natural NO se fijan numéricamente."
 
@@ -228,7 +228,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: rango
         valor_min: 48.17
         valor_max: 57.66
@@ -289,7 +289,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: rango
         valor_min: null
         valor_max: null
@@ -348,7 +348,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: rango
         valor_min: 0.5549
         valor_max: 0.7001
@@ -398,7 +398,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: 50.0
         unidad: mg_per_nm3
@@ -447,7 +447,7 @@ parametros:
         nota_critica: "⚠ Si el usuario da mg/m³ a 15 ºC, renormalizar a Nm³ (0 ºC) × 1,0549 antes de comparar."
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: 5.0
         unidad: mg_per_nm3
@@ -501,7 +501,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: null
         unidad: null
@@ -547,7 +547,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: null
         unidad: pct_mol
@@ -597,7 +597,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X (gas natural), art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: null
         unidad: null
@@ -645,7 +645,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: null
         unidad: grados_C
@@ -696,7 +696,7 @@ parametros:
         estado_verificacion: VERIFICADO
       PT:
         fuente: REG_PT_826_2023
-        articulo: "Anexo I, Secção X, art. 39.º (pág. 371)"
+        articulo: "Anexo I «Características do gás» (art. 39.º), pág. 144 del consolidado"
         tipo_limite: maximo
         valor: null
         unidad: null
