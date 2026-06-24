@@ -134,11 +134,22 @@
   .disclaimer b{color:var(--muted);font-weight:600}
 
   /* ===== Comparativa ===== */
-  .cmp-wrap{flex:1;overflow-y:auto;padding:22px}
-  .cmp-inner{max-width:920px;margin:0 auto}
-  .cmp-intro{color:var(--muted);margin:0 0 16px;max-width:680px}
-  .cmp-form{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;
-    display:grid;grid-template-columns:1.5fr 1fr;gap:16px 18px;align-items:end}
+  .cmp-wrap{flex:1;overflow-y:auto;padding:0;background:var(--panel)}
+  .cmp-inner{max-width:900px;margin:0 auto;padding:0 22px 36px}
+  /* Cabecera 'hero' con borde inferior curvo (formato tipo ficha) */
+  .cmp-hero{position:relative;text-align:center;padding:32px 22px 46px;
+    background:linear-gradient(180deg,#dceefb 0%,#ebf7fd 100%);
+    border-bottom-left-radius:50% 44px;border-bottom-right-radius:50% 44px;margin-bottom:26px}
+  .cmp-bc{font-size:12px;color:var(--muted);margin-bottom:16px}
+  .cmp-bc b{color:var(--accent-d);font-weight:600}
+  .cmp-bc span{margin:0 7px;color:var(--muted-2)}
+  .cmp-hero h1{font-size:30px;font-weight:700;color:var(--navy);margin:0 0 10px;letter-spacing:-.3px}
+  .cmp-hero-sub{font-size:14.5px;color:var(--muted);max-width:640px;margin:0 auto;line-height:1.55}
+  .cmp-card-main{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 8px 28px rgba(1,58,87,.07);padding:26px 28px}
+  .cmp-card-h2{text-align:center;font-size:18px;font-weight:700;color:var(--navy);margin:0 0 6px}
+  .cmp-intro{color:var(--muted);margin:0 auto 20px;max-width:620px;text-align:center}
+  .cmp-form{display:grid;grid-template-columns:1.5fr 1fr;gap:16px 18px;align-items:end}
   .cmp-field{display:flex;flex-direction:column;gap:6px}
   .cmp-field > label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)}
   .cmp-field > label span{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted-2)}
@@ -171,7 +182,7 @@
   .cmp-ev li b{color:var(--navy-2)}
   .cmp-ev a{color:var(--accent-d);word-break:break-all}
   .cmp-ev code{background:#eef2f6;padding:1px 5px;border-radius:4px;font-size:11px}
-  .cmp-subnav{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .cmp-subnav{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--line);justify-content:center}
   .sub-item{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--muted);
     padding:9px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-1px}
   .sub-item:hover{color:var(--ink)}
@@ -276,6 +287,11 @@
     <!-- VIEW: Comparativa -->
     <div id="viewCompare" class="view">
       <div class="cmp-wrap">
+        <div class="cmp-hero">
+          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa de calidad de gas</b></div>
+          <h1>Comparativa de calidad de gas</h1>
+          <p class="cmp-hero-sub">Compare los requisitos de calidad del gas natural entre España, Portugal, Francia y la UE, con cada límite normalizado a las condiciones de España.</p>
+        </div>
         <div class="cmp-inner">
           <div class="cmp-subnav">
             <button class="sub-item active" data-sub="puntual">Comparativa puntual</button>
@@ -283,27 +299,33 @@
           </div>
 
           <div id="subPuntual">
-            <p class="cmp-intro">Elige el <b>parámetro</b>, la <b>unidad</b> y los <b>países</b>. España es la base; la tabla incluye una columna con cada límite <b>normalizado a las condiciones de España</b> (con la <b>ISO&nbsp;13443</b> para PCS e Índice de Wobbe).</p>
-            <div class="cmp-form">
-              <div class="cmp-field">
-                <label for="cmpParam">Parámetro</label>
-                <select id="cmpParam"></select>
+            <div class="cmp-card-main">
+              <h2 class="cmp-card-h2">Comparativa puntual</h2>
+              <p class="cmp-intro">Elige el <b>parámetro</b>, la <b>unidad</b> y los <b>países</b>. España es la base; la tabla incluye una columna con cada límite <b>normalizado a las condiciones de España</b> (con la <b>ISO&nbsp;13443</b> para PCS e Índice de Wobbe).</p>
+              <div class="cmp-form">
+                <div class="cmp-field">
+                  <label for="cmpParam">Parámetro</label>
+                  <select id="cmpParam"></select>
+                </div>
+                <div class="cmp-field">
+                  <label for="cmpUnidad">Unidad</label>
+                  <select id="cmpUnidad"></select>
+                </div>
+                <div class="cmp-paises" id="cmpPaises"></div>
+                <button class="cmp-btn" id="cmpBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                  Comparar
+                </button>
               </div>
-              <div class="cmp-field">
-                <label for="cmpUnidad">Unidad</label>
-                <select id="cmpUnidad"></select>
-              </div>
-              <div class="cmp-paises" id="cmpPaises"></div>
-              <button class="cmp-btn" id="cmpBtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-                Comparar
-              </button>
             </div>
             <div class="cmp-result" id="cmpResult"></div>
           </div>
 
           <div id="subMatriz" style="display:none">
-            <p class="cmp-intro">Visión de conjunto: <b>países × parámetros</b>. Cada celda muestra el límite normalizado a las <b>condiciones de España</b> (ISO&nbsp;13443 para PCS/Wobbe). El color indica si el país es más restrictivo o más amplio que España; el icono ⚠ marca que hubo una <b>diferencia metodológica</b> (unidad o condiciones distintas).</p>
+            <div class="cmp-card-main">
+              <h2 class="cmp-card-h2">Matriz general (heatmap)</h2>
+              <p class="cmp-intro">Visión de conjunto: <b>países × parámetros</b>. Cada celda muestra el límite normalizado a las <b>condiciones de España</b> (ISO&nbsp;13443 para PCS/Wobbe). El color indica si el país es más restrictivo o más amplio que España; el icono ⚠ marca que hubo una <b>diferencia metodológica</b> (unidad o condiciones distintas).</p>
+            </div>
             <div id="matrizResult"></div>
           </div>
         </div>
