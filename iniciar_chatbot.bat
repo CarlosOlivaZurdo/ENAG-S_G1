@@ -38,6 +38,11 @@ if errorlevel 1 (
     exit /b
 )
 
+REM --- 3) Liberar el puerto 8000 si quedo un servidor anterior abierto ---
+REM   (cerrar el navegador NO detiene el servidor; esto evita el error 10048
+REM    "solo se permite un uso de cada direccion de socket")
+powershell -NoProfile -Command "$c = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue; if ($c) { $c.OwningProcess | Select-Object -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force -ErrorAction Stop; Write-Host ('  Se cerro una instancia anterior del servidor (PID {0}) que ocupaba el puerto 8000.' -f $_) -ForegroundColor Yellow } catch {} }; Start-Sleep -Milliseconds 700 }"
+
 echo Servidor listo. NO cierres esta ventana mientras uses la herramienta.
 echo.
 powershell -NoProfile -Command "$ip=(Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*'} | Select-Object -First 1).IPAddress; Write-Host '  Abrir en ESTE equipo:          http://localhost:8000/' -ForegroundColor Green; if($ip){ Write-Host ('  Compartir (misma red):         http://{0}:8000/' -f $ip) -ForegroundColor Cyan }"
