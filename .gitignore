@@ -7,3 +7,6 @@ __pycache__/
 
 # Excel/CSV normativo retirado: la fuente primaria es la ontologia (data/ontologia)
 data/raw/NORM_17_06.csv
+
+# Config local de Claude Code (no es del proyecto)
+.claude/
