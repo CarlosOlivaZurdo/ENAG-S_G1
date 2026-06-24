@@ -1020,15 +1020,19 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
 
             vi_es = vs_es = None
             factor = 1.0
-            if es_combustion and not es_base:
-                if vi is not None:
-                    cr = convertir_a_condiciones_espana(vi, parametro_slug, pais)
-                    vi_es, factor = cr["valor_convertido"], cr["factor"]
-                if vs is not None:
-                    cr = convertir_a_condiciones_espana(vs, parametro_slug, pais)
-                    vs_es, factor = cr["valor_convertido"], cr["factor"]
-                if factor and factor != 1.0:
-                    notas.append(f"{pais}: combustión {cond[0]} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
+            if not es_base and not sin_lim:
+                if es_combustion:
+                    if vi is not None:
+                        cr = convertir_a_condiciones_espana(vi, parametro_slug, pais)
+                        vi_es, factor = cr["valor_convertido"], cr["factor"]
+                    if vs is not None:
+                        cr = convertir_a_condiciones_espana(vs, parametro_slug, pais)
+                        vs_es, factor = cr["valor_convertido"], cr["factor"]
+                    if factor and factor != 1.0:
+                        notas.append(f"{pais}: combustión {cond[0]} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
+                else:
+                    # No depende de la temperatura de combustión: mismo valor, referido a 0/0.
+                    vi_es, vs_es = vi, vs
 
             def rng(a, b):
                 if sin_lim:
@@ -1042,7 +1046,11 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
                 "unidad": "—" if sin_lim else unidad_out,
                 "condiciones": cond_txt,
                 "es_base": es_base,
-                "limite_espana": (rng(vi_es, vs_es) if (es_combustion and not es_base and (vi_es is not None or vs_es is not None)) else None),
+                "limite_espana": (
+                    None if es_base
+                    else ("Sin límite numérico" if sin_lim
+                          else (rng(vi_es, vs_es) if (vi_es is not None or vs_es is not None) else None))
+                ),
                 "factor_iso": (factor if (es_combustion and not es_base and factor != 1.0) else None),
                 # Cita de la fuente oficial (para mostrar en el frontend).
                 "fuente": m.get("documento") or "",

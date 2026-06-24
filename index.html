@@ -500,9 +500,9 @@
   function renderComparativa(d){
     const filas = d.filas || [];
     if(!filas.length) return '<div class="cmp-empty">No hay datos normativos para esa combinación.</div>';
-    const showES = d.es_combustion && filas.some(f => f.limite_espana);
+    const showES = filas.some(f => !f.es_base);  // columna siempre que haya país a comparar
     let head = '<tr><th>País</th><th>Límite normativo</th><th>Unidad</th><th>Condiciones de referencia</th>';
-    if(showES) head += '<th>En condiciones de España</th>';
+    if(showES) head += '<th>Normalizado a condiciones de España</th>';
     head += '</tr>';
     let rows = "";
     filas.forEach(f => {
@@ -512,9 +512,11 @@
       r += '<td>'+esc(f.unidad)+'</td>';
       r += '<td>'+esc(f.condiciones)+'</td>';
       if(showES){
+        const le = f.limite_espana;
         if(f.es_base) r += '<td class="muted">— (referencia)</td>';
-        else if(f.limite_espana) r += '<td class="es-col">'+esc(f.limite_espana)+' '+esc(d.unidad||'')+'</td>';
-        else r += '<td class="muted">= (sin ajuste)</td>';
+        else if(le && le !== 'Sin límite numérico') r += '<td class="es-col">'+esc(le)+' '+esc(d.unidad||'')+' (0/0)</td>';
+        else if(le === 'Sin límite numérico') r += '<td class="muted">Sin límite</td>';
+        else r += '<td class="muted">—</td>';
       }
       r += '</tr>';
       rows += r;
