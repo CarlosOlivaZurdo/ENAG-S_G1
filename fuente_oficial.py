@@ -110,7 +110,6 @@ _URL_OFICIAL = {
     "REG_PT_826_2023": "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf",
     "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
     "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
-    "PD01": "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/",
 }
 
 

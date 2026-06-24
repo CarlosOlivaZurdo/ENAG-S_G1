@@ -98,14 +98,6 @@ ontologia:
       condiciones_referencia: "[0 ºC, V(0 ºC, 1,01325 bar)] — nota (*) al pie de la Tabla 3"
       ambito: "Fuente PRIMARIA VIGENTE de las especificaciones numéricas de calidad del gas natural español."
 
-    - id: PD01
-      tipo: protocolo_detalle
-      pais: ES
-      nombre: "PD-01 — Medición, Calidad y Odorización de Gas (NGTS-06)"
-      publicacion: "Redacción previa vía Resolución 21/12/2012 (BOE-A-2013-185) y 8/10/2018 (BOE-A-2018-14557)"
-      url_enagas: "https://www.enagas.es/es/gestion-tecnica-sistema/procesos-sistema-gasista/calidad-gas/"
-      ambito: "Fuente histórica de la Tabla 3 (apdo. 5.2). Mismos valores que la Orden TED/181/2025."
-
     - id: RD919
       tipo: reglamento_nacional
       pais: ES
@@ -166,17 +158,6 @@ ontologia:
       pdf: "data/raw/CELEX_32017R0459_ES_TXT.pdf"
       ambito: "Asignación de capacidad. No fija calidad."
 
-    - id: EASEE_GAS
-      tipo: buenas_practicas
-      pais: UE
-      nombre: "EASEE-gas CBP 2005-001/01 — Harmonisation of Natural Gas Quality"
-      organismo: "EASEE-gas (European Association for the Streamlining of Energy Exchange-gas)"
-      publicacion: "Common Business Practice nº 2005-001/01, aprobada 3-feb-2005, publicada 7-feb-2005 (revisión /02 posterior, borrador)"
-      url_eurlex: "https://www.naesb.org/pdf2/wgq_bps100605w1.pdf"
-      pdf: "data/raw/EASEE-gas_CBP_2005-001-01.pdf"
-      tabla_calidad: "§4 «Parameter ranges and values» (pág. 4). Condiciones: energía kWh con combustión 25 ºC; volumen m³ a 0 ºC, 1,01325 bar"
-      ambito: "Recomendación de armonización de calidad para puntos transfronterizos de la UE (gas grupo H, sin odorizar). NO vinculante; base de la EN 16726."
-
     - id: EN_16726
       tipo: norma_tecnica
       pais: UE
@@ -194,15 +175,6 @@ ontologia:
       pais: UE
       nombre: "EN ISO 6976 / ISO 13443 — Cálculo de poder calorífico, Wobbe y condiciones de referencia estándar"
       ambito: "Métodos de cálculo y condiciones de referencia estándar para PCS/Wobbe."
-
-  datasets_auxiliares:
-    - id: NORM_17_06
-      archivo: "data/raw/NORM_17_06.csv"
-      nota: >
-        Extracción previa de valores (ES/PT/FR). Usado como referencia cruzada; se han
-        corregido sus errores contra los PDFs primarios (p.ej. PT O₂ ≤ 1 % mol — el CSV
-        decía «no regulado»; PT rocío H₂O −8 ºC — el CSV decía −5; ES PCS máx 13,26 — el
-        CSV decía 13,27).
 
 
 # =============================================================================

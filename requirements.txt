@@ -1,7 +1,6 @@
 pint
 pytest
 pyyaml
-streamlit
 python-dotenv
 pandas
 openpyxl
@@ -9,6 +8,5 @@ fastapi
 uvicorn
 pydantic
 openai
-requests
 PyPDF2
 pdfplumber
