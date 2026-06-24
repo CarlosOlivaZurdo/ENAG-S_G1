@@ -53,6 +53,9 @@
   #history .empty:hover{background:none;color:#6f879c}
   .side-ref{font-size:11.5px;color:#92a6b8;line-height:1.65;padding:4px 9px}
   .side-ref b{color:#c9d6e1;font-weight:600}
+  .side-params{list-style:none;margin:4px 0 0;padding:2px 9px 0;display:flex;flex-direction:column;gap:7px}
+  .side-params li{position:relative;padding-left:15px;font-size:12px;color:#c2d1dd;line-height:1.35}
+  .side-params li::before{content:"";position:absolute;left:1px;top:5px;width:6px;height:6px;border-radius:50%;background:var(--brand-green)}
   .side-foot{border-top:1px solid rgba(255,255,255,.07);padding:12px 18px;font-size:11px;color:#6f879c;
     display:flex;justify-content:space-between;align-items:center}
 
@@ -243,11 +246,19 @@
         <div class="side-label">Consultas recientes</div>
         <ul id="history"><li class="empty">Sin consultas todavía</li></ul>
       </div>
-      <div class="side-label">Ámbito</div>
-      <div class="side-ref">
-        <b>Jurisdicciones:</b> España · Portugal · Francia · UE<br>
-        <b>Parámetros:</b> Índice de Wobbe, PCS, densidad relativa, azufre total, H₂S+COS, mercaptanos, O₂, CO₂, puntos de rocío (H₂O/HC).
-      </div>
+      <div class="side-label">Parámetros a analizar</div>
+      <ul class="side-params">
+        <li>Índice de Wobbe</li>
+        <li>Poder calorífico superior (PCS)</li>
+        <li>Densidad relativa</li>
+        <li>Azufre total</li>
+        <li>H₂S + COS</li>
+        <li>Mercaptanos (RSH)</li>
+        <li>Oxígeno (O₂)</li>
+        <li>Dióxido de carbono (CO₂)</li>
+        <li>Punto de rocío de agua (H₂O)</li>
+        <li>Punto de rocío de hidrocarburos (HC)</li>
+      </ul>
     </div>
     <div class="side-foot"><span>v1.2</span><span id="footStatus">—</span></div>
   </aside>
