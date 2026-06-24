@@ -978,7 +978,7 @@ PARAMETROS_UI = [
     {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"]},
     {"slug": "hc(rocío)", "label": "Punto de rocío de HC", "unidades": ["°C", "K", "°F"]},
 ]
-PAISES_UI = ["Portugal", "Francia"]  # España es siempre la base de referencia
+PAISES_UI = ["Portugal", "Francia", "UE"]  # España es siempre la base de referencia
 
 
 def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str = "") -> Dict[str, Any]:
