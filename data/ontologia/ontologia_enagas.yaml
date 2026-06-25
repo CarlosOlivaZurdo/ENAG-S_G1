@@ -170,6 +170,34 @@ ontologia:
       nota: "Norma de PAGO (CEN/AENOR): valores principales (Wobbe, densidad, O₂) verificados en la presentación oficial CEN/ENTSOG (nov-2025); el resto, sin cambios desde 2015+A1:2018, de fuente secundaria. Aún NO publicada como UNE-EN: en España rige todavía la UNE-EN 16726:2016+A1:2019."
       ambito: "Norma europea armonizada de calidad de gas grupo H. Alineada con Directiva (UE) 2024/1788 y Reglamento (UE) 2024/1789."
 
+    # --- Italia ---
+    - id: NORM_IT_GAS
+      tipo: regla_tecnica_nacional
+      pais: IT
+      nombre: "Qualità del gas naturale — DM 18 maggio 2018 (agg. DM 4 ottobre 2023), recepito nel Codice di Rete di Snam Rete Gas"
+      organismo: "Ministero dello Sviluppo Economico / MASE — operatore: Snam Rete Gas S.p.A. (regolatore: ARERA)"
+      publicacion: "DM 18/05/2018 (GU n. 129 del 6-6-2018), p.to 5.1 Tabella 1; Indice di Wobbe aggiornato a 47,31÷53 MJ/Sm³ dal DM 4 ottobre 2023 (GU n. 241 del 14-10-2023)"
+      pdf: "data/raw/IT_Snam_Allegato_11A.pdf"
+      url_pdf: "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf"
+      tabla_calidad: "Snam Codice di Rete, Allegato 11/A (Specifica tecnica), §4.1–4.3; DM 18/05/2018 All. A, p.to 5.1, Tabella 1"
+      condiciones_referencia: "Condizioni standard ISO 13443: 288,15 K (15 ºC) e 101,325 kPa; riferimento entalpico (combustione) 15 ºC → 15/15. Volume in Sm³ (15 ºC)"
+      nota: "Gas naturale Gruppo H. Valores verificados directamente del PDF de Snam (Allegato 11/A, Rev. LXXXV). El DM 18/05/2018 oficial está escaneado; sus valores coinciden con el Codice di Rete vigente."
+      ambito: "Fuente PRIMARIA de las especificaciones de calidad del gas natural en la red de transporte italiana (gruppo H)."
+
+    # --- Alemania ---
+    - id: DVGW_G260
+      tipo: norma_tecnica
+      pais: DE
+      nombre: "DVGW Arbeitsblatt G 260 (2021) — Gasbeschaffenheit"
+      organismo: "DVGW — Deutscher Verein des Gas- und Wasserfaches"
+      publicacion: "Edición septiembre 2021"
+      pdf: "data/raw/DE_GASCADE_Gasbeschaffenheit.pdf"
+      url_pdf: "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf"
+      tabla_calidad: "DVGW G 260:2021 (gas grupo H). Condiciones de referencia y Wobbe verificados en hoja de red GASCADE; azufre/H₂S+COS/CO₂/O₂/agua/rocío HC en el informe oficial DVGW G 202140 (Tabelle 5) y gwf-gas 2024"
+      condiciones_referencia: "Combustión 25 ºC (298,15 K); volumen en Normbedingungen 0 ºC (273,15 K), 1,01325 bar → 25/0"
+      nota: "Gas grupo H (2. Gasfamilie). Norma de PAGO: el rango de Brennwert (PCS) y de densidad relativa NO son públicos → marcados NO_VERIFICABLE (no se inventan). Wobbe, azufre total, H₂S+COS, CO₂, O₂, agua y rocío HC confirmados en publicaciones oficiales DVGW."
+      ambito: "Norma técnica alemana de calidad del gas; referencia de la red de transporte (gruppo H)."
+
     - id: EN_ISO_6976
       tipo: norma_tecnica
       pais: UE
@@ -237,6 +265,28 @@ parametros:
         expresion_original: "Wobbe index entry range: 46,44 — 54,00 MJ/m³ [15 ºC/15 ºC]"
         estado_verificacion: VERIFICADO
         nota: "EN 16726:2025 (verificado en presentación CEN/ENTSOG, nov-2025). Rango recomendado en puntos de ENTRADA; en SALIDA «Class Specified» 46,44–53,00 MJ/m³. Condiciones 15/15 → requiere ISO 13443 para comparar con España (0/0)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.3; DM 18/05/2018 All. A p.to 5.1 Tab. 1 (Wobbe agg. DM 4/10/2023)"
+        tipo_limite: rango
+        valor_min: 47.31
+        valor_max: 53.00
+        unidad: MJ_per_nm3
+        expresion_original: "Indice di Wobbe: 47,31 ÷ 53 MJ/Sm³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas naturale Gruppo H. Sm³ = volumen a 15 ºC (ISO 13443). Techo subido de 52,33 a 53 por DM 4 ottobre 2023. Condiciones 15/15 → ISO 13443 para comparar con España (0/0)."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260 (2021), gas grupo H — confirmado en publicación DVGW (Nitschke-Kowsky) y hoja de red GASCADE"
+        tipo_limite: rango
+        valor_min: 13.6
+        valor_max: 15.7
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbe-Index Erdgas H: 13,6 — 15,7 kWh/m³ (combustión 25 ºC, volumen 0 ºC)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas grupo H. La ed. 2021 recomienda bajar el techo a 15,4 kWh/m³ (excepción hasta 15,7). Condiciones 25/0 (como Portugal) → ISO 13443 para comparar con España."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -296,6 +346,28 @@ parametros:
         expresion_original: "La EN 16726 NO fija un rango de PCS: la propiedad energética se controla vía el Índice de Wobbe"
         condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.3; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: rango
+        valor_min: 34.95
+        valor_max: 45.28
+        unidad: MJ_per_nm3
+        expresion_original: "Potere Calorifico Superiore: 34,95 ÷ 45,28 MJ/Sm³"
+        condiciones_referencia: { norma_calculo: EN_ISO_6976, temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas naturale Gruppo H. MJ/Sm³ @15/15 → ÷3,6 (MJ→kWh) e ISO 13443 para comparar con España (kWh/m³ @0/0)."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260:2021 (Brennwert de gas grupo H — rango en la tabla de pago de la norma)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: kWh_per_nm3
+        expresion_original: "El rango de Brennwert (PCS) de gas grupo H está en la tabla de pago de DVGW G 260; no hay valor de especificación público verificable"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "DVGW G 260 es de PAGO. Los valores operativos de red (p. ej. GASCADE ~10,5 kWh/m³ mín.) no son el rango de especificación. No se inventa un valor."
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
@@ -354,6 +426,26 @@ parametros:
         expresion_original: "Relative density: 0,45 — 0,70"
         estado_verificacion: VERIFICADO
         nota: "EN 16726:2025 (verificado en presentación CEN/ENTSOG). El mínimo bajó de 0,555 a 0,45 para admitir hidrógeno (hasta 2 % mol). Adimensional: comparable directamente."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.3; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: rango
+        valor_min: 0.555
+        valor_max: 0.700
+        unidad: adimensional
+        expresion_original: "Densità relativa: 0,555 ÷ 0,7"
+        estado_verificacion: VERIFICADO
+        nota: "Gas naturale Gruppo H. Adimensional → comparable directamente."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260:2021 (densidad relativa de gas grupo H — tabla de pago)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "El rango de densidad relativa de gas grupo H está en la tabla de pago de DVGW G 260; el 0,55–0,75 que circula es la clasificación de la 2ª familia, no la especificación aislada"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "DVGW G 260 de pago. No se fija un valor sin fuente limpia de especificación de grupo H."
 
   # ---------------------------------------------------------------------------
   S_TOTAL:
@@ -400,6 +492,26 @@ parametros:
         expresion_original: "Total sulphur: – / 20 mg/m³ (sin odorizar; 30 con odorizante)"
         estado_verificacion: VERIFICADO
         nota: "EN 16726 (ed. 2015+A1:2018, sin cambios en 2025): 20 mg/m³ sin odorizante (30 con odorizante). Fuente técnica secundaria (norma de pago)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.2; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: 20.0
+        unidad: mg_per_nm3
+        expresion_original: "Zolfo Totale (*): ≤ 20 mg/Sm³  (* escluso lo zolfo da odorizzante)"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "mg/Sm³ (volumen a 15 ºC). Excluye el azufre del odorizante. Para comparar con ES (mg/Nm³ a 0 ºC) multiplicar × 1,0549 (288,15/273,15)."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260:2021; confirmado en gwf-gas 2024 y Leseprobe G 260"
+        tipo_limite: maximo
+        valor: 6.0
+        unidad: mg_per_nm3
+        expresion_original: "Gesamtschwefel ohne Odoriermittel: ≤ 6 mg/m³ (8 mg/m³ con odorización)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "La ed. 2021 bajó el azufre total a 6 mg/m³ sin odorizante (8 con odorización); el histórico 30 mg/m³ (EASEE) quedó superado. mg/m³ a 0 ºC → comparable con ES."
 
   # ---------------------------------------------------------------------------
   H2S_COS:
@@ -449,6 +561,26 @@ parametros:
         expresion_original: "H2S + COS (as S): – / 5 mg/m³"
         estado_verificacion: VERIFICADO
         nota: "EN 16726:2025 (norma europea, pendiente de publicar como UNE-EN). Valor sin cambios desde la ed. 2015+A1:2018; fuente técnica secundaria (la norma es de pago)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.2; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "Solfuro di idrogeno (H₂S): ≤ 5 mg/Sm³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Italia fija H₂S ≤ 5 mg/Sm³ para el gas natural; NO fija una línea combinada «H₂S+COS» (esa sólo existe para el biometano). mg/Sm³ a 15 ºC → × 1,0549 para comparar con ES (Nm³)."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260; confirmado en el informe oficial DVGW G 202140 (Tabelle 5)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "H2S, COS als S: ≤ 5 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Suma H₂S + COS como S. mg/m³ a 0 ºC → comparable con ES."
     conversion:
       tipo: masa_molar
       formula_mg_nm3_a_ppm_vol: "ppm_vol = mg/Nm³ × 22.414 / 34.08 = mg/Nm³ × 0.6577  (H₂S puro)"
@@ -502,6 +634,25 @@ parametros:
         expresion_original: "RSH (as S): – / 6 mg/m³"
         estado_verificacion: VERIFICADO
         nota: "EN 16726:2025 (norma europea, pendiente de publicar como UNE-EN). Valor sin cambios desde la ed. 2015+A1:2018; fuente técnica secundaria (la norma es de pago)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.2; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: 6.0
+        unidad: mg_per_nm3
+        expresion_original: "Zolfo da mercaptani (*): ≤ 6 mg/Sm³  (* escluso lo zolfo da odorizzante)"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Excluye el azufre del odorizante. mg/Sm³ a 15 ºC → × 1,0549 para comparar con ES (Nm³)."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260:2021 (azufre mercaptánico — no aislado en fuente pública vigente)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "El valor de azufre mercaptánico de la G 260 vigente no consta en fuente pública limpia (tabla de pago); el 6 mg/m³ histórico (EASEE) ya no es coherente con el azufre total de 6 mg/m³ de 2021"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Con el azufre total bajado a 6 mg/m³ en 2021, el límite de mercaptanos (≤ total) no se publica por separado de forma verificable. No se inventa."
 
   # ---------------------------------------------------------------------------
   O2:
@@ -550,6 +701,24 @@ parametros:
         expresion_original: "O2: – / 1 % mol (en la red); proceso de evaluación lo baja a 0,01 % o 0,001 % para instalaciones sensibles"
         estado_verificacion: VERIFICADO
         nota: "EN 16726:2025 (verificado en presentación CEN/ENTSOG). Subió de 0,01 %/0,001 % a 1 % mol para facilitar el biometano; un proceso de evaluación lo rebaja a 0,01 % (100 ppm) o 0,001 % (10 ppm) en instalaciones sensibles (p. ej. almacenamiento subterráneo)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.1; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: 0.6
+        unidad: pct_mol
+        expresion_original: "Ossigeno: ≤ 0,6 % mol"
+        estado_verificacion: VERIFICADO
+        nota: "% mol (independiente de la temperatura) → comparable directamente."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260; confirmado en el informe oficial DVGW G 202140 (Tabelle 5)"
+        tipo_limite: maximo
+        valor: 0.001
+        unidad: pct_mol
+        expresion_original: "Sauerstoff: ≤ 0,001 mol-% (10 ppm)"
+        estado_verificacion: VERIFICADO
+        nota: "Límite muy estricto (10 ppm), aplicable sobre todo a redes conectadas a almacenamiento subterráneo. % mol → comparable directamente."
     conversion:
       formula_pct_a_ppm: "ppm_vol = pct_vol × 10000"
       ejemplo: "0,01 % = 100 ppm(vol)"
@@ -599,6 +768,25 @@ parametros:
         expresion_original: "CO2: – / 2,5 % mol"
         estado_verificacion: VERIFICADO
         nota: "EN 16726:2025 (norma europea, pendiente de publicar como UNE-EN). Valor sin cambios desde la ed. 2015+A1:2018; fuente técnica secundaria (la norma es de pago)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.1; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "Anidride Carbonica (CO₂): ≤ 2,5 % mol"
+        estado_verificacion: VERIFICADO
+        nota: "% mol → comparable directamente."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260; confirmado en el informe oficial DVGW G 202140 (Tabelle 5)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "Kohlenstoffdioxid (CO₂): ≤ 2,5 mol-%"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "El informe DVGW lista «2,5 / 4 mol-%»; 2,5 es el valor de referencia para gas natural grupo H. % mol → comparable directamente."
 
   # ---------------------------------------------------------------------------
   PR_H2O:
@@ -650,6 +838,26 @@ parametros:
         expresion_original: "H2O DP: – / -8 ºC a 70 bar"
         estado_verificacion: VERIFICADO
         nota: "EN 16726 (ed. 2015+A1:2018, sin cambios en 2025): –8 ºC a 70 bar, igual presión que España. Fuente técnica secundaria (norma de pago)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.3; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: -5.0
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "Punto di rugiada dell'acqua: ≤ -5 ºC alla pressione di 7000 kPa relativi"
+        estado_verificacion: VERIFICADO
+        nota: "A 70 bar (7000 kPa relativos), igual presión de referencia que ES y UE."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260; rocío de red (GASCADE/EN 16726). Métrica primaria de G 260: contenido de agua 200/50 mg/m³ (informe DVGW G 202140)"
+        tipo_limite: maximo
+        valor: -8.0
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "Wasserdampftaupunkt ≈ -8 ºC a 70 bar; G 260 lo fija como contenido de agua ≤ 200 mg/m³ (MOP ≤ 10 bar) / 50 mg/m³ (MOP > 10 bar)"
+        estado_verificacion: VERIFICADO
+        nota: "G 260 expresa el agua como CONTENIDO (200/50 mg/m³); el rocío equivalente de red es ≈ -8 ºC a 70 bar (igual presión que ES/UE)."
 
   # ---------------------------------------------------------------------------
   PR_HC:
@@ -701,6 +909,26 @@ parametros:
         expresion_original: "HC DP: – / -2 ºC a 1-70 bar"
         estado_verificacion: VERIFICADO
         nota: "EN 16726 (ed. 2015+A1:2018, sin cambios en 2025): –2 ºC en 1-70 bar. Fuente técnica secundaria (norma de pago)."
+      IT:
+        fuente: NORM_IT_GAS
+        articulo: "Snam Codice di Rete, Allegato 11/A, §4.3; DM 18/05/2018 All. A p.to 5.1 Tab. 1"
+        tipo_limite: maximo
+        valor: 0.0
+        unidad: grados_C
+        presion_referencia_bar: "1-70"
+        expresion_original: "Punto di rugiada degli idrocarburi: ≤ 0 ºC nel campo di pressione 100 ÷ 7.000 kPa relativi"
+        estado_verificacion: VERIFICADO
+        nota: "Rango 1-70 bar (100-7000 kPa rel.), coincide con ES/FR → comparable."
+      DE:
+        fuente: DVGW_G260
+        articulo: "DVGW G 260; confirmado en el informe oficial DVGW G 202140 (Tabelle 5)"
+        tipo_limite: maximo
+        valor: -2.0
+        unidad: grados_C
+        presion_referencia_bar: "1-70"
+        expresion_original: "Kohlenwasserstofftaupunkt: ≤ -2 ºC bei 1 bis 70 bar"
+        estado_verificacion: VERIFICADO
+        nota: "Rango 1-70 bar, coincide con ES/FR/UE → comparable."
 
   # NOTA: Polvo / Partículas queda EXCLUIDO del alcance del proyecto.
   #   ES (Tabla 3) lo recoge como «Técnicamente puro» (sin cifra). FR (GRTgaz): < 5 mg/m³(n).

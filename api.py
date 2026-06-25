@@ -39,7 +39,7 @@ try:
 except Exception:  # fallback si el paquete src no está en el path
     SYSTEM_PROMPT = (
         "Eres el Asistente Experto de Calidad de Gas Natural. Solo tratas la calidad "
-        "del gas natural (España, Portugal, Francia, UE). Nunca inventas valores "
+        "del gas natural (España, Portugal, Francia, Italia, Alemania, UE). Nunca inventas valores "
         "numéricos: los obtienes de las herramientas deterministas. Cita siempre la fuente."
     )
 
@@ -129,7 +129,7 @@ OPENAI_TOOLS = [
                 "type": "object",
                 "properties": {
                     "parametro": {"type": "string", "description": "Parámetro de calidad (p.ej. O2, PCS, Wobbe, S total)."},
-                    "pais": {"type": "string", "description": "País/jurisdicción (España, Portugal, Francia)."},
+                    "pais": {"type": "string", "description": "País/jurisdicción (España, Portugal, Francia, Italia, Alemania, UE)."},
                 },
                 "required": ["parametro", "pais"],
             },
@@ -210,7 +210,7 @@ OPENAI_TOOLS = [
                 "properties": {
                     "valor": {"type": "number", "description": "Valor a convertir (en kWh/m³; convierte antes la unidad si hace falta)."},
                     "parametro": {"type": "string", "description": "PCS o Wobbe."},
-                    "pais_origen": {"type": "string", "description": "País de origen (España, Portugal, Francia, UE)."},
+                    "pais_origen": {"type": "string", "description": "País de origen (España, Portugal, Francia, Italia, Alemania, UE)."},
                 },
                 "required": ["valor", "parametro", "pais_origen"],
             },
@@ -496,7 +496,7 @@ def _parametro_no_reconocido_message() -> str:
         "No he reconocido el parámetro de tu consulta. "
         "Los parámetros disponibles son:\n\n"
         f"{opciones}\n\n"
-        "Indícame uno de ellos junto con el país (España, Portugal, Francia o UE) "
+        "Indícame uno de ellos junto con el país (España, Portugal, Francia, Italia, Alemania o UE) "
         "para darte los valores o comprobar el cumplimiento."
     )
 
@@ -505,7 +505,7 @@ def _mensaje_capacidades() -> str:
     opciones = "\n".join(f"- {p}" for p in PARAMETROS_DISPONIBLES)
     return (
         "Puedo ayudarte con consultas sobre **calidad del gas natural** en España, "
-        "Portugal, Francia y la UE. Los parámetros que puedes consultar son:\n\n"
+        "Portugal, Francia, Italia, Alemania y la UE. Los parámetros que puedes consultar son:\n\n"
         f"{opciones}\n\n"
         "Puedes pedirme, por ejemplo: los valores de un parámetro en un país, "
         "comprobar si un valor cumple la normativa, o comparar dos países."
@@ -554,7 +554,7 @@ def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unid
     return _evaluar_paises(parametro, valor, unidad, [pais])
 
 
-ALL_COUNTRIES = ["España", "Portugal", "Francia"]
+ALL_COUNTRIES = ["España", "Portugal", "Francia", "Italia", "Alemania", "UE"]
 PAIS_BASE = "España"
 
 
@@ -692,7 +692,8 @@ def _celda_es_vs_pais(parametro: str, pais: str, unidad_pais: Optional[str], uni
     return f"España vs {pais}: {estado}"
 
 
-_PAIS_FUZZY = {"espana": "España", "portugal": "Portugal", "francia": "Francia"}
+_PAIS_FUZZY = {"espana": "España", "portugal": "Portugal", "francia": "Francia",
+               "italia": "Italia", "alemania": "Alemania"}
 
 
 def _detectar_paises(texto_norm: str) -> list:
@@ -705,6 +706,8 @@ def _detectar_paises(texto_norm: str) -> list:
     # 1) coincidencia directa por subcadena (evita falsos positivos con "espan")
     for kw, nombre in [("espan", "España"), ("spain", "España"),
                        ("portugal", "Portugal"), ("francia", "Francia"), ("france", "Francia"),
+                       ("italia", "Italia"), ("italy", "Italia"),
+                       ("alemania", "Alemania"), ("germania", "Alemania"), ("germany", "Alemania"), ("deutschland", "Alemania"),
                        ("europa", "UE"), ("union europea", "UE"), ("easee", "UE")]:
         if kw in t and nombre not in encontrados:
             encontrados.append(nombre)
@@ -978,7 +981,17 @@ PARAMETROS_UI = [
     {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"]},
     {"slug": "hc(rocío)", "label": "Punto de rocío de HC", "unidades": ["°C", "K", "°F"]},
 ]
-PAISES_UI = ["Portugal", "Francia", "UE"]  # España es siempre la base de referencia
+PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "UE"]  # España es siempre la base de referencia
+
+
+def _es_mg_por_volumen(unidad: str) -> bool:
+    """True si la unidad es una concentración másica por volumen (mg/m³, mg/Nm³, mg/Sm³).
+
+    Estas dependen de la temperatura del volumen de referencia (gas ideal); el % mol,
+    el ppm (molar) y las adimensionales NO.
+    """
+    s = (unidad or "").lower().replace(" ", "")
+    return "mg" in s and ("m³" in s or "m3" in s or "nm" in s or "sm" in s)
 
 
 def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str = "") -> Dict[str, Any]:
@@ -1032,8 +1045,18 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
                         vs_es, factor = cr["valor_convertido"], cr["factor"]
                     if factor and factor != 1.0:
                         notas.append(f"{pais}: combustión {_coma(ccomb)} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
+                elif cmed and cmed != 0 and _es_mg_por_volumen(unidad_out):
+                    # Concentración MÁSICA (mg/m³) referida a un volumen a T ≠ 0 °C
+                    # (p. ej. Italia: mg/Sm³ a 15 °C). Se normaliza el volumen a 0 °C
+                    # con factor (273,15 + T_vol)/273,15 (base de gas ideal). El % mol,
+                    # ppm (molar) y adimensionales NO dependen de la temperatura.
+                    fvol = (273.15 + cmed) / 273.15
+                    vi_es = round(vi * fvol, 6) if vi is not None else None
+                    vs_es = round(vs * fvol, 6) if vs is not None else None
+                    factor = fvol
+                    notas.append(f"{pais}: volumen {_coma(cmed)} °C → 0 °C (× {fvol:.4f}, base de gas ideal)")
                 else:
-                    # No depende de la temperatura de combustión: mismo valor, referido a 0/0.
+                    # No depende de la temperatura de combustión ni del volumen: mismo valor, referido a 0/0.
                     vi_es, vs_es = vi, vs
 
             def rng(a, b):
@@ -1076,7 +1099,7 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
 # Filas = países, columnas = parámetros. Cada celda: rango normalizado a condiciones
 # de España, un NIVEL frente a España (para el color) y un FLAG si hubo diferencia
 # metodológica (unidad o condiciones distintas → se aplicó conversión).
-PAISES_MATRIZ = ["España", "Portugal", "Francia", "UE"]
+PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "UE"]
 
 
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
@@ -1166,9 +1189,12 @@ _PARAM_A_ONTO = {
     "s total": "S_TOTAL", "h2s+cos": "H2S_COS", "rsh": "RSH",
     "o2": "O2", "co2": "CO2", "h2o(rocío)": "PR_H2O", "hc(rocío)": "PR_HC",
 }
-_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE"}
-_CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE"}
-_PAISES_FUENTE = ["España", "Portugal", "Francia", "UE"]
+_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE",
+                  "italia": "IT", "italy": "IT", "alemania": "DE", "germany": "DE",
+                  "deutschland": "DE", "germania": "DE"}
+_CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE",
+                  "IT": "Italia", "DE": "Alemania"}
+_PAISES_FUENTE = ["España", "Portugal", "Francia", "Italia", "Alemania", "UE"]
 
 
 def _cargar_ontologia() -> Dict[str, Any]:
@@ -1339,6 +1365,12 @@ def _rango_de_match(m: Dict[str, Any], parametro: str, pais: str, unidad_es: Opt
             v = c["valor_convertido"]
         if es_combustion and not base_es:
             v = convertir_a_condiciones_espana(v, parametro, pais)["valor_convertido"]
+        elif not base_es:
+            # Concentración másica (mg/m³) a volumen ≠ 0 °C (p. ej. Italia, Sm³ a 15 °C):
+            # normaliza el volumen a 0 °C (gas ideal). El % mol/ppm/adimensional no cambia.
+            _cc, cmed = _parse_notac(m.get("notacion") or "(0/0)")
+            if cmed and cmed != 0 and _es_mg_por_volumen(unidad_es or ureg):
+                v = round(v * (273.15 + cmed) / 273.15, 6)
         return v
 
     lo, hi = conv(inf), conv(sup)

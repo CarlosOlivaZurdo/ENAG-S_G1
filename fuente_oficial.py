@@ -26,13 +26,17 @@ _PARAM_A_ONTO = {
     "s total": "S_TOTAL", "h2s+cos": "H2S_COS", "rsh": "RSH",
     "o2": "O2", "co2": "CO2", "h2o(rocío)": "PR_H2O", "hc(rocío)": "PR_HC",
 }
-_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE"}
-_CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE"}
+_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE",
+                  "italia": "IT", "italy": "IT", "alemania": "DE", "germany": "DE",
+                  "deutschland": "DE", "germania": "DE"}
+_CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE",
+                  "IT": "Italia", "DE": "Alemania"}
 # Condiciones de referencia (combustión/volumen) de cada país, aplicables a TODOS sus
 # parámetros. España y Francia: 0/0; Portugal: combustión 25 ºC (ISO 13443/96); UE (EN 16726): 15/15.
 # UE = EN 16726. El Wobbe se expresa a 15/15 (lo lleva su propia condicion_referencia);
 # concentraciones y fracciones molares: equivalentes a 0/0 (comparables directamente).
-_NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(0/0)"}
+_NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(0/0)",
+                  "IT": "(15/15)", "DE": "(25/0)"}
 
 # Código de unidad de la ontología -> símbolo legible (y convertible por el conversor)
 _UNIDAD_DISPLAY = {
@@ -110,6 +114,8 @@ _URL_OFICIAL = {
     "REG_PT_826_2023": "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf",
     "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
     "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
+    "NORM_IT_GAS": "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf",
+    "DVGW_G260": "https://www.dvgw-regelwerk.de/technische-regel/arbeitsblatt-g-260/a83267",
 }
 
 

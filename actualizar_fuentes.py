@@ -38,6 +38,10 @@ URLS_PDF: Dict[str, str] = {
     # Francia — GRTgaz (hoy Natran) y GRDF, prescripciones técnicas oficiales:
     "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
     "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
+    # Italia — Snam Rete Gas, Codice di Rete, Allegato 11/A (recoge el DM 18/05/2018 + DM 4/10/2023):
+    "NORM_IT_GAS": "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf",
+    # Alemania — DVGW G 260 es de pago; se descarga la hoja de red de GASCADE (condiciones de referencia + Wobbe):
+    "DVGW_G260": "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf",
     # UE — EN 16726:2025 (norma de pago): presentación oficial CEN/ENTSOG con los valores:
     "EN_16726": "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf",
 }
