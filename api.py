@@ -333,8 +333,19 @@ _INDEX_HTML = os.path.join(os.path.dirname(__file__), "index.html")
 
 @app.get("/")
 async def servir_chat() -> FileResponse:
-    """Sirve la interfaz web del chatbot en la raíz (http://localhost:8000/)."""
-    return FileResponse(_INDEX_HTML)
+    """Sirve la interfaz web del chatbot en la raíz (http://localhost:8000/).
+
+    Sin caché: así los compañeros ven SIEMPRE la última versión tras un `git pull`,
+    sin tener que forzar recarga (Ctrl+F5) en el navegador.
+    """
+    return FileResponse(
+        _INDEX_HTML,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 
 def _normalize_country(text: str) -> Optional[str]:
