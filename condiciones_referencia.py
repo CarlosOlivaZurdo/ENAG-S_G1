@@ -15,6 +15,8 @@ referencia histórica):
     Francia  : combustión 0 °C,  medición 0 °C   (igual que España)
     Italia   : combustión 15 °C, medición 15 °C  (DM 18/05/2018 + Snam, Sm³ a 15 °C)
     Alemania : combustión 25 °C, medición 0 °C   (DVGW G 260, como Portugal)
+    P. Bajos : combustión 25 °C, medición 0 °C   (Regeling gaskwaliteit, m³(n))
+    Bélgica  : combustión 25 °C, medición 0 °C   (Fluxys, m³(n))
     UE (ISO) : combustión 15 °C, medición 15 °C
 NOTA: la Tabla E.1 (1996) listaba Italia como 25/0, pero su normativa vigente usa las
 condiciones estándar ISO 15/15; por eso Italia se trata como 15/15.
@@ -44,6 +46,9 @@ CONDICIONES_PAIS = {
     "europa": (15, 15),
     "italia": (15, 15),  # DM 18/05/2018 + Snam: condiciones estándar ISO 13443 (15 ºC / 15 ºC), Sm³
     "alemania": (25, 0), # DVGW G 260: combustión 25 ºC, volumen Normbedingungen 0 ºC
+    "paises bajos": (25, 0),  # Regeling gaskwaliteit: combustión 25 ºC (298,15 K), volumen m³(n) 0 ºC
+    "holanda": (25, 0),
+    "belgica": (25, 0),  # Fluxys: combustión 25 ºC, volumen m³(n) 0 ºC
 }
 
 # Parámetros que dependen de la temperatura de COMBUSTIÓN (los únicos que cambian).
@@ -80,7 +85,7 @@ def convertir_a_condiciones_espana(valor: float, parametro: str, pais_origen: st
     if cond is None:
         return {
             "error": f"No conozco las condiciones de referencia de '{pais_origen}'.",
-            "paises_conocidos": ["España", "Portugal", "Francia", "Italia", "Alemania", "UE"],
+            "paises_conocidos": ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "UE"],
         }
 
     slug = _slug_parametro(parametro)

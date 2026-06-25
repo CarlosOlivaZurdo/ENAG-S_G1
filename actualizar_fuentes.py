@@ -42,6 +42,10 @@ URLS_PDF: Dict[str, str] = {
     "NORM_IT_GAS": "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf",
     # Alemania — DVGW G 260 es de pago; se descarga la hoja de red de GASCADE (condiciones de referencia + Wobbe):
     "DVGW_G260": "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf",
+    # Países Bajos — Regeling gaskwaliteit (HTML en wetten.overheid.nl; no es PDF directo, descarga manual):
+    "NORM_NL_GAS": "",
+    # Bélgica — Fluxys, Bijlage 7 «Natuurgas specificaties» (gas H):
+    "NORM_BE_FLUXYS": "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf",
     # UE — EN 16726:2025 (norma de pago): presentación oficial CEN/ENTSOG con los valores:
     "EN_16726": "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf",
 }

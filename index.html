@@ -301,7 +301,7 @@
         <div class="cmp-hero">
           <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa de calidad de gas</b></div>
           <h1>Comparativa de calidad de gas</h1>
-          <p class="cmp-hero-sub">Compare los requisitos de calidad del gas natural entre España, Portugal, Francia, Italia, Alemania y la UE, con cada límite normalizado a las condiciones de España.</p>
+          <p class="cmp-hero-sub">Compare los requisitos de calidad del gas natural entre España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica y la UE, con cada límite normalizado a las condiciones de España.</p>
         </div>
         <div class="cmp-inner">
           <div class="cmp-subnav">
@@ -513,7 +513,7 @@
     {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
     {slug:"hc(rocío)", label:"Punto de rocío de HC", unidades:["°C","K","°F"]},
   ];
-  const PAISES_OPC = ["Portugal","Francia","Italia","Alemania","UE"];
+  const PAISES_OPC = ["Portugal","Francia","Italia","Alemania","Países Bajos","Bélgica","UE"];
   function initCompare(){
     const selP = $("cmpParam");
     selP.innerHTML = PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("");
