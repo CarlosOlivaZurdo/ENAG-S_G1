@@ -3,6 +3,39 @@ chcp 65001 >nul
 cd /d "%~dp0"
 title Chatbot de Calidad de Gas Natural - ENAGAS
 
+REM ============================================================================
+REM  Al abrir:
+REM   1) Se ACTUALIZA solo a la ultima version (git, de forma SEGURA: nunca
+REM      borra cambios locales).
+REM   2) Se relanza ya actualizado (lee el .bat nuevo) y arranca el servidor.
+REM   3) Libera el puerto 8000 si quedo un servidor anterior abierto.
+REM  Asi todos los companeros ven SIEMPRE la misma version, sin pasos manuales.
+REM ============================================================================
+
+if /i "%~1"=="run" goto run
+
+call :actualizar
+REM Relanza leyendo el .bat YA ACTUALIZADO (no vuelve aqui).
+"%~f0" run
+goto :eof
+
+:actualizar
+where git >nul 2>&1 || goto :eof
+if not exist ".git" goto :eof
+echo Buscando actualizaciones...
+set GIT_TERMINAL_PROMPT=0
+git pull --ff-only
+if errorlevel 1 (
+    echo   [aviso] No se pudo actualizar automaticamente.
+    echo           Causa habitual: tienes cambios locales sin guardar o no hay conexion.
+    echo           Se usara la version que ya tienes. Para forzar la ultima: git pull
+) else (
+    echo   Tienes la ultima version.
+)
+echo.
+goto :eof
+
+:run
 echo ===============================================
 echo    Chatbot de Calidad de Gas Natural - ENAGAS
 echo ===============================================
