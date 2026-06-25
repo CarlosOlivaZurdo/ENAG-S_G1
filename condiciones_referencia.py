@@ -8,11 +8,16 @@ MEDICIÓN/volumen (t2). Para poder comparar el **PCS** o el **Índice de Wobbe**
 países hay que llevarlos a una base común. Aquí se convierten a las condiciones
 **ESPAÑOLAS** (combustión 0 °C, medición 0 °C), que son la base del comparador.
 
-Condiciones por país (ISO 13443, Anexo E «Tabla E.1» + normas nacionales):
+Condiciones por país (normas nacionales vigentes; ISO 13443 Anexo E «Tabla E.1» como
+referencia histórica):
     España   : combustión 0 °C,  medición 0 °C
     Portugal : combustión 25 °C, medición 0 °C   <- difiere SOLO en la combustión
     Francia  : combustión 0 °C,  medición 0 °C   (igual que España)
+    Italia   : combustión 15 °C, medición 15 °C  (DM 18/05/2018 + Snam, Sm³ a 15 °C)
+    Alemania : combustión 25 °C, medición 0 °C   (DVGW G 260, como Portugal)
     UE (ISO) : combustión 15 °C, medición 15 °C
+NOTA: la Tabla E.1 (1996) listaba Italia como 25/0, pero su normativa vigente usa las
+condiciones estándar ISO 15/15; por eso Italia se trata como 15/15.
 
 Como España, Portugal y Francia miden el volumen a 0 °C, la ÚNICA diferencia entre
 Portugal y España es la temperatura de combustión (25 °C vs 0 °C). Por eso solo

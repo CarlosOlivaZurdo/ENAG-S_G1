@@ -300,7 +300,15 @@ _PARAMS_MEDICION_13443 = {"volumen", "densidad", "densidad_relativa"}
 # normativo; gas real, base volumétrica), para los pares de condiciones tabulados a
 # 101,325 kPa. Tienen PRIORIDAD sobre las ecuaciones del Anexo B (informativo). Clave:
 # (cond_origen, cond_destino), con cond = (t_combustión, t_medición) en °C.
-# Cubren los países del proyecto: España (0,0), Portugal (25,0), Francia (0,0), UE (15,15).
+# Cubren los países del proyecto, todos referidos a España (0,0):
+#   Portugal (25,0) y Alemania (25,0)  -> factor (25,0)->(0,0)   [Tabla A.1, col. 25:00->00:00]
+#   Italia (15,15)  y UE/ISO (15,15)   -> factor (15,15)->(0,0)  [Tabla A.1, col. 15:15->00:00]
+#   España (0,0) y Francia (0,0)       -> identidad (factor 1).
+# Valores LITERALES de la Tabla A.1 (gas real, base volumétrica): filas 19 (PCS), 20
+# (PCI) y 21 (Wobbe). Verificados contra el PDF oficial de la UNE-EN ISO 13443:2006.
+# NOTA: la Tabla E.1 (Anexo E, informativo, 1996) listaba Italia como 25:0; la normativa
+# italiana VIGENTE (DM 18/05/2018 + Codice di Rete de Snam) usa condiciones estándar ISO
+# 15 ºC/15 ºC (Sm³), por eso Italia se trata como (15,15). No cambiar sin re-verificar.
 _TABLA_A1 = {
     ((25, 0), (0, 0)): {"pcs": 1.0026, "wobbe": 1.0026, "pci": 1.0003},
     ((15, 15), (0, 0)): {"pcs": 1.0570, "wobbe": 1.0569, "pci": 1.0555},
