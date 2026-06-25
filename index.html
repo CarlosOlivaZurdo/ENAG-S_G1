@@ -260,7 +260,7 @@
         <li>Punto de rocío de hidrocarburos (HC)</li>
       </ul>
     </div>
-    <div class="side-foot"><span>v1.3</span><span id="footStatus">—</span></div>
+    <div class="side-foot"><span>v1.4</span><span id="footStatus">—</span></div>
   </aside>
 
   <!-- Workspace -->
@@ -301,18 +301,18 @@
         <div class="cmp-hero">
           <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa de calidad de gas</b></div>
           <h1>Comparativa de calidad de gas</h1>
-          <p class="cmp-hero-sub">Compare los requisitos de calidad del gas natural entre España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica y la UE, con cada límite normalizado a las condiciones de España.</p>
+          <p class="cmp-hero-sub">Requisitos de calidad del gas natural por jurisdicción, normalizados a las condiciones de España.</p>
         </div>
         <div class="cmp-inner">
           <div class="cmp-subnav">
-            <button class="sub-item active" data-sub="puntual">Comparativa puntual</button>
-            <button class="sub-item" data-sub="matriz">Matriz general (heatmap)</button>
+            <button class="sub-item active" data-sub="puntual">Comparativa</button>
+            <button class="sub-item" data-sub="matriz">Matriz general</button>
           </div>
 
           <div id="subPuntual">
             <div class="cmp-card-main">
-              <h2 class="cmp-card-h2">Comparativa puntual</h2>
-              <p class="cmp-intro">Elige el <b>parámetro</b>, la <b>unidad</b> y los <b>países</b>. España es la base; la tabla incluye una columna con cada límite <b>normalizado a las condiciones de España</b> (con la <b>ISO&nbsp;13443</b> para PCS e Índice de Wobbe).</p>
+              <h2 class="cmp-card-h2">Comparativa</h2>
+              <p class="cmp-intro">España es la base. Cada límite se muestra también <b>normalizado a las condiciones de España</b> (ISO&nbsp;13443 para PCS y Wobbe).</p>
               <div class="cmp-form">
                 <div class="cmp-field">
                   <label for="cmpParam">Parámetro</label>
@@ -334,8 +334,8 @@
 
           <div id="subMatriz" style="display:none">
             <div class="cmp-card-main">
-              <h2 class="cmp-card-h2">Matriz general (heatmap)</h2>
-              <p class="cmp-intro">Visión de conjunto: <b>países × parámetros</b>. Cada celda muestra el límite normalizado a las <b>condiciones de España</b> (ISO&nbsp;13443 para PCS/Wobbe). El color indica si el país es más restrictivo o más amplio que España; el icono ⚠ marca que hubo una <b>diferencia metodológica</b> (unidad o condiciones distintas).</p>
+              <h2 class="cmp-card-h2">Matriz general</h2>
+              <p class="cmp-intro"><b>Países × parámetros</b>, normalizado a España. Color = más restrictivo / más amplio que España; ⚠ = unidad o condiciones distintas.</p>
             </div>
             <div id="matrizResult"></div>
           </div>
@@ -387,7 +387,7 @@
   /* ===== View switching ===== */
   const TITLES = {
     chat: 'Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span>',
-    compare: 'Comparativa entre jurisdicciones <span class="sub">· España como base · normalización ISO 13443</span>'
+    compare: 'Comparativa <span class="sub">· España como base · ISO 13443</span>'
   };
   function setView(view){
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view===view));
