@@ -1585,13 +1585,20 @@ def _parse_notac(n: Any) -> tuple:
 
 def _condiciones_iguales(parametro: str, notac_a: Any, notac_b: Any) -> bool:
     """¿Las condiciones de referencia son equivalentes PARA ESTE parámetro?
-    Para PCS/Wobbe importan combustión y volumen; para el resto, solo el volumen
-    (la temperatura de combustión no afecta a concentraciones, densidad ni rocíos)."""
+
+    La temperatura del VOLUMEN de referencia solo afecta a magnitudes VOLUMÉTRICAS:
+    PCS/Wobbe (MJ/m³) y concentraciones MÁSICAS por volumen (mg/m³ — azufre total,
+    H₂S+COS, mercaptanos). El % mol, el ppm, lo adimensional (densidad relativa) y los
+    puntos de rocío (°C) NO dependen de la temperatura del volumen. Para PCS/Wobbe
+    importa además la temperatura de combustión."""
     ca, va = _parse_notac(notac_a)
     cb, vb = _parse_notac(notac_b)
-    if va != vb:
+    es_comb = _slug_param_comb(parametro) in {"pcs", "wobbe"}
+    p = _norm_pais(parametro)
+    masa_volumen = any(k in p for k in ("s total", "azufre", "h2s", "mercapt", "rsh"))
+    if (es_comb or masa_volumen) and va != vb:
         return False
-    if _slug_param_comb(parametro) in {"pcs", "wobbe"} and ca != cb:
+    if es_comb and ca != cb:
         return False
     return True
 
