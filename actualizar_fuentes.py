@@ -6,49 +6,26 @@ la última versión publicada:
     python actualizar_fuentes.py            # descarga las fuentes con URL configurada
     python actualizar_fuentes.py --listar   # solo muestra qué haría, sin descargar
 
-No usa dependencias externas (solo la librería estándar). Si una descarga falla o no
-devuelve un PDF, CONSERVA el PDF anterior y lo indica. Hace copia .bak antes de
+No usa dependencias externas salvo PyYAML (ya en requirements). Si una descarga falla o
+no devuelve un PDF, CONSERVA el PDF anterior y lo indica. Hace copia .bak antes de
 sobrescribir. Tras actualizar, conviene revisar la ontología: si la fuente oficial
 cambió de valores, el chatbot lo señalará como «discrepancia con el Excel/ontología».
 
-Las URLs de BOE y EUR-Lex se construyen de forma estable. Para Portugal (ERSE/DRE) y
-Francia (GRTgaz/GRDF) añade la URL directa del PDF en `URLS_PDF` cuando la tengas
-(o en la ontología, campo `url_pdf` de cada fuente).
+FUENTE ÚNICA DE URLS: cada fuente de `data/ontologia/ontologia_enagas.yaml` tiene un
+campo `url`. Ese MISMO enlace es el que se descarga aquí y el que aparece como cita en
+la comparativa (vía `fuente_oficial.url_de`). No hay tablas de URLs duplicadas: para
+cambiar un enlace, edita el `url` de la fuente en la ontología y queda actualizado en
+los dos sitios a la vez.
 """
 import os
 import sys
 import ssl
 import glob
+import time
 import urllib.request
-from typing import Dict, Optional
+from typing import Dict
 
-# URLs DIRECTAS al PDF oficial por código de fuente. BOE y EUR-Lex son estables.
-# Deja "" en las que aún no tengas la URL directa (se omitirán con aviso).
-URLS_PDF: Dict[str, str] = {
-    # España — BOE (texto consolidado, estable):
-    "ORDEN_TED_181_2025": "https://www.boe.es/buscar/pdf/2025/BOE-A-2025-3873-consolidado.pdf",
-    "RD919": "https://www.boe.es/buscar/pdf/2006/BOE-A-2006-15345-consolidado.pdf",
-    # UE — EUR-Lex (PDF en español por CELEX):
-    "NC_INT": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:32015R0703",
-    "NC_CAM": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:32017R0459",
-    # Portugal — ERSE (regulador). Versión CONSOLIDADA vigente del RQS (incluye
-    # modificaciones posteriores). Nota: la paginación difiere del boletín original
-    # del Diário da República; las citas por artículo (art. 39.º) siguen siendo válidas.
-    "REG_PT_826_2023": "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf",
-    # Francia — GRTgaz (hoy Natran) y GRDF, prescripciones técnicas oficiales:
-    "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
-    "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
-    # Italia — Snam Rete Gas, Codice di Rete, Allegato 11/A (recoge el DM 18/05/2018 + DM 4/10/2023):
-    "NORM_IT_GAS": "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf",
-    # Alemania — DVGW G 260 es de pago; se descarga la hoja de red de GASCADE (condiciones de referencia + Wobbe):
-    "DVGW_G260": "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf",
-    # Países Bajos — Regeling gaskwaliteit (HTML en wetten.overheid.nl; no es PDF directo, descarga manual):
-    "NORM_NL_GAS": "",
-    # Bélgica — Fluxys, Bijlage 7 «Natuurgas specificaties» (gas H):
-    "NORM_BE_FLUXYS": "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf",
-    # UE — EN 16726:2025 (norma de pago): presentación oficial CEN/ENTSOG con los valores:
-    "EN_16726": "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf",
-}
+from fuente_oficial import url_de  # resolvedor ÚNICO de la URL canónica (mismo que la cita)
 
 _RAIZ = os.path.dirname(os.path.abspath(__file__))
 
@@ -78,16 +55,33 @@ def _destino(codigo: str, fuente: Dict) -> str:
 
 
 def _url(codigo: str, fuente: Dict) -> str:
-    return URLS_PDF.get(codigo) or (fuente or {}).get("url_pdf") or ""
+    """URL canónica de la fuente (la misma que cita la comparativa)."""
+    return url_de(fuente)
 
 
-def _descargar(url: str, destino: str) -> int:
+def _descargar(url: str, destino: str, intentos: int = 3) -> int:
     ctx = ssl.create_default_context()
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (comparador-calidad-gas)"})
-    with urllib.request.urlopen(req, timeout=90, context=ctx) as resp:
-        data = resp.read()
+    # Accept: prioriza PDF (la API de la Oficina de Publicaciones de la UE,
+    # publications.europa.eu/resource/celex/…, negocia el formato por cabecera).
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (comparador-calidad-gas)",
+        "Accept": "application/pdf,*/*;q=0.8",
+        "Accept-Language": "spa,es;q=0.8",
+    })
+    data = b""
+    for intento in range(1, intentos + 1):
+        with urllib.request.urlopen(req, timeout=90, context=ctx) as resp:
+            data = resp.read()
+        if data[:5].startswith(b"%PDF"):
+            break
+        # Algunos servidores responden con retardo (p. ej. cuerpo vacío la 1.ª vez);
+        # esperamos y reintentamos. EUR-Lex genera el PDF con JS (HTTP 202) y NO se
+        # puede automatizar con urllib: ahí fallará y se conservará el PDF anterior.
+        if intento < intentos:
+            time.sleep(2)
     if not data[:5].startswith(b"%PDF"):
-        raise ValueError("la respuesta no es un PDF (¿la web pide captcha o cambió la URL?)")
+        raise ValueError("la respuesta no es un PDF (EUR-Lex/HTML generan el PDF en el navegador; "
+                         "ábrelo desde el enlace y guárdalo a mano si hace falta)")
     os.makedirs(os.path.dirname(destino), exist_ok=True)
     if os.path.exists(destino):
         try:
@@ -101,8 +95,8 @@ def _descargar(url: str, destino: str) -> int:
 
 def main(listar: bool = False) -> None:
     fuentes = _fuentes_ontologia()
-    # Une los códigos de URLS_PDF y los de la ontología.
-    codigos = list(dict.fromkeys(list(URLS_PDF.keys()) + list(fuentes.keys())))
+    # La ontología es la fuente ÚNICA: recorre sus fuentes y descarga su `url`.
+    codigos = list(fuentes.keys())
     ok = fallos = omitidos = 0
     print("=== Actualización de PDFs oficiales ===\n")
     for codigo in codigos:
@@ -112,6 +106,12 @@ def main(listar: bool = False) -> None:
         nombre = fuente.get("nombre", codigo)
         if not url:
             print(f"[—] {codigo}: sin URL directa configurada → descarga manual. ({nombre})")
+            omitidos += 1
+            continue
+        if fuente.get("descarga_auto") is False:
+            # Fuente cuya URL no sirve un PDF automatizable (HTML, o EUR-Lex con JS).
+            # El enlace es válido para CITAR/abrir en el navegador; el PDF se baja a mano.
+            print(f"[—] {codigo}: descarga manual (la fuente no entrega PDF por URL directa)\n     {url}")
             omitidos += 1
             continue
         if listar:

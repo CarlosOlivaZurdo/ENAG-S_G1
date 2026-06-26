@@ -94,6 +94,7 @@ ontologia:
       organismo: "Ministerio para la Transición Ecológica y el Reto Demográfico"
       publicacion: "BOE-A-2025-3873, BOE núm. 50, de 27 de febrero de 2025 (texto consolidado, últ. mod. 30/09/2025)"
       pdf: "data/raw/BOE-A-2025-3873-consolidado.pdf"
+      url: "https://www.boe.es/buscar/pdf/2025/BOE-A-2025-3873-consolidado.pdf"
       tabla_calidad: "Apartado 2.5.2.1 «Especificaciones del gas natural», Tabla 3 (págs. 26-27)"
       condiciones_referencia: "[0 ºC, V(0 ºC, 1,01325 bar)] — nota (*) al pie de la Tabla 3"
       ambito: "Fuente PRIMARIA VIGENTE de las especificaciones numéricas de calidad del gas natural español."
@@ -104,6 +105,7 @@ ontologia:
       nombre: "Real Decreto 919/2006, de 28 de julio"
       publicacion: "BOE-A-2006-15345, BOE núm. 211, de 4 de septiembre de 2006"
       pdf: "data/raw/BOE-A-2006-15345-consolidado.pdf"
+      url: "https://www.boe.es/buscar/pdf/2006/BOE-A-2006-15345-consolidado.pdf"
       nota: "Distribución y utilización (ICG 01–11). Contexto; no contiene la tabla de calidad del transporte."
 
     # --- Portugal ---
@@ -114,6 +116,7 @@ ontologia:
       organismo: "ERSE — Entidade Reguladora dos Serviços Energéticos"
       publicacion: "Diário da República, 2.ª série, N.º 146, de 28 de julho de 2023"
       pdf: "data/raw/regulacion_portugal_826-2023.pdf"
+      url: "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf"
       tabla_calidad: "Anexo I «Características do gás» (art. 39.º): valores en pág. 144 del PDF consolidado de ERSE (pág. 371 del Diário da República original N.º 146)"
       condiciones_referencia: "0 ºC, 1,01325 bar, combustión inicial 25 ºC (ISO 13443/96); volumen en m³(n)"
       nota: "Deroga el RQS n.º 406/2021. PCS, mercaptanos RSH, CO₂ y rocío de HC del gas natural NO se fijan numéricamente."
@@ -125,6 +128,7 @@ ontologia:
       nombre: "GRTgaz — Annexe 4: caractéristiques physico-chimiques du méthane de synthèse destiné à être injecté"
       organismo: "GRTgaz (gestor de transporte, Francia)"
       pdf: "data/raw/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
+      url: "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
       tabla_calidad: "Tabla «Prescriptions techniques» (pág. 1)"
       condiciones_referencia: "Combustión 0 ºC y 1,01325 bar; volumen m³(n)"
       nota: "Alcance: inyección de metano de síntesis en la red de transporte. Distingue gas tipo H y tipo B."
@@ -136,6 +140,7 @@ ontologia:
       organismo: "GRDF (Gaz Réseau Distribution France)"
       publicacion: "Abril 2017 (base reglamentaria: décret n.º 2016-348)"
       pdf: "data/raw/Prescriptions_techniques_GRDF.pdf"
+      url: "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf"
       tabla_calidad: "Tabla 5.1.1 (gas natural, pág. 9) y Tabla 5.1.2 (inyección de gases distintos del gas natural, págs. 10-11)"
       nota: "Spec de distribución. Difiere de GRTgaz: S total gas natural ≤ 150 mg/m³(n); O₂ inyección 15-40 mg/m³(n)."
 
@@ -146,16 +151,17 @@ ontologia:
       nombre: "Network Code on Interoperability and Data Exchange (NC INT)"
       referencia_legal: "Reglamento (UE) 2015/703 de la Comisión"
       publicacion: "DOUE L 113, de 1 de mayo de 2015"
-      url_eurlex: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703"
       pdf: "data/raw/CELEX_32015R0703_ES_TXT.pdf"
+      url: "https://publications.europa.eu/resource/celex/32015R0703"
       ambito: "Armoniza unidades, condiciones de referencia y monitorización de Wobbe/PCS. NO fija límites numéricos de calidad."
 
     - id: NC_CAM
       tipo: reglamento_europeo
       pais: UE
       nombre: "Network Code on Capacity Allocation Mechanisms (NC CAM) — Reglamento (UE) 2017/459"
-      url_eurlex: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459"
       pdf: "data/raw/CELEX_32017R0459_ES_TXT.pdf"
+      url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459"
+      descarga_auto: false  # EUR-Lex no sirve el PDF ES por API (404); enlace de cita, descarga manual
       ambito: "Asignación de capacidad. No fija calidad."
 
     - id: EN_16726
@@ -164,8 +170,8 @@ ontologia:
       nombre: "EN 16726:2025 — Gas infrastructure - Quality of gas - Group H"
       organismo: "CEN — Comité Europeo de Normalización (TC 234 / WG 11)"
       publicacion: "Septiembre 2025 (aprobada 20-jul-2025; supersede EN 16726:2015+A1:2018, ya derogada)"
-      url_eurlex: "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf"
       pdf: "data/raw/EN16726-2025_CEN-ENTSOG.pdf"
+      url: "https://www.entsog.eu/sites/default/files/2025-12/S1.1%20CEN%20-%20EN16726.pdf"
       tabla_calidad: "§5 (Wobbe entrada/salida, O₂, densidad, H₂) + Tabla 1. Condiciones del Wobbe: 15 ºC/15 ºC"
       nota: "Norma de PAGO (CEN/AENOR): valores principales (Wobbe, densidad, O₂) verificados en la presentación oficial CEN/ENTSOG (nov-2025); el resto, sin cambios desde 2015+A1:2018, de fuente secundaria. Aún NO publicada como UNE-EN: en España rige todavía la UNE-EN 16726:2016+A1:2019."
       ambito: "Norma europea armonizada de calidad de gas grupo H. Alineada con Directiva (UE) 2024/1788 y Reglamento (UE) 2024/1789."
@@ -178,7 +184,7 @@ ontologia:
       organismo: "Ministero dello Sviluppo Economico / MASE — operatore: Snam Rete Gas S.p.A. (regolatore: ARERA)"
       publicacion: "DM 18/05/2018 (GU n. 129 del 6-6-2018), p.to 5.1 Tabella 1; Indice di Wobbe aggiornato a 47,31÷53 MJ/Sm³ dal DM 4 ottobre 2023 (GU n. 241 del 14-10-2023)"
       pdf: "data/raw/IT_Snam_Allegato_11A.pdf"
-      url_pdf: "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf"
+      url: "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf"
       tabla_calidad: "Snam Codice di Rete, Allegato 11/A (Specifica tecnica), §4.1–4.3; DM 18/05/2018 All. A, p.to 5.1, Tabella 1"
       condiciones_referencia: "Condizioni standard ISO 13443: 288,15 K (15 ºC) e 101,325 kPa; riferimento entalpico (combustione) 15 ºC → 15/15. Volume in Sm³ (15 ºC)"
       nota: "Gas naturale Gruppo H. Valores verificados directamente del PDF de Snam (Allegato 11/A, Rev. LXXXV). El DM 18/05/2018 oficial está escaneado; sus valores coinciden con el Codice di Rete vigente."
@@ -192,7 +198,7 @@ ontologia:
       organismo: "DVGW — Deutscher Verein des Gas- und Wasserfaches"
       publicacion: "Edición septiembre 2021"
       pdf: "data/raw/DE_GASCADE_Gasbeschaffenheit.pdf"
-      url_pdf: "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf"
+      url: "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf"
       tabla_calidad: "DVGW G 260:2021 (gas grupo H). Condiciones de referencia y Wobbe verificados en hoja de red GASCADE; azufre/H₂S+COS/CO₂/O₂/agua/rocío HC en el informe oficial DVGW G 202140 (Tabelle 5) y gwf-gas 2024"
       condiciones_referencia: "Combustión 25 ºC (298,15 K); volumen en Normbedingungen 0 ºC (273,15 K), 1,01325 bar → 25/0"
       nota: "Gas grupo H (2. Gasfamilie). Norma de PAGO: el rango de Brennwert (PCS) y de densidad relativa NO son públicos → marcados NO_VERIFICABLE (no se inventan). Wobbe, azufre total, H₂S+COS, CO₂, O₂, agua y rocío HC confirmados en publicaciones oficiales DVGW."
@@ -205,7 +211,8 @@ ontologia:
       nombre: "Regeling gaskwaliteit (Países Bajos) — implementada por Gasunie Transport Services (GTS)"
       organismo: "Ministerie van Economische Zaken / ACM (regulador) — operador: Gasunie Transport Services (GTS)"
       publicacion: "Regeling gaskwaliteit (BWBR0035367), Bijlagen 1/3 (gas hoogcalorisch). Expiró el 1-1-2026 con la transición Gaswet→Energiewet; valores técnicos vigentes vía GTS."
-      url_pdf: "https://wetten.overheid.nl/BWBR0035367/"
+      url: "https://wetten.overheid.nl/BWBR0035367/"
+      descarga_auto: false  # fuente HTML (no PDF); enlace de cita, descarga manual
       tabla_calidad: "Regeling gaskwaliteit, Bijlage 1 (invoeding/entrada) y Bijlage 3 (afname/salida) para gas H"
       condiciones_referencia: "Wobbe/PCS a verbrandingsreferentietemperatuur 298,15 K (25 ºC); volumen m³(n) a 273,15 K (0 ºC), 101,325 kPa → 25/0"
       nota: "Gas hoogcalorisch (H-gas). La Regeling fija Wobbe, O₂, CO₂, azufre total y rocío de agua; NO fija para H-gas: H₂S, mercaptanos, rocío de HC ni densidad (→ NO_VERIFICABLE)."
@@ -219,7 +226,7 @@ ontologia:
       organismo: "Fluxys Belgium (operador de transporte) — regulador: CREG"
       publicacion: "Access Code for Transport (Transmission Program, aprob. CREG 20-jun-2024); Bijlage 7 «Natuurgas specificaties» (gas H)"
       pdf: "data/raw/BE_Fluxys_NaturalGasSpecs_H.pdf"
-      url_pdf: "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf"
+      url: "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf"
       tabla_calidad: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (gas H); banda de Wobbe del Transmission Program (47–55,7 MJ/m³ @25/0)"
       condiciones_referencia: "Combustión 25 ºC; volumen m³(n) a 0 ºC, 101,325 kPa → 25/0"
       nota: "Gas H. Fluxys fija Wobbe, azufre total y H₂S (excl. COS); O₂, CO₂, densidad, mercaptanos y rocíos NO constan en la spec del punto de salida → NO_VERIFICABLE (no se inventan)."

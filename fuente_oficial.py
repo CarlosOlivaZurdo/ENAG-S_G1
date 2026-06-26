@@ -106,26 +106,22 @@ def _pagina(*textos: str) -> str:
     return ""
 
 
-# URL web oficial por fuente (Nota 4: enlace a la fuente consultada). Se usa cuando la
-# ontología no trae una URL explícita. Verificadas (descargan el PDF/documento oficial).
-_URL_OFICIAL = {
-    "ORDEN_TED_181_2025": "https://www.boe.es/buscar/pdf/2025/BOE-A-2025-3873-consolidado.pdf",
-    "RD919": "https://www.boe.es/buscar/pdf/2006/BOE-A-2006-15345-consolidado.pdf",
-    "NC_INT": "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32015R0703",
-    "NC_CAM": "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32017R0459",
-    "REG_PT_826_2023": "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf",
-    "FR_GRTGAZ": "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf",
-    "FR_GRDF": "https://projet-methanisation.grdf.fr/cms-assets/2019/07/Prescriptions_techniques_GRDF.pdf",
-    "NORM_IT_GAS": "https://www.snam.it/content/dam/snam/pages-attachments/it/i-nostri-business/trasporto/documents/codice-di-rete-srg/allegato_11_A_RevLXXXV.pdf",
-    "DVGW_G260": "https://www.dvgw-regelwerk.de/technische-regel/arbeitsblatt-g-260/a83267",
-    "NORM_NL_GAS": "https://wetten.overheid.nl/BWBR0035367/",
-    "NORM_BE_FLUXYS": "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf",
-}
+def url_de(fuente: Optional[Dict[str, Any]]) -> str:
+    """URL oficial CANÓNICA de una fuente (única para descarga y cita).
+
+    Fuente ÚNICA de verdad: el campo `url` de la ontología (data/ontologia/). Los
+    campos antiguos (`url_pdf`/`url_eurlex`/`url_enagas`) se mantienen solo como
+    respaldo retrocompatible. Este mismo enlace lo usan `actualizar_fuentes.py`
+    (descarga del PDF) y la comparativa (cita), de modo que SIEMPRE coinciden.
+    """
+    g = fuente or {}
+    return (g.get("url") or g.get("url_pdf") or g.get("url_eurlex")
+            or g.get("url_enagas") or "")
 
 
 def _cita(fuente_code: Optional[str], articulo: Optional[str]) -> Dict[str, str]:
     g = _glosario().get(fuente_code, {})
-    url = g.get("url_eurlex") or g.get("url_enagas") or _URL_OFICIAL.get(fuente_code, "")
+    url = url_de(g)
     return {
         "documento": g.get("nombre") or fuente_code or "No consta",
         "organismo": g.get("organismo") or "",

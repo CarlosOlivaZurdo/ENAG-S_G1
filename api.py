@@ -1351,7 +1351,7 @@ def _normativa_de_pais(paises: list) -> str:
             if pub:
                 partes.append(pub)
             linea = " · ".join(partes)
-            url = info.get("url_eurlex") or info.get("url_enagas") or ""
+            url = fuente_oficial.url_de(info)
             if url:
                 linea += f" — {url}"
             lineas.append(linea)
