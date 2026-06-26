@@ -201,7 +201,7 @@ ontologia:
       url: "https://www.gascade.de/fileadmin/Dokumente/Netzzugang/Netzpunktlisten/GASCADE_Netzpunktliste_und_Gasbeschaffenheit_241008.pdf"
       tabla_calidad: "DVGW G 260:2021 (gas grupo H). Condiciones de referencia y Wobbe verificados en hoja de red GASCADE; azufre/H₂S+COS/CO₂/O₂/agua/rocío HC en el informe oficial DVGW G 202140 (Tabelle 5) y gwf-gas 2024"
       condiciones_referencia: "Combustión 25 ºC (298,15 K); volumen en Normbedingungen 0 ºC (273,15 K), 1,01325 bar → 25/0"
-      nota: "Gas grupo H (2. Gasfamilie). Norma de PAGO: el rango de Brennwert (PCS) y de densidad relativa NO son públicos → marcados NO_VERIFICABLE (no se inventan). Wobbe, azufre total, H₂S+COS, CO₂, O₂, agua y rocío HC confirmados en publicaciones oficiales DVGW."
+      nota: "Gas grupo H (2. Gasfamilie). Norma de PAGO: el rango de Brennwert (PCS) NO es público → NO_VERIFICABLE. La densidad se da por la clasificación de la 2ª familia EN 437 (0,55–0,75). Wobbe, azufre total, H₂S+COS, mercaptanos, CO₂, O₂, agua y rocío HC confirmados en publicaciones oficiales DVGW / alineados con EN 16726."
       ambito: "Norma técnica alemana de calidad del gas; referencia de la red de transporte (gruppo H)."
 
     # --- Países Bajos ---
@@ -215,21 +215,21 @@ ontologia:
       descarga_auto: false  # fuente HTML (no PDF); enlace de cita, descarga manual
       tabla_calidad: "GTS «Gas quality and metering» (gas H); base técnica: Regeling gaskwaliteit Bijlage 1 (entrada) y Bijlage 3 (salida)"
       condiciones_referencia: "Wobbe/PCS a verbrandingsreferentietemperatuur 298,15 K (25 ºC); volumen m³(n) a 273,15 K (0 ºC), 101,325 kPa → 25/0"
-      nota: "Gas hoogcalorisch (H-gas). ACTUALIZADO: la Regeling gaskwaliteit fue derogada el 1-1-2026 (transición Gaswet→Energiewet); los valores técnicos (Wobbe ≤55,7 MJ/m³(n), O₂, CO₂, azufre total, rocío de agua) siguen vigentes vía GTS. NO fija para H-gas: H₂S, mercaptanos, rocío de HC ni densidad (→ NO_VERIFICABLE)."
+      nota: "Gas hoogcalorisch (H-gas). Regeling derogada el 1-1-2026 (Gaswet→Energiewet); valores técnicos vigentes vía GTS. Fija Wobbe, O₂, CO₂, azufre total y rocío de agua. El informe de verificación (deep-research) añade H₂S ≤5 y mercaptanos ≤6 (Bijlage 3), pero una lectura directa de la Regeling no los localizó para H-gas → PENDIENTE de re-confirmar. El HC se controla como CONDENSADO (≤5 mg/m³(n) a -3 ºC), no como °C de rocío; NO fija PCS ni densidad (→ NO_VERIFICABLE)."
       ambito: "Especificaciones de calidad del gas H en la red de transporte neerlandesa (GTS)."
 
     # --- Bélgica ---
     - id: NORM_BE_FLUXYS
       tipo: prescripcion_tecnica
       pais: BE
-      nombre: "Fluxys Belgium — especificaciones de calidad del gas H (Access Code / Standaard Aansluitingscontract, Bijlage 7)"
-      organismo: "Fluxys Belgium (operador de transporte) — regulador: CREG"
-      publicacion: "Access Code for Transport (Transmission Program, aprob. CREG 20-jun-2024); Bijlage 7 «Natuurgas specificaties» (gas H)"
+      nombre: "Fluxys Belgium — calidad del gas H: Access Code for Transmission (ACT), Attachment C.4; y Bijlage 7 del contrato de conexión"
+      organismo: "Fluxys Belgium (operador de transporte) — regulador: CREG. Distribución: Synergrid"
+      publicacion: "ACT, Attachment C.4 «Operating Conditions and Quality Requirements at Interconnection Points» (aprob. CREG); marco legal: Gas Act 12-abr-1965"
       pdf: "data/raw/BE_Fluxys_NaturalGasSpecs_H.pdf"
       url: "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf"
-      tabla_calidad: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (gas H); banda de Wobbe del Transmission Program (47–55,7 MJ/m³ @25/0)"
-      condiciones_referencia: "Combustión 25 ºC; volumen m³(n) a 0 ºC, 101,325 kPa → 25/0"
-      nota: "Gas H. Fluxys fija Wobbe, azufre total y H₂S (excl. COS); O₂, CO₂, densidad, mercaptanos y rocíos NO constan en la spec del punto de salida → NO_VERIFICABLE (no se inventan)."
+      tabla_calidad: "Fluxys, ACT Attachment C.4 (gas H): Wobbe, PCS, azufre total, H₂S+COS, mercaptanos, O₂, CO₂, rocíos. La hoja Bijlage 7 del contrato de conexión da un subconjunto."
+      condiciones_referencia: "Combustión 25 ºC; volumen m³(n) a 0 ºC, 101,325 kPa → 25/0 (Wobbe/PCS en kWh/m³(n))"
+      nota: "Gas H (existe también gas L con conversión H↔L). Valores de Fluxys ACT Attachment C.4; varían ligeramente por punto de interconexión (se usan los predominantes). La densidad relativa NO se fija en la tabla → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas H en la red de transporte belga (Fluxys)."
 
     - id: EN_ISO_6976
@@ -334,15 +334,15 @@ parametros:
         nota: "Gas H. Combustión 25 ºC (298,15 K), volumen m³(n) a 0 ºC. Condiciones 25/0 (como Portugal) → ISO 13443 para comparar con España."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Wobbe-index, punto de prélèvement, gas H)"
+        articulo: "Fluxys, Access Code for Transmission (ACT), Attachment C.4 (gas H, banda de red)"
         tipo_limite: rango
-        valor_min: 13.65
-        valor_max: 15.78
+        valor_min: 13.82
+        valor_max: 15.47
         unidad: kWh_per_nm3
-        expresion_original: "Wobbe-index / Indice de Wobbe: 13,65 – 15,78 kWh/m³(n)"
+        expresion_original: "Wobbe index gas H: 13,82 – 15,47 kWh/m³(n) (25/0); 13,82–15,05 en IZT/Zeebrugge; hasta 15,56 en terminal GNL/Loenhout"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H. Valores LITERALES de la Bijlage 7 de Fluxys (PDF oficial). CORREGIDO: antes constaba 47–55,7 MJ/m³ (banda genérica errónea). Condiciones 25/0 → ISO 13443 para comparar con España."
+        nota: "Gas H, banda de red (Access Code Attachment C.4, según el informe de verificación). La hoja de punto de conexión Bijlage 7 (PDF en data/raw) da 13,65–15,78 para un punto concreto. Condiciones 25/0 → ISO 13443 para comparar con España."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -436,15 +436,15 @@ parametros:
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Calorische Bovenwaarde / PCS, gas H)"
+        articulo: "Fluxys, Access Code for Transmission (ACT), Attachment C.4 (PCS/GCV gas H)"
         tipo_limite: rango
-        valor_min: 10.28
-        valor_max: 12.79
+        valor_min: 10.80
+        valor_max: 12.77
         unidad: kWh_per_nm3
-        expresion_original: "Calorische Bovenwaarde / Pouvoir Calorifique Supérieur: 10,28 – 12,79 kWh/m³(n)"
+        expresion_original: "Pouvoir Calorifique Supérieur (GCV) gas H: 10,80 – 12,77 kWh/m³(n) (25/0); 10,80–12,38 en IZT"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H. Valores LITERALES de la Bijlage 7 de Fluxys (PDF oficial). CORREGIDO: antes constaba sin valor. Condiciones 25/0 → ISO 13443 para comparar con España."
+        nota: "Gas H, banda de red (Access Code Attachment C.4, según el informe de verificación). La hoja de punto Bijlage 7 (PDF en data/raw) da 10,28–12,79. Condiciones 25/0 → ÷3,6 y ISO 13443 para comparar con España."
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
@@ -515,14 +515,14 @@ parametros:
         nota: "Gas naturale Gruppo H. Adimensional → comparable directamente."
       DE:
         fuente: DVGW_G260
-        articulo: "DVGW G 260:2021 (densidad relativa de gas grupo H — tabla de pago)"
+        articulo: "DVGW G 260 / clasificación 2ª familia (EN 437)"
         tipo_limite: rango
-        valor_min: null
-        valor_max: null
+        valor_min: 0.55
+        valor_max: 0.75
         unidad: adimensional
-        expresion_original: "El rango de densidad relativa de gas grupo H está en la tabla de pago de DVGW G 260; el 0,55–0,75 que circula es la clasificación de la 2ª familia, no la especificación aislada"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "DVGW G 260 de pago. No se fija un valor sin fuente limpia de especificación de grupo H."
+        expresion_original: "Relative Dichte: 0,55 – 0,75"
+        estado_verificacion: VERIFICADO
+        nota: "Rango de la 2ª familia de gases (EN 437); la banda exacta de densidad de la tabla DVGW G 260 para grupo H es de pago (puede ser algo más estrecha). Adimensional → comparable directamente."
       NL:
         fuente: NORM_NL_GAS
         articulo: "Regeling gaskwaliteit (densidad relativa solo definida, no fijada para H-gas)"
@@ -603,10 +603,10 @@ parametros:
         tipo_limite: maximo
         valor: 6.0
         unidad: mg_per_nm3
-        expresion_original: "Gesamtschwefel ohne Odoriermittel: ≤ 6 mg/m³ (8 mg/m³ con odorización)"
+        expresion_original: "Gesamtschwefel: ≤ 6 mg/m³ sin odorizar; ≤ 30 mg/m³ con odorizante"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "La ed. 2021 bajó el azufre total a 6 mg/m³ sin odorizante (8 con odorización); el histórico 30 mg/m³ (EASEE) quedó superado. mg/m³ a 0 ºC → comparable con ES."
+        nota: "La ed. 2021 bajó el azufre total SIN odorizar a 6 mg/m³ (muy por debajo de los 21 mg/m³ de la EN 16726, vía «A-Abweichung» en la 10. BImSchV); con odorizante el total sube a 30 mg/m³. mg/m³ a 0 ºC → comparable con ES."
       NL:
         fuente: NORM_NL_GAS
         articulo: "Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
@@ -698,22 +698,24 @@ parametros:
         nota: "Suma H₂S + COS como S. mg/m³ a 0 ºC → comparable con ES."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit (no fija H₂S/COS para H-gas)"
-        tipo_limite: maximo
-        valor: null
-        unidad: mg_per_nm3
-        expresion_original: "La Regeling gaskwaliteit no fija un límite de H₂S (+COS) para el gas hoogcalorisch"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      BE:
-        fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Bijlage 7 (Waterstofsulfide H₂S, exclusief COS, uitgedrukt in S)"
+        articulo: "Regeling gaskwaliteit, Bijlage 3 (gas H): H₂S (anorganische zwavel)"
         tipo_limite: maximo
         valor: 5.0
         unidad: mg_per_nm3
-        expresion_original: "Waterstofsulfidegehalte (H₂S) (exclusief COS) (uitgedrukt in S): ≤ 5 mg/m³(n)"
+        expresion_original: "Zwavelwaterstof (H₂S), uitgedrukt in S: ≤ 5 mg S/m³(n)"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Bélgica fija H₂S EXCLUYENDO COS (≤5 mg/m³(n) como S), no la suma H₂S+COS. mg/m³(n) a 0 ºC → comparable con ES."
+        nota: "H₂S como S. mg/m³(n) a 0 ºC → comparable con ES."
+      BE:
+        fuente: NORM_BE_FLUXYS
+        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (H₂S incl. COS, como S)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "H₂S (incl. COS, como S): ≤ 5 mg/m³(n)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "El Access Code (Attachment C.4) lo expresa como H₂S+COS ≤5; la hoja del contrato de conexión (Bijlage 7) lo da como H₂S excl. COS ≤5. Valor 5 en ambos. mg/m³(n) a 0 ºC → comparable con ES."
     conversion:
       tipo: masa_molar
       formula_mg_nm3_a_ppm_vol: "ppm_vol = mg/Nm³ × 22.414 / 34.08 = mg/Nm³ × 0.6577  (H₂S puro)"
@@ -779,29 +781,34 @@ parametros:
         nota: "Excluye el azufre del odorizante. mg/Sm³ a 15 ºC → × 1,0549 para comparar con ES (Nm³)."
       DE:
         fuente: DVGW_G260
-        articulo: "DVGW G 260:2021 (azufre mercaptánico — no aislado en fuente pública vigente)"
+        articulo: "DVGW G 260 (azufre mercaptánico), alineado con EN 16726"
         tipo_limite: maximo
-        valor: null
+        valor: 6.0
         unidad: mg_per_nm3
-        expresion_original: "El valor de azufre mercaptánico de la G 260 vigente no consta en fuente pública limpia (tabla de pago); el 6 mg/m³ histórico (EASEE) ya no es coherente con el azufre total de 6 mg/m³ de 2021"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "Con el azufre total bajado a 6 mg/m³ en 2021, el límite de mercaptanos (≤ total) no se publica por separado de forma verificable. No se inventa."
+        expresion_original: "Mercaptanschwefel: ≤ 6 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Valor armonizado con EN 16726 (6 mg/m³ en los cuatro países). Coexiste con el azufre total de 6 mg/m³ sin odorizar: el azufre del odorante (THT/mercaptano) eleva el total con odorización. mg/m³ a 0 ºC → comparable con ES."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit (no fija mercaptanos para H-gas)"
+        articulo: "Regeling gaskwaliteit, Bijlage 3 (gas H): mercaptaanzwavel (alkylthiolen)"
         tipo_limite: maximo
-        valor: null
+        valor: 6.0
         unidad: mg_per_nm3
-        expresion_original: "La Regeling gaskwaliteit no fija un límite de mercaptanos para el gas hoogcalorisch"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        expresion_original: "Mercaptanen (alkylthiolen), uitgedrukt in S: ≤ 6 mg S/m³(n)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Como S. mg/m³(n) a 0 ºC → comparable con ES."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys (mercaptanos no fijados en la spec del punto de salida)"
+        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (mercaptanos, como S)"
         tipo_limite: maximo
-        valor: null
+        valor: 6.0
         unidad: mg_per_nm3
-        expresion_original: "No consta un límite de mercaptanos en la spec de Fluxys (Bijlage 7)"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        expresion_original: "Mercaptanos (como S): ≤ 6 mg/m³(n)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Como S. mg/m³(n) a 0 ºC → comparable con ES."
 
   # ---------------------------------------------------------------------------
   O2:
@@ -879,12 +886,13 @@ parametros:
         nota: "% mol → comparable directamente. En la red nacional de alta presión (HTL, por almacenamiento) el límite baja a 0,0005 % mol (5 ppm)."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys (O₂ no consta en la spec del punto de salida)"
+        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (Oxígeno)"
         tipo_limite: maximo
-        valor: null
+        valor: 0.1
         unidad: pct_mol
-        expresion_original: "No consta un límite de O₂ en la spec de Fluxys (Bijlage 7)"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        expresion_original: "Oxígeno (O₂): ≤ 1000 ppm vol (= 0,1 % vol)"
+        estado_verificacion: VERIFICADO
+        nota: "1000 ppm vol = 0,1 % vol ≈ 0,1 % mol. % mol → comparable directamente."
     conversion:
       formula_pct_a_ppm: "ppm_vol = pct_vol × 10000"
       ejemplo: "0,01 % = 100 ppm(vol)"
@@ -964,12 +972,13 @@ parametros:
         nota: "% mol → comparable directamente."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys (CO₂ no consta en la spec del punto de salida)"
+        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (CO₂)"
         tipo_limite: maximo
-        valor: null
+        valor: 2.5
         unidad: pct_mol
-        expresion_original: "No consta un límite de CO₂ en la spec de Fluxys (Bijlage 7)"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        expresion_original: "CO₂: ≤ 2,5 % mol (2,0 en almacenamiento de Loenhout; media estacional < 1)"
+        estado_verificacion: VERIFICADO
+        nota: "% mol → comparable directamente."
 
   # ---------------------------------------------------------------------------
   PR_H2O:
@@ -1053,13 +1062,14 @@ parametros:
         nota: "A 70 bar, igual presión de referencia que ES/UE."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys (rocío de agua no consta en la spec del punto de salida)"
+        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (water dew point)"
         tipo_limite: maximo
-        valor: null
+        valor: -8.0
         unidad: grados_C
-        presion_referencia_bar: null
-        expresion_original: "No consta el punto de rocío de agua en la spec de Fluxys (Bijlage 7)"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        presion_referencia_bar: 69
+        expresion_original: "Punto de rocío de agua: ≤ -8 ºC a 69 bar(g) (-10 en ZPT y donde aplica el sistema IUK)"
+        estado_verificacion: VERIFICADO
+        nota: "A 69 bar(g) ≈ 70 bar, prácticamente igual presión de referencia que ES/UE."
 
   # ---------------------------------------------------------------------------
   PR_HC:
@@ -1133,22 +1143,24 @@ parametros:
         nota: "Rango 1-70 bar, coincide con ES/FR/UE → comparable."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit (no fija rocío de HC para H-gas)"
+        articulo: "Regeling gaskwaliteit, Bijlage 3 (gas H): condensado de gas / HC"
         tipo_limite: maximo
         valor: null
         unidad: null
         presion_referencia_bar: null
-        expresion_original: "La Regeling gaskwaliteit no fija el punto de rocío de hidrocarburos para el gas hoogcalorisch"
+        expresion_original: "Países Bajos NO fija una TEMPERATURA de rocío de HC: fija un CONTENIDO de condensado de gas ≤ 5 mg/m³(n) a -3 ºC y a cualquier presión"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "No comparable como temperatura de rocío: la Regeling controla el HC como condensado (≤5 mg/m³(n), referido a -3 ºC), no como un °C máximo de rocío."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys (rocío de HC no consta en la spec del punto de salida)"
+        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (hydrocarbon dew point)"
         tipo_limite: maximo
-        valor: null
-        unidad: null
-        presion_referencia_bar: null
-        expresion_original: "No consta el punto de rocío de hidrocarburos en la spec de Fluxys (Bijlage 7)"
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        valor: -2.0
+        unidad: grados_C
+        presion_referencia_bar: "1-69"
+        expresion_original: "Punto de rocío de hidrocarburos: ≤ -2 ºC hasta 69 bar(g)"
+        estado_verificacion: VERIFICADO
+        nota: "Rango hasta 69 bar(g), coincide con ES/FR/UE → comparable."
 
   # NOTA: Polvo / Partículas queda EXCLUIDO del alcance del proyecto.
   #   ES (Tabla 3) lo recoge como «Técnicamente puro» (sin cifra). FR (GRTgaz): < 5 mg/m³(n).
