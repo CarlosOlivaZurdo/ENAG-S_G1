@@ -222,14 +222,14 @@ ontologia:
     - id: NORM_BE_FLUXYS
       tipo: prescripcion_tecnica
       pais: BE
-      nombre: "Fluxys Belgium — calidad del gas H: Access Code for Transmission (ACT), Attachment C.4; y Bijlage 7 del contrato de conexión"
+      nombre: "Fluxys Belgium — calidad del gas H: Bijlage 7 del Standaard Aansluitingscontract (hoja oficial)"
       organismo: "Fluxys Belgium (operador de transporte) — regulador: CREG. Distribución: Synergrid"
-      publicacion: "ACT, Attachment C.4 «Operating Conditions and Quality Requirements at Interconnection Points» (aprob. CREG); marco legal: Gas Act 12-abr-1965"
+      publicacion: "Bijlage 7 «Specifieke vereisten op het afnamepunt / Qualités requises du gaz au point de prélèvement» del Standaard Aansluitingscontract; marco legal: Gas Act 12-abr-1965"
       pdf: "data/raw/BE_Fluxys_NaturalGasSpecs_H.pdf"
       url: "https://www.fluxys.com/-/media/project/fluxys/public/corporate/fluxyscom/documents/fluxys-belgium/commercial/dpeu-documents/bijlage-7-annexe-7-nlfr--v2.pdf"
-      tabla_calidad: "Fluxys, ACT Attachment C.4 (gas H): Wobbe, PCS, azufre total, H₂S+COS, mercaptanos, O₂, CO₂, rocíos. La hoja Bijlage 7 del contrato de conexión da un subconjunto."
+      tabla_calidad: "Fluxys, Bijlage 7 (gas H): SOLO fija PCS, Wobbe, H₂S (excl. COS), azufre total y H₂. NO fija densidad, mercaptanos, O₂, CO₂ ni rocíos → esos van NO_VERIFICABLE."
       condiciones_referencia: "Combustión 25 ºC; volumen m³(n) a 0 ºC, 101,325 kPa → 25/0 (Wobbe/PCS en kWh/m³(n))"
-      nota: "Gas H (existe también gas L con conversión H↔L). Valores de Fluxys ACT Attachment C.4; varían ligeramente por punto de interconexión (se usan los predominantes). La densidad relativa NO se fija en la tabla → NO_VERIFICABLE."
+      nota: "Gas H (existe también gas L con conversión H↔L). Valores LITERALES del PDF oficial de Fluxys (Bijlage 7, en data/raw): Wobbe 13,65–15,78 y PCS 10,28–12,79 kWh/m³(n), H₂S excl. COS ≤5, azufre total ≤30 mg/m³(n). El resto de parámetros no figura en esta hoja."
       ambito: "Especificaciones de calidad del gas H en la red de transporte belga (Fluxys)."
 
     - id: EN_ISO_6976
@@ -334,15 +334,15 @@ parametros:
         nota: "Gas H. Combustión 25 ºC (298,15 K), volumen m³(n) a 0 ºC. Condiciones 25/0 (como Portugal) → ISO 13443 para comparar con España."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code for Transmission (ACT), Attachment C.4 (gas H, banda de red)"
+        articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Wobbe-index, gas H)"
         tipo_limite: rango
-        valor_min: 13.82
-        valor_max: 15.47
+        valor_min: 13.65
+        valor_max: 15.78
         unidad: kWh_per_nm3
-        expresion_original: "Wobbe index gas H: 13,82 – 15,47 kWh/m³(n) (25/0); 13,82–15,05 en IZT/Zeebrugge; hasta 15,56 en terminal GNL/Loenhout"
+        expresion_original: "Wobbe-index / Indice de Wobbe: 13,65 – 15,78 kWh/m³(n)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H, banda de red (Access Code Attachment C.4, según el informe de verificación). La hoja de punto de conexión Bijlage 7 (PDF en data/raw) da 13,65–15,78 para un punto concreto. Condiciones 25/0 → ISO 13443 para comparar con España."
+        nota: "Gas H. Valores LITERALES del PDF oficial de Fluxys (Bijlage 7, en data/raw). Condiciones 25/0 → ISO 13443 para comparar con España."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -436,15 +436,15 @@ parametros:
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code for Transmission (ACT), Attachment C.4 (PCS/GCV gas H)"
+        articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Calorische Bovenwaarde / PCS, gas H)"
         tipo_limite: rango
-        valor_min: 10.80
-        valor_max: 12.77
+        valor_min: 10.28
+        valor_max: 12.79
         unidad: kWh_per_nm3
-        expresion_original: "Pouvoir Calorifique Supérieur (GCV) gas H: 10,80 – 12,77 kWh/m³(n) (25/0); 10,80–12,38 en IZT"
+        expresion_original: "Calorische Bovenwaarde / Pouvoir Calorifique Supérieur: 10,28 – 12,79 kWh/m³(n)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H, banda de red (Access Code Attachment C.4, según el informe de verificación). La hoja de punto Bijlage 7 (PDF en data/raw) da 10,28–12,79. Condiciones 25/0 → ÷3,6 y ISO 13443 para comparar con España."
+        nota: "Gas H. Valores LITERALES del PDF oficial de Fluxys (Bijlage 7, en data/raw). Condiciones 25/0 → ÷3,6 y ISO 13443 para comparar con España."
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
@@ -708,14 +708,14 @@ parametros:
         nota: "H₂S como S. mg/m³(n) a 0 ºC → comparable con ES."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (H₂S incl. COS, como S)"
+        articulo: "Fluxys, Bijlage 7 (Waterstofsulfidegehalte H₂S, exclusief COS, uitgedrukt in S)"
         tipo_limite: maximo
         valor: 5.0
         unidad: mg_per_nm3
-        expresion_original: "H₂S (incl. COS, como S): ≤ 5 mg/m³(n)"
+        expresion_original: "Waterstofsulfidegehalte (H₂S) (exclusief COS) (uitgedrukt in S): ≤ 5,00 mg/m³(n)"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "El Access Code (Attachment C.4) lo expresa como H₂S+COS ≤5; la hoja del contrato de conexión (Bijlage 7) lo da como H₂S excl. COS ≤5. Valor 5 en ambos. mg/m³(n) a 0 ºC → comparable con ES."
+        nota: "Bélgica (Bijlage 7) fija H₂S EXCLUYENDO COS (≤5 mg/m³(n) como S). mg/m³(n) a 0 ºC → comparable con ES."
     conversion:
       tipo: masa_molar
       formula_mg_nm3_a_ppm_vol: "ppm_vol = mg/Nm³ × 22.414 / 34.08 = mg/Nm³ × 0.6577  (H₂S puro)"
@@ -801,14 +801,13 @@ parametros:
         nota: "Como S. mg/m³(n) a 0 ºC → comparable con ES."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (mercaptanos, como S)"
+        articulo: "Fluxys, Bijlage 7 (mercaptanos no constan en la hoja)"
         tipo_limite: maximo
-        valor: 6.0
+        valor: null
         unidad: mg_per_nm3
-        expresion_original: "Mercaptanos (como S): ≤ 6 mg/m³(n)"
-        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
-        estado_verificacion: VERIFICADO
-        nota: "Como S. mg/m³(n) a 0 ºC → comparable con ES."
+        expresion_original: "El Bijlage 7 de Fluxys no fija un límite de mercaptanos para el gas H"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
 
   # ---------------------------------------------------------------------------
   O2:
@@ -886,13 +885,13 @@ parametros:
         nota: "% mol → comparable directamente. En la red nacional de alta presión (HTL, por almacenamiento) el límite baja a 0,0005 % mol (5 ppm)."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (Oxígeno)"
+        articulo: "Fluxys, Bijlage 7 (O₂ no consta en la hoja)"
         tipo_limite: maximo
-        valor: 0.1
+        valor: null
         unidad: pct_mol
-        expresion_original: "Oxígeno (O₂): ≤ 1000 ppm vol (= 0,1 % vol)"
-        estado_verificacion: VERIFICADO
-        nota: "1000 ppm vol = 0,1 % vol ≈ 0,1 % mol. % mol → comparable directamente."
+        expresion_original: "El Bijlage 7 de Fluxys no fija un límite de O₂ para el gas H"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
     conversion:
       formula_pct_a_ppm: "ppm_vol = pct_vol × 10000"
       ejemplo: "0,01 % = 100 ppm(vol)"
@@ -972,13 +971,13 @@ parametros:
         nota: "% mol → comparable directamente."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (CO₂)"
+        articulo: "Fluxys, Bijlage 7 (CO₂ no consta en la hoja)"
         tipo_limite: maximo
-        valor: 2.5
+        valor: null
         unidad: pct_mol
-        expresion_original: "CO₂: ≤ 2,5 % mol (2,0 en almacenamiento de Loenhout; media estacional < 1)"
-        estado_verificacion: VERIFICADO
-        nota: "% mol → comparable directamente."
+        expresion_original: "El Bijlage 7 de Fluxys no fija un límite de CO₂ para el gas H"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
 
   # ---------------------------------------------------------------------------
   PR_H2O:
@@ -1062,14 +1061,14 @@ parametros:
         nota: "A 70 bar, igual presión de referencia que ES/UE."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (water dew point)"
+        articulo: "Fluxys, Bijlage 7 (rocío de agua no consta en la hoja)"
         tipo_limite: maximo
-        valor: -8.0
+        valor: null
         unidad: grados_C
-        presion_referencia_bar: 69
-        expresion_original: "Punto de rocío de agua: ≤ -8 ºC a 69 bar(g) (-10 en ZPT y donde aplica el sistema IUK)"
-        estado_verificacion: VERIFICADO
-        nota: "A 69 bar(g) ≈ 70 bar, prácticamente igual presión de referencia que ES/UE."
+        presion_referencia_bar: null
+        expresion_original: "El Bijlage 7 de Fluxys no fija el punto de rocío de agua para el gas H"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
 
   # ---------------------------------------------------------------------------
   PR_HC:
@@ -1153,14 +1152,14 @@ parametros:
         nota: "No comparable como temperatura de rocío: la Regeling controla el HC como condensado (≤5 mg/m³(n), referido a -3 ºC), no como un °C máximo de rocío."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code (ACT) Attachment C.4 (hydrocarbon dew point)"
+        articulo: "Fluxys, Bijlage 7 (rocío de HC no consta en la hoja)"
         tipo_limite: maximo
-        valor: -2.0
-        unidad: grados_C
-        presion_referencia_bar: "1-69"
-        expresion_original: "Punto de rocío de hidrocarburos: ≤ -2 ºC hasta 69 bar(g)"
-        estado_verificacion: VERIFICADO
-        nota: "Rango hasta 69 bar(g), coincide con ES/FR/UE → comparable."
+        valor: null
+        unidad: null
+        presion_referencia_bar: null
+        expresion_original: "El Bijlage 7 de Fluxys no fija el punto de rocío de hidrocarburos para el gas H"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
 
   # NOTA: Polvo / Partículas queda EXCLUIDO del alcance del proyecto.
   #   ES (Tabla 3) lo recoge como «Técnicamente puro» (sin cifra). FR (GRTgaz): < 5 mg/m³(n).
