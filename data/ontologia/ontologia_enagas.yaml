@@ -208,14 +208,14 @@ ontologia:
     - id: NORM_NL_GAS
       tipo: regla_tecnica_nacional
       pais: NL
-      nombre: "Especificaciones de calidad del gas H (Países Bajos) — Gasunie Transport Services (GTS), marco Energiewet (desde 1-1-2026)"
-      organismo: "ACM (regulador) — operador: Gasunie Transport Services (GTS). Marco legal: Energiewet (sustituye a la Gaswet desde 1-1-2026)"
-      publicacion: "Marco legal vigente: Energiewet (BWBR0050714, en vigor 1-1-2026, sustituye a la Gaswet). La ACM aún NO ha publicado un código de calidad del gas sucesor, así que la referencia operativa son las especificaciones de GTS (Gas quality and metering). Base técnica de los valores: Regeling gaskwaliteit (BWBR0035367, Bijlagen 1/3), DEROGADA el 1-1-2026 pero cuyos valores se siguen aplicando vía GTS."
-      url: "https://www.gasunietransportservices.nl/en/connected-parties/gas-quality-and-metering"
-      descarga_auto: false  # fuente HTML (no PDF); enlace de cita, descarga manual
-      tabla_calidad: "GTS «Gas quality and metering» (gas H); base técnica: Regeling gaskwaliteit Bijlage 1 (entrada) y Bijlage 3 (salida)"
+      nombre: "Energieregeling (Países Bajos), art. 3.16 «invoed- en afleverspecificaties gas» — calidad del gas H (sucesor de la Regeling gaskwaliteit)"
+      organismo: "Ministerie van Klimaat en Groene Groei / ACM (regulador) — operador: Gasunie Transport Services (GTS). Marco legal: Energiewet (BWBR0050714, desde 1-1-2026)"
+      publicacion: "Energieregeling (BWBR0051774), art. 3.16, lid 1, sub b y Bijlage 1 (gas H) — EN VIGOR desde 1-1-2026 bajo la Energiewet. SUCESOR directo de la Regeling gaskwaliteit (BWBR0035367, derogada el 1-1-2026). La ACM confirmó que la transición es TERMINOLÓGICA: los valores de los 10 parámetros se mantienen materialmente iguales."
+      url: "https://wetten.overheid.nl/BWBR0051774/2026-01-01"
+      descarga_auto: false  # fuente HTML (wetten.overheid.nl, no PDF); enlace de cita, descarga manual
+      tabla_calidad: "Energieregeling, art. 3.16, lid 1, sub b; valores de gas H en la Bijlage 1 (sucesor de las Bijlagen 1/3 de la Regeling gaskwaliteit). La numeración exacta de anexos puede haberse reorganizado en la transición de 2026."
       condiciones_referencia: "Wobbe/PCS a verbrandingsreferentietemperatuur 298,15 K (25 ºC); volumen m³(n) a 273,15 K (0 ºC), 101,325 kPa → 25/0"
-      nota: "Gas hoogcalorisch (H-gas). Regeling derogada el 1-1-2026 (Gaswet→Energiewet); valores técnicos vigentes vía GTS. Fija Wobbe, O₂, CO₂, azufre total y rocío de agua. El informe de verificación (deep-research) añade H₂S ≤5 y mercaptanos ≤6 (Bijlage 3), pero una lectura directa de la Regeling no los localizó para H-gas → PENDIENTE de re-confirmar. El HC se controla como CONDENSADO (≤5 mg/m³(n) a -3 ºC), no como °C de rocío; NO fija PCS ni densidad (→ NO_VERIFICABLE)."
+      nota: "Gas hoogcalorisch (H-gas). Valores trasladados de la Regeling gaskwaliteit (derogada 1-1-2026) a la Energieregeling art. 3.16(1)(b); la ACM confirma que NO cambian (cambio terminológico). Fija Wobbe, O₂, CO₂, azufre total y rocío de agua. El HC se controla como CONDENSADO (≤5 mg/m³(n) a -3 ºC), no como °C de rocío; NO fija PCS ni densidad (→ NO_VERIFICABLE). H₂S/mercaptanos: el deep-research los da (5/6) pero una lectura directa no los localizó → PENDIENTE de re-confirmar contra la Bijlage 1 de la Energieregeling."
       ambito: "Especificaciones de calidad del gas H en la red de transporte neerlandesa (GTS)."
 
     # --- Bélgica ---
@@ -323,7 +323,7 @@ parametros:
         nota: "Gas grupo H. La ed. 2021 recomienda bajar el techo a 15,4 kWh/m³ (excepción hasta 15,7). Condiciones 25/0 (como Portugal) → ISO 13443 para comparar con España."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 3 (afname, gas H); banda estándar"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 3 (afname, gas H); banda estándar"
         tipo_limite: rango
         valor_min: 47.0
         valor_max: 55.7
@@ -426,7 +426,7 @@ parametros:
         nota: "DVGW G 260 es de PAGO. Los valores operativos de red (p. ej. GASCADE ~10,5 kWh/m³ mín.) no son el rango de especificación. No se inventa un valor."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit (no fija rango de calorische bovenwaarde para H-gas)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit (no fija rango de calorische bovenwaarde para H-gas)"
         tipo_limite: rango
         valor_min: null
         valor_max: null
@@ -525,7 +525,7 @@ parametros:
         nota: "Rango de la 2ª familia de gases (EN 437); la banda exacta de densidad de la tabla DVGW G 260 para grupo H es de pago (puede ser algo más estrecha). Adimensional → comparable directamente."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit (densidad relativa solo definida, no fijada para H-gas)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit (densidad relativa solo definida, no fijada para H-gas)"
         tipo_limite: rango
         valor_min: null
         valor_max: null
@@ -609,7 +609,7 @@ parametros:
         nota: "La ed. 2021 bajó el azufre total SIN odorizar a 6 mg/m³ (muy por debajo de los 21 mg/m³ de la EN 16726, vía «A-Abweichung» en la 10. BImSchV); con odorizante el total sube a 30 mg/m³. mg/m³ a 0 ºC → comparable con ES."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
         tipo_limite: maximo
         valor: 30.0
         unidad: mg_per_nm3
@@ -698,7 +698,7 @@ parametros:
         nota: "Suma H₂S + COS como S. mg/m³ a 0 ºC → comparable con ES."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 3 (gas H): H₂S (anorganische zwavel)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 3 (gas H): H₂S (anorganische zwavel)"
         tipo_limite: maximo
         valor: 5.0
         unidad: mg_per_nm3
@@ -791,7 +791,7 @@ parametros:
         nota: "Valor armonizado con EN 16726 (6 mg/m³ en los cuatro países). Coexiste con el azufre total de 6 mg/m³ sin odorizar: el azufre del odorante (THT/mercaptano) eleva el total con odorización. mg/m³ a 0 ºC → comparable con ES."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 3 (gas H): mercaptaanzwavel (alkylthiolen)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 3 (gas H): mercaptaanzwavel (alkylthiolen)"
         tipo_limite: maximo
         valor: 6.0
         unidad: mg_per_nm3
@@ -877,7 +877,7 @@ parametros:
         nota: "Límite muy estricto (10 ppm), aplicable sobre todo a redes conectadas a almacenamiento subterráneo. % mol → comparable directamente."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 3 (afname, gas H)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 3 (afname, gas H)"
         tipo_limite: maximo
         valor: 0.5
         unidad: pct_mol
@@ -963,7 +963,7 @@ parametros:
         nota: "El informe DVGW lista «2,5 / 4 mol-%»; 2,5 es el valor de referencia para gas natural grupo H. % mol → comparable directamente."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
         tipo_limite: maximo
         valor: 2.5
         unidad: pct_mol
@@ -1052,7 +1052,7 @@ parametros:
         nota: "G 260 expresa el agua como CONTENIDO (200/50 mg/m³); el rocío equivalente de red es ≈ -8 ºC a 70 bar (igual presión que ES/UE)."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 1/3 (gas H)"
         tipo_limite: maximo
         valor: -8.0
         unidad: grados_C
@@ -1143,7 +1143,7 @@ parametros:
         nota: "Rango 1-70 bar, coincide con ES/FR/UE → comparable."
       NL:
         fuente: NORM_NL_GAS
-        articulo: "Regeling gaskwaliteit, Bijlage 3 (gas H): condensado de gas / HC"
+        articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit, Bijlage 3 (gas H): condensado de gas / HC"
         tipo_limite: maximo
         valor: null
         unidad: null
