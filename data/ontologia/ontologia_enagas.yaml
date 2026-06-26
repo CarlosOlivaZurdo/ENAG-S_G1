@@ -210,7 +210,7 @@ ontologia:
       pais: NL
       nombre: "Especificaciones de calidad del gas H (Países Bajos) — Gasunie Transport Services (GTS), marco Energiewet (desde 1-1-2026)"
       organismo: "ACM (regulador) — operador: Gasunie Transport Services (GTS). Marco legal: Energiewet (sustituye a la Gaswet desde 1-1-2026)"
-      publicacion: "Especificaciones de calidad de gas H publicadas por GTS (Gas quality and metering). Base técnica histórica: Regeling gaskwaliteit (BWBR0035367), Bijlagen 1/3, DEROGADA el 1-1-2026; sus valores siguen aplicándose operativamente vía GTS bajo la Energiewet."
+      publicacion: "Marco legal vigente: Energiewet (BWBR0050714, en vigor 1-1-2026, sustituye a la Gaswet). La ACM aún NO ha publicado un código de calidad del gas sucesor, así que la referencia operativa son las especificaciones de GTS (Gas quality and metering). Base técnica de los valores: Regeling gaskwaliteit (BWBR0035367, Bijlagen 1/3), DEROGADA el 1-1-2026 pero cuyos valores se siguen aplicando vía GTS."
       url: "https://www.gasunietransportservices.nl/en/connected-parties/gas-quality-and-metering"
       descarga_auto: false  # fuente HTML (no PDF); enlace de cita, descarga manual
       tabla_calidad: "GTS «Gas quality and metering» (gas H); base técnica: Regeling gaskwaliteit Bijlage 1 (entrada) y Bijlage 3 (salida)"
