@@ -208,14 +208,14 @@ ontologia:
     - id: NORM_NL_GAS
       tipo: regla_tecnica_nacional
       pais: NL
-      nombre: "Regeling gaskwaliteit (Países Bajos) — implementada por Gasunie Transport Services (GTS)"
-      organismo: "Ministerie van Economische Zaken / ACM (regulador) — operador: Gasunie Transport Services (GTS)"
-      publicacion: "Regeling gaskwaliteit (BWBR0035367), Bijlagen 1/3 (gas hoogcalorisch). Expiró el 1-1-2026 con la transición Gaswet→Energiewet; valores técnicos vigentes vía GTS."
-      url: "https://wetten.overheid.nl/BWBR0035367/"
+      nombre: "Especificaciones de calidad del gas H (Países Bajos) — Gasunie Transport Services (GTS), marco Energiewet (desde 1-1-2026)"
+      organismo: "ACM (regulador) — operador: Gasunie Transport Services (GTS). Marco legal: Energiewet (sustituye a la Gaswet desde 1-1-2026)"
+      publicacion: "Especificaciones de calidad de gas H publicadas por GTS (Gas quality and metering). Base técnica histórica: Regeling gaskwaliteit (BWBR0035367), Bijlagen 1/3, DEROGADA el 1-1-2026; sus valores siguen aplicándose operativamente vía GTS bajo la Energiewet."
+      url: "https://www.gasunietransportservices.nl/en/connected-parties/gas-quality-and-metering"
       descarga_auto: false  # fuente HTML (no PDF); enlace de cita, descarga manual
-      tabla_calidad: "Regeling gaskwaliteit, Bijlage 1 (invoeding/entrada) y Bijlage 3 (afname/salida) para gas H"
+      tabla_calidad: "GTS «Gas quality and metering» (gas H); base técnica: Regeling gaskwaliteit Bijlage 1 (entrada) y Bijlage 3 (salida)"
       condiciones_referencia: "Wobbe/PCS a verbrandingsreferentietemperatuur 298,15 K (25 ºC); volumen m³(n) a 273,15 K (0 ºC), 101,325 kPa → 25/0"
-      nota: "Gas hoogcalorisch (H-gas). La Regeling fija Wobbe, O₂, CO₂, azufre total y rocío de agua; NO fija para H-gas: H₂S, mercaptanos, rocío de HC ni densidad (→ NO_VERIFICABLE)."
+      nota: "Gas hoogcalorisch (H-gas). ACTUALIZADO: la Regeling gaskwaliteit fue derogada el 1-1-2026 (transición Gaswet→Energiewet); los valores técnicos (Wobbe ≤55,7 MJ/m³(n), O₂, CO₂, azufre total, rocío de agua) siguen vigentes vía GTS. NO fija para H-gas: H₂S, mercaptanos, rocío de HC ni densidad (→ NO_VERIFICABLE)."
       ambito: "Especificaciones de calidad del gas H en la red de transporte neerlandesa (GTS)."
 
     # --- Bélgica ---
@@ -334,15 +334,15 @@ parametros:
         nota: "Gas H. Combustión 25 ºC (298,15 K), volumen m³(n) a 0 ºC. Condiciones 25/0 (como Portugal) → ISO 13443 para comparar con España."
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys, Access Code / Transmission Program (banda H-gas)"
+        articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Wobbe-index, punto de prélèvement, gas H)"
         tipo_limite: rango
-        valor_min: 47.0
-        valor_max: 55.7
-        unidad: MJ_per_nm3
-        expresion_original: "Wobbe index H-gas: 47 – 55,7 MJ/m³ (25/0)"
+        valor_min: 13.65
+        valor_max: 15.78
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbe-index / Indice de Wobbe: 13,65 – 15,78 kWh/m³(n)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H. Condiciones 25/0 → ISO 13443 para comparar con España."
+        nota: "Gas H. Valores LITERALES de la Bijlage 7 de Fluxys (PDF oficial). CORREGIDO: antes constaba 47–55,7 MJ/m³ (banda genérica errónea). Condiciones 25/0 → ISO 13443 para comparar con España."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -436,14 +436,15 @@ parametros:
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
       BE:
         fuente: NORM_BE_FLUXYS
-        articulo: "Fluxys (rango general no fijado; se controla vía Wobbe)"
+        articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Calorische Bovenwaarde / PCS, gas H)"
         tipo_limite: rango
-        valor_min: null
-        valor_max: null
+        valor_min: 10.28
+        valor_max: 12.79
         unidad: kWh_per_nm3
-        expresion_original: "Fluxys controla la energía vía el Wobbe; el PCS del punto de salida del ejemplo (Bijlage 7) es ~10,28–12,79 kWh/m³(n), no un rango general"
+        expresion_original: "Calorische Bovenwaarde / Pouvoir Calorifique Supérieur: 10,28 – 12,79 kWh/m³(n)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        estado_verificacion: VERIFICADO
+        nota: "Gas H. Valores LITERALES de la Bijlage 7 de Fluxys (PDF oficial). CORREGIDO: antes constaba sin valor. Condiciones 25/0 → ISO 13443 para comparar con España."
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
