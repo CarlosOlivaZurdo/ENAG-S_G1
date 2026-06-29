@@ -1104,6 +1104,9 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
                 "url": m.get("url") or m.get("pdf") or "",
                 "estado": m.get("estado") or "",
                 "discrepancia": m.get("discrepancia") or "",
+                # Condiciones/matices que el reglamento adjunta al límite (p. ej. el O₂
+                # de la EN 16726: ≤1 % general, ≤0,01 %/0,001 % por evaluación).
+                "nota": m.get("nota") or "",
             })
     return {
         "parametro": display,
@@ -1671,6 +1674,12 @@ def _comparativa_enagas(parametro: str, pais: str) -> str:
         "| --- | --- | --- | --- | --- |",
     ]
     evidencias = [f"- **España** · {es.get('parametro') or display}: {_cita_oficial(es)}"]
+    # Condiciones/matices que el reglamento adjunta a cada límite (p. ej. el O₂ de la
+    # EN 16726 es ≤1 % general, pero ≤0,01 %/0,001 % por proceso de evaluación en
+    # instalaciones sensibles). Sin esto, la comparación de un solo número engaña.
+    notas: list = []
+    if es.get("nota"):
+        notas.append(f"- **España**: {es['nota']}")
     for m in pa_resp["matches"]:  # Nota 3: una fila por límite (tipos de gas H/L…)
         nombre = str(m.get("parametro") or display).strip()
         u_pa = _txt(m.get("unidad")).strip("()").replace("^3", "³").replace("^2", "²")
@@ -1682,6 +1691,10 @@ def _comparativa_enagas(parametro: str, pais: str) -> str:
         conv_celda = _limite_convertido_a_es(parametro, pais, pa_inf, pa_sup, u_pa, unidad_es, notac_es, dec)
         lines.append(f"| {nombre} | {es_celda} | {pa_celda} | {comparable} | {conv_celda} |")
         evidencias.append(f"- **{pais}** · {nombre}: {_cita_oficial(m)}")
+        if m.get("nota"):
+            notas.append(f"- **{pais}**: {m['nota']}")
+    if notas:
+        lines += ["", "**Condiciones y matices del reglamento**", ""] + notas
     lines += ["", "**Fuente consultada**", ""] + evidencias
     if _slug_param_comb(parametro) in {"pcs", "wobbe"}:
         lines += ["", "_Conversión de unidad y de condiciones de referencia según ISO 13443:1996; "

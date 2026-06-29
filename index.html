@@ -586,6 +586,12 @@
       html += '<div class="cmp-iso"><span class="tag">ISO 13443</span><b>Normalización de condiciones de combustión a la base española (Tabla A.1):</b><br>'+
         d.notas_iso.map(n => '· '+esc(n)).join("<br>")+'</div>';
     }
+    // Condiciones y matices que el reglamento adjunta a cada límite (p. ej. el O₂ de la
+    // EN 16726: ≤1 % general, pero ≤0,01 %/0,001 % por proceso de evaluación).
+    const notas = filas.filter(f => f.nota).map(f => '<li><b>'+esc(f.pais)+'</b>: '+esc(f.nota)+'</li>');
+    if(notas.length){
+      html += '<div class="cmp-ev"><div class="cmp-ev-h">Condiciones y matices del reglamento</div><ul>'+notas.join("")+'</ul></div>';
+    }
     // Evidencias: cita de la fuente oficial por país (norma, organismo, fecha, artículo/página, URL/PDF).
     const evs = filas.filter(f => f.fuente).map(f => {
       let partes = ['<b>'+esc(f.pais)+'</b>', esc(f.fuente)];
