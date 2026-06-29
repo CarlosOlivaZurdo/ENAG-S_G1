@@ -232,6 +232,35 @@ ontologia:
       nota: "Gas H (existe también gas L con conversión H↔L). Valores LITERALES del PDF oficial de Fluxys (Bijlage 7, en data/raw): Wobbe 13,65–15,78 y PCS 10,28–12,79 kWh/m³(n), H₂S excl. COS ≤5, azufre total ≤30 mg/m³(n). El resto de parámetros no figura en esta hoja."
       ambito: "Especificaciones de calidad del gas H en la red de transporte belga (Fluxys)."
 
+    # --- Noruega ---
+    - id: NORM_NO_GASSCO
+      tipo: prescripcion_tecnica
+      pais: NOR
+      nombre: "Gassco — Terms and Conditions for Transportation of Gas in Gassled (especificación de calidad del gas)"
+      organismo: "Gassco AS (operador del sistema de transporte noruego, Gassled)"
+      publicacion: "Terms and Conditions for Transportation of Gas in Gassled (vigente 1-oct-2022): §1 definiciones (combustión 25 ºC) + tabla Gas Quality Specification (pág. 64)"
+      pdf: "data/raw/NO_Gassled_Terms_Conditions.pdf"
+      url: "https://gassco.eu/wp-content/uploads/2023/03/gassled-terms-and-conditions.pdf"
+      tabla_calidad: "Gassled T&C, cuadro de Gas Quality Specification (pág. 64): Wobbe, GCV, azufre, H₂S+COS, mercaptanos, O₂, CO₂, rocío de agua y de HC. Combustión 25 ºC (§1)."
+      condiciones_referencia: "Combustión 25 ºC (§1); volumen Nm³ a 0 ºC (cifras en kWh/Nm³ y mg/Nm³), 1,01325 bar → 25/0"
+      nota: "Gas H exportado de Noruega (Gassled). Valores LITERALES del PDF oficial de Gassco (en data/raw). Varían algo por punto de entrada/salida (p. ej. Ekofisk D8); se usan los del cuadro principal. La densidad relativa no se fija → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas en el sistema de transporte noruego (Gassled), exportación a Europa."
+
+    # --- Polonia ---
+    - id: NORM_PL_GAZSYSTEM
+      tipo: regla_tecnica_nacional
+      pais: PL
+      nombre: "Rozporządzenie w sprawie szczegółowych warunków funkcjonowania systemu gazowego (Polonia) — gas grupo E; aplica GAZ-SYSTEM"
+      organismo: "Minister Klimatu i Środowiska / URE (regulador) — operador: GAZ-SYSTEM S.A."
+      publicacion: "Rozporządzenie ..., Rozdział 8 «Parametry jakościowe paliw gazowych» (texto consolidado Dz.U. 2025, poz. 1382), §38 y ss. — gaz wysokometanowy grupy E"
+      pdf: "data/raw/PL_Rozporzadzenie_system_gazowy.pdf"
+      url: "https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU20250001382/O/D20251382.pdf"
+      descarga_auto: false  # ISAP bloquea la descarga automática (HTTP 403); enlace de cita, descarga manual
+      tabla_calidad: "Rozdział 8 (gas grupo E): Wobbe 45,0–56,9 MJ/m³, ciepło spalania ≥38 MJ/m³, azufre, H₂S, mercaptanos, O₂, CO₂, rocío de agua. Verificado también en la página de GAZ-SYSTEM."
+      condiciones_referencia: "Wobbe/PCS a combustión 15 ºC y volumen 15 ºC (15/15); concentraciones a 0 ºC (273,15 K), 101,325 kPa"
+      nota: "Gaz wysokometanowy grupy E (alto metano = gas H). Wobbe/PCS en MJ/m³ @15/15; concentraciones (mg/m³, % mol) a 0 ºC (comparables con España). El rocío de HC y la densidad no se fijan para grupo E → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas grupo E en la red de transmisión polaca (GAZ-SYSTEM)."
+
     - id: EN_ISO_6976
       tipo: norma_tecnica
       pais: UE
@@ -343,6 +372,28 @@ parametros:
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
         nota: "Gas H. Valores LITERALES del PDF oficial de Fluxys (Bijlage 7, en data/raw). Condiciones 25/0 → ISO 13443 para comparar con España."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: rango
+        valor_min: 14.17
+        valor_max: 15.47
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbe Index: 14,17 – 15,47 kWh/Nm³ (= 51,0–55,7 MJ/Nm³)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas H. Combustión 25 ºC, volumen Nm³ a 0 ºC → ISO 13443 (×1,0026) para comparar con España."
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (gas grupo E); página GAZ-SYSTEM"
+        tipo_limite: rango
+        valor_min: 45.0
+        valor_max: 56.9
+        unidad: MJ_per_nm3
+        expresion_original: "Liczba Wobbego (grupa E): 45,0 – 56,9 MJ/m³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas grupo E. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0569) para comparar con España (kWh/m³ @0/0)."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -445,6 +496,27 @@ parametros:
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
         nota: "Gas H. Valores LITERALES del PDF oficial de Fluxys (Bijlage 7, en data/raw). Condiciones 25/0 → ÷3,6 y ISO 13443 para comparar con España."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: rango
+        valor_min: 11.17
+        valor_max: 12.78
+        unidad: kWh_per_nm3
+        expresion_original: "Gross Calorific Value: 11,17 – 12,78 kWh/Nm³ (= 40,2–46,0 MJ/Nm³)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas H. GCV/PCS @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (ciepło spalania, gas grupo E)"
+        tipo_limite: minimo
+        valor: 38.0
+        unidad: MJ_per_nm3
+        expresion_original: "Ciepło spalania (GCV) grupa E: nie mniejsze niż 38,0 MJ/m³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Solo MÍNIMO (el máximo se controla vía Wobbe). 38,0 MJ/m³ es el ciepło spalania (GCV); la wartość opałowa (NCV) mínima es 34,0. @15/15 → ISO 13443 para comparar con España."
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
@@ -541,6 +613,24 @@ parametros:
         unidad: adimensional
         expresion_original: "No consta un rango de densidad relativa en la spec de Fluxys (Bijlage 7)"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C (densidad relativa no consta en el cuadro)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "El cuadro de calidad de Gassled no fija un rango de densidad relativa"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie (densidad relativa no fijada para grupo E)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "El Rozporządzenie no fija densidad relativa para el grupo E (se controla vía Wobbe)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
 
   # ---------------------------------------------------------------------------
   S_TOTAL:
@@ -627,6 +717,26 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Azufre total como S. El gas redélivré no lleva odorantes añadidos. mg/m³(n) a 0 ºC → comparable con ES."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: 30.0
+        unidad: mg_per_nm3
+        expresion_original: "Maximum sulphur: 30 mg/Nm³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total. mg/Nm³ a 0 ºC → comparable con ES. (En Ekofisk D8 el máximo sube a 150 mg/Nm³.)"
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (siarka całkowita, grupa E)"
+        tipo_limite: maximo
+        valor: 40.0
+        unidad: mg_per_nm3
+        expresion_original: "Zawartość siarki całkowitej: ≤ 40,0 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total. mg/m³ a 0 ºC → comparable con ES."
 
   # ---------------------------------------------------------------------------
   H2S_COS:
@@ -716,6 +826,26 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Bélgica (Bijlage 7) fija H₂S EXCLUYENDO COS (≤5 mg/m³(n) como S). mg/m³(n) a 0 ºC → comparable con ES."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "Maximum hydrogen sulphide incl. COS: 5 mg/Nm³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Suma H₂S + COS como S. mg/Nm³ a 0 ºC → comparable con ES. (En Ekofisk D8, H₂S excl. COS ≤15.)"
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (siarkowodór H₂S, grupa E)"
+        tipo_limite: maximo
+        valor: 7.0
+        unidad: mg_per_nm3
+        expresion_original: "Siarkowodór (H₂S): ≤ 7,0 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Polonia fija H₂S (no la suma con COS) ≤7 mg/m³. mg/m³ a 0 ºC → comparable con ES."
     conversion:
       tipo: masa_molar
       formula_mg_nm3_a_ppm_vol: "ppm_vol = mg/Nm³ × 22.414 / 34.08 = mg/Nm³ × 0.6577  (H₂S puro)"
@@ -808,6 +938,26 @@ parametros:
         expresion_original: "El Bijlage 7 de Fluxys no fija un límite de mercaptanos para el gas H"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: 6.0
+        unidad: mg_per_nm3
+        expresion_original: "Maximum mercaptans: 6,0 mg/Nm³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Como S. mg/Nm³ a 0 ºC → comparable con ES."
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (merkaptany, grupa E)"
+        tipo_limite: maximo
+        valor: 16.0
+        unidad: mg_per_nm3
+        expresion_original: "Zawartość merkaptanów: ≤ 16,0 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre de mercaptanos. mg/m³ a 0 ºC → comparable con ES."
 
   # ---------------------------------------------------------------------------
   O2:
@@ -892,6 +1042,24 @@ parametros:
         expresion_original: "El Bijlage 7 de Fluxys no fija un límite de O₂ para el gas H"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: 0.0002
+        unidad: pct_mol
+        expresion_original: "Maximum oxygen: 2 ppm vol (= 0,0002 % mol)"
+        estado_verificacion: VERIFICADO
+        nota: "Límite muy estricto (2 ppm), por el transporte submarino. % mol → comparable directamente."
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (tlen O₂, grupa E)"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: pct_mol
+        expresion_original: "Zawartość tlenu (O₂): ≤ 0,2 % mol/mol"
+        estado_verificacion: VERIFICADO
+        nota: "% mol → comparable directamente."
     conversion:
       formula_pct_a_ppm: "ppm_vol = pct_vol × 10000"
       ejemplo: "0,01 % = 100 ppm(vol)"
@@ -978,6 +1146,25 @@ parametros:
         expresion_original: "El Bijlage 7 de Fluxys no fija un límite de CO₂ para el gas H"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "Maximum carbon dioxide: 2,50 mol %"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "% mol → comparable directamente. (En Ekofisk D8, ≤2,60 %.)"
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (dwutlenek węgla CO₂, grupa E)"
+        tipo_limite: maximo
+        valor: 3.0
+        unidad: pct_mol
+        expresion_original: "Zawartość dwutlenku węgla (CO₂): ≤ 3,0 % mol/mol"
+        estado_verificacion: VERIFICADO
+        nota: "% mol → comparable directamente."
 
   # ---------------------------------------------------------------------------
   PR_H2O:
@@ -1069,6 +1256,26 @@ parametros:
         expresion_original: "El Bijlage 7 de Fluxys no fija el punto de rocío de agua para el gas H"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: -18.0
+        unidad: grados_C
+        presion_referencia_bar: 69
+        expresion_original: "Water dew point: -18 ºC at 69 barg"
+        estado_verificacion: VERIFICADO
+        nota: "A 69 bar(g) ≈ 70 bar, casi igual presión que ES/UE. Mucho más seco (-18 ºC) por el transporte submarino."
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie, Rozdział 8 (punkt rosy wody, grupa E)"
+        tipo_limite: maximo
+        valor: -5.0
+        unidad: grados_C
+        presion_referencia_bar: 55
+        expresion_original: "Temperatura punktu rosy wody a 5,5 MPa: ≤ -5 ºC (1 oct–31 mar); ≤ +3,7 ºC (1 abr–30 sep)"
+        estado_verificacion: VERIFICADO
+        nota: "Valor de invierno (-5 ºC a 55 bar); en verano +3,7 ºC. Presión 55 bar (distinta de los 70 bar de ES) → comparar con cautela."
 
   # ---------------------------------------------------------------------------
   PR_HC:
@@ -1160,6 +1367,25 @@ parametros:
         expresion_original: "El Bijlage 7 de Fluxys no fija el punto de rocío de hidrocarburos para el gas H"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "No consta en el PDF oficial que tenemos (Bijlage 7). No se inventa."
+      NOR:
+        fuente: NORM_NO_GASSCO
+        articulo: "Gassco, Gassled T&C, Gas Quality Specification (pág. 64)"
+        tipo_limite: maximo
+        valor: -10.0
+        unidad: grados_C
+        presion_referencia_bar: 50
+        expresion_original: "Hydrocarbon dewpoint: < -10 ºC at 50 barg"
+        estado_verificacion: VERIFICADO
+        nota: "A 50 bar (distinta de los 1-70 bar de ES/FR) → comparar con cautela. Otros puntos de Gassled: -2 ºC a 1-69 bar."
+      PL:
+        fuente: NORM_PL_GAZSYSTEM
+        articulo: "Rozporządzenie (rocío de HC no fijado para grupo E)"
+        tipo_limite: maximo
+        valor: null
+        unidad: null
+        presion_referencia_bar: null
+        expresion_original: "El Rozporządzenie no fija el punto de rocío de hidrocarburos para el grupo E"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
 
   # NOTA: Polvo / Partículas queda EXCLUIDO del alcance del proyecto.
   #   ES (Tabla 3) lo recoge como «Técnicamente puro» (sin cifra). FR (GRTgaz): < 5 mg/m³(n).
