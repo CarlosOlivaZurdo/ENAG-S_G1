@@ -1,0 +1,9 @@
+# Tratar SIEMPRE como binario (no convertir saltos de línea LF<->CRLF, no diff).
+# Evita que git corrompa estos archivos según la config de cada equipo.
+*.pdf   binary
+*.sqlite3 binary
+*.docx  binary
+*.xlsx  binary
+*.png   binary
+*.jpg   binary
+*.bak   binary
