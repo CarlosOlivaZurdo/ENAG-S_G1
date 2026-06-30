@@ -18,7 +18,10 @@ referencia histórica):
     P. Bajos : combustión 25 °C, medición 0 °C   (Regeling gaskwaliteit, m³(n))
     Bélgica  : combustión 25 °C, medición 0 °C   (Fluxys, m³(n))
     Noruega  : combustión 25 °C, medición 0 °C   (Gassco/Gassled, Nm³)
-    Polonia  : combustión 15 °C, medición 15 °C  (Rozporządzenie, Wobbe/PCS; conc. a 0 °C)
+    Polonia  : combustión 25 °C, medición 0 °C   (Rozporządzenie, Rozdział 8: warunki
+               odniesienia 298,15 K / 273,15 K; concentraciones a 0 °C)
+    Dinamarca: combustión 25 °C, medición 0 °C   (BEK nr 230, Nm³)
+    Hungría  : combustión 25 °C, medición 0 °C   (Decreto 19/2009/ÜKSZ: Wobbe y PCS @25/0; conc. 0 °C)
     UE (ISO) : combustión 15 °C, medición 15 °C
 NOTA: la Tabla E.1 (1996) listaba Italia como 25/0, pero su normativa vigente usa las
 condiciones estándar ISO 15/15; por eso Italia se trata como 15/15.
@@ -52,7 +55,9 @@ CONDICIONES_PAIS = {
     "holanda": (25, 0),
     "belgica": (25, 0),  # Fluxys: combustión 25 ºC, volumen m³(n) 0 ºC
     "noruega": (25, 0),  # Gassco/Gassled: combustión 25 ºC, volumen Nm³ 0 ºC
-    "polonia": (15, 15), # Rozporządzenie: Wobbe/PCS @15/15 (concentraciones a 0 ºC)
+    "polonia": (25, 0),  # Rozporządzenie (Rozdział 8): warunki odniesienia = combustión 298,15 K (25 ºC), volumen 273,15 K (0 ºC) → @25/0; concentraciones a 0 ºC (cf. nota verificada de la ontología)
+    "dinamarca": (25, 0),  # BEK 230: combustión 25 ºC, volumen Nm³ 0 ºC → 25/0
+    "hungria": (25, 0),    # Decreto 19/2009 / ÜKSZ: Wobbe y égéshő (PCS) @25/0; concentraciones a 0 ºC
 }
 
 # Parámetros que dependen de la temperatura de COMBUSTIÓN (los únicos que cambian).
@@ -89,7 +94,7 @@ def convertir_a_condiciones_espana(valor: float, parametro: str, pais_origen: st
     if cond is None:
         return {
             "error": f"No conozco las condiciones de referencia de '{pais_origen}'.",
-            "paises_conocidos": ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "UE"],
+            "paises_conocidos": ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "UE"],
         }
 
     slug = _slug_parametro(parametro)

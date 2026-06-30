@@ -261,6 +261,34 @@ ontologia:
       nota: "Gaz wysokometanowy grupy E (alto metano = gas H; equivale a grupo E/EASEE = H-gas). Se descartan los nitrogenados Lw/Ls/Ln/Lm (sin equivalente en España). Wobbe/PCS en MJ/m³ @25/0; concentraciones (mg/m³, % mol) a 0 ºC (comparables con España). El rocío de HC y la densidad no se fijan para grupo E → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas grupo E en la red de transmisión polaca (GAZ-SYSTEM)."
 
+    # --- Dinamarca ---
+    - id: NORM_DK_BEK230
+      tipo: regla_tecnica_nacional
+      pais: DK
+      nombre: "Bekendtgørelse om gaskvalitet (BEK nr 230 af 21/03/2018) — gas H (2. gasfamilie, gruppe H)"
+      organismo: "Sikkerhedsstyrelsen (Autoridad Danesa de Seguridad), Erhvervsministeriet — base legal: gassikkerhedsloven (lov nr. 61 af 30/01/2018)"
+      publicacion: "BEK nr 230 af 21/03/2018, «Gældende» (vigente); en vigor 21-abr-2018 (§62). Valores en §§ 8, 14, 17 y 18; definiciones en §2"
+      pdf: "data/raw/DK_BEK230_Gaskvalitet.pdf"
+      url: "https://www.retsinformation.dk/api/pdf/200169"
+      tabla_calidad: "BEK 230 (gas natural H): fija Wobbe superior (§14.2), densidad relativa (§14.3), azufre total/H₂S+COS/mercaptanos (§18) y rocíos de agua (§8.2) y de HC (§17). NO fija PCS, O₂ ni CO₂ para gas H (esos límites en la norma son solo para biogás/hidrógeno) → NO_VERIFICABLE."
+      condiciones_referencia: "Combustión 25 ºC (§2 øvre brændværdi); volumen Nm³ a 273,15 K (0 ºC), 1013,25 mbar (§2) → 25/0; corroborado por Energinet (Rules for Gas Transport v22)"
+      nota: "Gas H (2. gasfamilie gruppe H, EN 437). Valores LITERALES del PDF oficial de Retsinformation (en data/raw), verificados verbatim por parágrafo. En condiciones ANORMALES con plan aprobado, Wobbe puede bajar a 50,04–50,76 MJ/Nm³ (§15)."
+      ambito: "Especificaciones de calidad del gas natural H en la red danesa (transporte/distribución)."
+
+    # --- Hungría ---
+    - id: NORM_HU_KORM_19_2009
+      tipo: regla_tecnica_nacional
+      pais: HU
+      nombre: "19/2009. (I. 30.) Korm. rendelet, 11. számú melléklet «A földgáz minőségi követelményei» (Hungría) — gas grupo 2H; aplica FGSZ"
+      organismo: "Kormány (Gobierno de Hungría), reglamento de desarrollo (Vhr.) de la Ley del Gas GET (2008. évi XL. törvény); operador: FGSZ Zrt.; regulador: MEKH"
+      publicacion: "Decreto 19/2009, Anexo 11 (introducido por 139/2009. (VI. 30.) Korm. rendelet, en vigor 1-jul-2009); texto consolidado vigente 2025.VIII.14. El TSO (ÜKSZ §3.1.3.2) remite a este Anexo 11"
+      pdf: "data/raw/HU_Korm_19_2009_Anexo11.pdf"
+      url: "https://fgsz.hu/file/documents/0/0394/19_2009_korm_rendelet_hatalyos_2018_02_01_tol.pdf"
+      tabla_calidad: "Anexo 11 (gas 2H): «1. Égési jellemzők» Wobbe 45,66–54,76 y felső hőérték (PCS) 31,00–45,28 MJ/m³; «2. Szennyezőanyag» azufre total ≤100, H₂S ≤20, O₂ ≤0,2 % V/V; «3. Egyéb» contenido de agua ≤0,17 g/m³ y rocío de HC ≤4 ºC a 4 MPa. NO fija densidad, mercaptanos, CO₂ ni rocío de agua en ºC → NO_VERIFICABLE."
+      condiciones_referencia: "ÜKSZ: Wobbe-szám y égéshő (PCS) referidos a 25/0 ºC; PCI a 15/15; «gáztechnikai normál köbméter» a 288,15 K (15 ºC) pero liquidación energética a 0 ºC; 1,01325 bar → Wobbe/PCS @25/0. Cálculo según MSZ ISO 6976"
+      nota: "Gas 2H (gas H/alto metano). Valores LITERALES del PDF oficial del Decreto 19/2009 (Anexo 11, en data/raw), verificados verbatim. El valor concreto de Wobbe/hőérték dentro del rango se fija por contrato. Hungría regula el CONTENIDO de agua (≤0,17 g/m³), no un punto de rocío de agua en ºC; y fija H₂S solo (no la suma con COS). Densidad relativa, mercaptanos y CO₂ no figuran en el Anexo 11 → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas 2H en la red de transporte húngara (FGSZ)."
+
     - id: EN_ISO_6976
       tipo: norma_tecnica
       pais: UE
@@ -383,6 +411,28 @@ parametros:
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
         nota: "Gas H. Combustión 25 ºC, volumen Nm³ a 0 ºC → ISO 13443 (×1,0026) para comparar con España."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 14, stk. 2 (pág. 3)"
+        tipo_limite: rango
+        valor_min: 50.76
+        valor_max: 55.8
+        unidad: MJ_per_nm3
+        expresion_original: "Naturgas skal ved normale forsyningsforhold have et øvre Wobbeindeks i intervallet 50,76 – 55,8 MJ/Nm3."
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. MJ/Nm³ @25/0 → ÷3,6 e ISO 13443 (×1,0026) para comparar con España (kWh/m³ @0/0). En condiciones anormales con plan aprobado puede bajar a 50,04–50,76 MJ/Nm³ (§15)."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «1. Égési jellemzők», columna 2H (pág. 128)"
+        tipo_limite: rango
+        valor_min: 45.66
+        valor_max: 54.76
+        unidad: MJ_per_nm3
+        expresion_original: "Wobbe-szám (2H): 45,66–54,76 MJ/m³ (12,68–15,21 kWh/m³); Névleges Wobbe-szám 50,72 MJ/m³ (14,09 kWh/m³)."
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Gas 2H. Wobbe calculado del PCS (felső hőérték). MJ/m³ @25/0 (por el ÜKSZ) → ÷3,6 e ISO 13443 (×1,0026) para comparar con España. Nominal 50,72 MJ/m³."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (gas grupo E); página GAZ-SYSTEM"
@@ -507,6 +557,27 @@ parametros:
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
         nota: "Gas H. GCV/PCS @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 2 nr. 16 (define øvre brændværdi; sin rango para gas H)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: MJ_per_nm3
+        expresion_original: "Øvre brændværdi (Hø) angives i MJ/Nm3 — la BEK 230 DEFINE el PCS pero NO fija rango/máx/mín para gas natural H (se especifica por Wobbe + densidad relativa)."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Dinamarca no fija un límite numérico de PCS para gas H (lo controla vía Wobbe y densidad relativa) → NO_VERIFICABLE."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «1. Égési jellemzők» (felső hőérték), columna 2H (pág. 129)"
+        tipo_limite: rango
+        valor_min: 31.0
+        valor_max: 45.28
+        unidad: MJ_per_nm3
+        expresion_original: "Felső hőérték (2H): 31,00–45,28 MJ/m³ (8,61–12,58 kWh/m³). «A földgáz felső és alsó hőérték értékhatárokon belüli konkrét értékét szerződésben kell meghatározni.»"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Felső hőérték = GCV = PCS, gas 2H. Rango amplio; el valor concreto se fija por contrato. MJ/m³ @25/0 → ÷3,6 e ISO 13443 (×1,0026) para comparar con España. (PCI/alsó hőérték: 27,94–40,81 MJ/m³.)"
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (ciepło spalania, gas grupo E)"
@@ -622,6 +693,26 @@ parametros:
         unidad: adimensional
         expresion_original: "El cuadro de calidad de Gassled no fija un rango de densidad relativa"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 14, stk. 3 (pág. 3)"
+        tipo_limite: rango
+        valor_min: 0.555
+        valor_max: 0.7
+        unidad: adimensional
+        expresion_original: "Den relative densitet (d) af naturgaskvaliteter må ikke være lavere end 0,555 og ikke højere end 0,7."
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa (adimensional) → comparable directamente con España."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11 (no fija densidad relativa para gas 2H)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "El Anexo 11 no fija densidad relativa; queda implícita vía Wobbe = PCS / √(densidad relativa)."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El 0,55–0,70 que circula procede de una tabla de distribuidor (TIGÁZ), no del Anexo 11 oficial → NO_VERIFICABLE."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie (densidad relativa no fijada para grupo E)"
@@ -727,6 +818,26 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Azufre total, mg/Nm³ a 0 ºC → comparable con ES. Nota del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 4): para el punto de entrada D8 (Ekofisk) el azufre total máximo es 150 mg/Nm³ (120 mg/Nm³ de media anual)."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 18, stk. 4 (pág. 3)"
+        tipo_limite: maximo
+        valor: 30.0
+        unidad: mg_per_nm3
+        expresion_original: "Det totale svovlindhold i naturgas må ikke overstige 30 mg/Nm3."
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total. mg/Nm³ a 0 ºC → comparable con ES. Excluye el azufre del odorante (§18.5)."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «2. Szennyezőanyag-tartalom», columna 2H (pág. 129)"
+        tipo_limite: maximo
+        valor: 100.0
+        unidad: mg_per_nm3
+        expresion_original: "Összes illó kéntartalom: legfeljebb 100 mg/m³ (método MSZ989 / MSZ ISO 6326)."
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total (volátil), límite holgado (100 mg/m³). El «normál köbméter» húngaro se define a 15 ºC pero la energía se liquida a 0 ºC → tratado a 0 ºC para comparar con ES."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (siarka całkowita, grupa E)"
@@ -836,6 +947,26 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Suma H₂S + COS como S, mg/Nm³ a 0 ºC → comparable con ES. Notas del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 3 y 6): (3) para el flujo combinado de PL018+PL006+PL033 en el punto de entrada D8 (Ekofisk) el H₂S excluyendo COS es 15 mg/Nm³; (6) conforme al art. 4.5.3, el H₂S máximo es 36 mg/Nm³ para ese flujo combinado en D8 (Ekofisk) y 15 mg/Nm³ para todos los demás puntos de entrada."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 18, stk. 1 (pág. 3)"
+        tipo_limite: maximo
+        valor: 5.0
+        unidad: mg_per_nm3
+        expresion_original: "Det samlede indhold af svovlbrinte (H2S) og carbonylsulfid (COS) målt som svovl i naturgas må ikke overstige 5 mg/Nm3."
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Suma H₂S + COS como S. mg/Nm³ a 0 ºC → comparable con ES. En condiciones anormales ≤10 mg/Nm³ por períodos ≤2 h (media diaria nunca >5; máx 132 h/año)."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «2. Szennyezőanyag-tartalom», columna 2H (pág. 129)"
+        tipo_limite: maximo
+        valor: 20.0
+        unidad: mg_per_nm3
+        expresion_original: "Hidrogén-szulfid-tartalom: legfeljebb 20 mg/m³ (método MSZ ISO 6326-2)."
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Hungría fija H₂S SOLO (no la suma con COS) ≤20 mg/m³. mg/m³ a 0 ºC → comparable con ES con la salvedad de que es H₂S, no H₂S+COS."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (siarkowodór H₂S, grupa E)"
@@ -948,6 +1079,25 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Como S. mg/Nm³ a 0 ºC → comparable con ES."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 18, stk. 3 (pág. 3)"
+        tipo_limite: maximo
+        valor: 6.0
+        unidad: mg_per_nm3
+        expresion_original: "Indholdet af merkaptaner i naturgas målt som svovl må ikke overstige 6 mg/Nm3."
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Mercaptanos como S. mg/Nm³ a 0 ºC → comparable con ES. Excluye el azufre del odorante."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11 (no fija mercaptanos para gas 2H)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "El Anexo 11 no contiene un límite de mercaptanos."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El 15 mg/m³ que circula es práctica alemana citada por un distribuidor (TIGÁZ), no del Anexo 11 → NO_VERIFICABLE."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (merkaptany, grupa E)"
@@ -1051,6 +1201,24 @@ parametros:
         expresion_original: "Maximum oxygen: 2 ppm vol (= 0,0002 % mol)"
         estado_verificacion: VERIFICADO
         nota: "Límite muy estricto (2 ppm), por el transporte submarino. % mol → comparable directamente."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230 (sin límite de O₂ para gas natural H)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "La BEK 230 NO fija O₂ para gas natural H; los límites de O₂ (§23, §27/§28) son solo para bionaturgas e hidrógeno."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Dinamarca no fija O₂ para gas H en fuente oficial → NO_VERIFICABLE."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «2. Szennyezőanyag-tartalom», columna 2H (pág. 129)"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: pct_mol
+        expresion_original: "Oxigéntartalom (V/V): legfeljebb 0,2% (método MSZ ISO 6974)."
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,2 % V/V (≈ % mol) → comparable directamente con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (tlen O₂, grupa E)"
@@ -1156,6 +1324,24 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "% mol a 0 ºC → comparable directamente con ES. Notas del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 2 y 5): (2) para el flujo combinado de PL018+PL006+PL033 en el punto de entrada D8 (Ekofisk) el CO₂ máximo es 2,60 % mol; (5) conforme al art. 4.5.2, el CO₂ máximo es 6,00 % mol."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230 (sin límite de CO₂ para gas natural H)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "La BEK 230 NO fija CO₂ para gas natural H; los límites de CO₂ (§23, §27) son solo para bionaturgas e hidrógeno."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Dinamarca no fija CO₂ para gas H en fuente oficial → NO_VERIFICABLE."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11 (no fija CO₂ para gas 2H)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "El Anexo 11 no fija CO₂. El <4,5 mol% que circula procede de la norma MSZ 1648:2016 (de pago) citada por terceros, no verificable directamente."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "CO₂ no figura en el Anexo 11 → NO_VERIFICABLE."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (dwutlenek węgla CO₂, grupa E)"
@@ -1266,6 +1452,26 @@ parametros:
         expresion_original: "Water dew point: -18 ºC at 69 barg"
         estado_verificacion: VERIFICADO
         nota: "A 69 bar(g) ≈ 70 bar, casi igual presión que ES/UE. Mucho más seco (-18 ºC) por el transporte submarino."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 8, stk. 2 (pág. 2)"
+        tipo_limite: maximo
+        valor: -8.0
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "Vanddugpunktet i naturgas må ikke overstige minus 8 °C ved ethvert tryk op til 70 bar absolut tryk."
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤ −8 ºC a cualquier presión hasta 70 bar abs. Sin valores estacionales."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «3. Egyéb követelmények» (contenido de agua, no rocío)"
+        tipo_limite: maximo
+        valor: null
+        unidad: grados_C
+        presion_referencia_bar: null
+        expresion_original: "Hungría regula el CONTENIDO de vapor de agua (vízgőztartalom) ≤0,17 g/m³ (red de transporte; ≤1,0 g/m³ en operación en isla), NO un punto de rocío de agua en ºC."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Hungría no fija punto de rocío de agua en ºC; limita el contenido de vapor de agua a ≤0,17 g/m³ → no comparable directamente con un rocío en ºC."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (punkt rosy wody, grupa E)"
@@ -1377,6 +1583,26 @@ parametros:
         expresion_original: "Hydrocarbon dewpoint: < -10 ºC at 50 barg"
         estado_verificacion: VERIFICADO
         nota: "A 50 bar (distinta de los 1-70 bar de ES/FR) → comparar con cautela. Otros puntos de Gassled: -2 ºC a 1-69 bar."
+      DK:
+        fuente: NORM_DK_BEK230
+        articulo: "BEK 230, § 17 (pág. 3)"
+        tipo_limite: maximo
+        valor: -2.0
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "Kulbrintedugpunktet i naturgas må ved ethvert tryk op til 70 bar absolut tryk ikke overstige minus 2 °C."
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤ −2 ºC a cualquier presión hasta 70 bar abs."
+      HU:
+        fuente: NORM_HU_KORM_19_2009
+        articulo: "Anexo 11, «3. Egyéb követelmények», columna 2H"
+        tipo_limite: maximo
+        valor: 4.0
+        unidad: grados_C
+        presion_referencia_bar: 40
+        expresion_original: "Szénhidrogén harmatpont: legfeljebb 4 °C – 4 MPa nyomáson (método MSZ ISO 6974)."
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤ +4 ºC a 4 MPa (40 bar). Presión de referencia 40 bar (distinta de los 70 bar de ES) → comparar con cautela."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie (rocío de HC no fijado para grupo E)"
