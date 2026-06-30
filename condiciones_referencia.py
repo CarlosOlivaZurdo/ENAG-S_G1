@@ -22,6 +22,15 @@ referencia histórica):
                odniesienia 298,15 K / 273,15 K; concentraciones a 0 °C)
     Dinamarca: combustión 25 °C, medición 0 °C   (BEK nr 230, Nm³)
     Hungría  : combustión 25 °C, medición 0 °C   (Decreto 19/2009/ÜKSZ: Wobbe y PCS @25/0; conc. 0 °C)
+    Austria  : combustión 25 °C, medición 0 °C   (ÖVGW G B210; vol. Nm³ 0 °C)
+    Suiza    : combustión 25 °C, medición 0 °C   (SVGW G18)
+    Chequia  : combustión 15 °C, medición 15 °C  (NET4GAS; conc. a 15 °C)
+    Grecia   : combustión 25 °C, medición 0 °C   (DESFA, Nm³)
+    Irlanda  : combustión 15 °C, medición 15 °C  (GNI Code; conc. a 15 °C)
+    Rumanía  : combustión 15 °C, medición 15 °C  (ANRE; PCS en kcal)
+    Eslovaquia: combustión 25 °C, medición 20 °C (eustream; ATÍPICO, Anexo B)
+    Turquía  : combustión 15 °C, medición 15 °C  (BOTAŞ; kcal/m³)
+    R. Unido : combustión 15 °C, medición 15 °C  (GS(M)R; conc. a 15 °C)
     UE (ISO) : combustión 15 °C, medición 15 °C
 NOTA: la Tabla E.1 (1996) listaba Italia como 25/0, pero su normativa vigente usa las
 condiciones estándar ISO 15/15; por eso Italia se trata como 15/15.
@@ -58,6 +67,15 @@ CONDICIONES_PAIS = {
     "polonia": (25, 0),  # Rozporządzenie (Rozdział 8): warunki odniesienia = combustión 298,15 K (25 ºC), volumen 273,15 K (0 ºC) → @25/0; concentraciones a 0 ºC (cf. nota verificada de la ontología)
     "dinamarca": (25, 0),  # BEK 230: combustión 25 ºC, volumen Nm³ 0 ºC → 25/0
     "hungria": (25, 0),    # Decreto 19/2009 / ÜKSZ: Wobbe y égéshő (PCS) @25/0; concentraciones a 0 ºC
+    "austria": (25, 0),    # ÖVGW G B210: volumen Nm³ 0 ºC (E-Control); combustión 25 ºC (ISO 6976)
+    "suiza": (25, 0),      # SVGW G18: combustión 25 ºC, volumen Nm³ 0 ºC
+    "chequia": (15, 15),   # NET4GAS: t1=t2=15 ºC (ČSN EN ISO 6976); conc. a 15 ºC
+    "grecia": (25, 0),     # DESFA: Nm³ 0 ºC, combustión 25 ºC
+    "irlanda": (15, 15),   # GNI Code: 15 ºC y 101,325 kPa (Real Gross Dry)
+    "rumania": (15, 15),   # ANRE: combustión 15 ºC, volumen 15 ºC
+    "eslovaquia": (25, 20), # eustream: combustión 25 ºC, VOLUMEN 20 ºC (atípico → Anexo B)
+    "turquia": (15, 15),   # BOTAŞ: 15 ºC; Wobbe/PCS en kcal/m³
+    "reino unido": (15, 15), # GS(M)R: reference conditions 15 ºC y 1,01325 bar
 }
 
 # Parámetros que dependen de la temperatura de COMBUSTIÓN (los únicos que cambian).
@@ -94,7 +112,7 @@ def convertir_a_condiciones_espana(valor: float, parametro: str, pais_origen: st
     if cond is None:
         return {
             "error": f"No conozco las condiciones de referencia de '{pais_origen}'.",
-            "paises_conocidos": ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "UE"],
+            "paises_conocidos": ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"],
         }
 
     slug = _slug_parametro(parametro)

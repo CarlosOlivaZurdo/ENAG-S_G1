@@ -289,6 +289,132 @@ ontologia:
       nota: "Gas 2H (gas H/alto metano). Valores LITERALES del PDF oficial del Decreto 19/2009 (Anexo 11, en data/raw), verificados verbatim. El valor concreto de Wobbe/hőérték dentro del rango se fija por contrato. Hungría regula el CONTENIDO de agua (≤0,17 g/m³), no un punto de rocío de agua en ºC; y fija H₂S solo (no la suma con COS). Densidad relativa, mercaptanos y CO₂ no figuran en el Anexo 11 → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas 2H en la red de transporte húngara (FGSZ)."
 
+    # --- Austria ---
+    - id: NORM_AT_OVGW_GB210
+      tipo: regla_tecnica_nacional
+      pais: AT
+      nombre: "ÖVGW Richtlinie G B210 «Gasbeschaffenheit» (antes G31) — gas H; delegada por GMMO-VO 2020"
+      organismo: "ÖVGW (Österreichische Vereinigung für das Gas- und Wasserfach); regulador: E-Control (GMMO-VO 2020, Anlage 2); TSO: Gas Connect Austria"
+      publicacion: "ÖVGW G B210:2021-06. La GMMO-VO 2020 (E-Control) Anlage 2 delega legalmente los valores de calidad a esta norma técnica"
+      url: "https://www.austrian-standards.at/en/shop/ovgw-g-b210-2021-06~p2579867"
+      descarga_auto: false  # norma de pago (Austrian Standards); valores vía reproducción pública oficial + TSO Gas Connect Austria
+      tabla_calidad: "G B210/G31 (gas H): Wobbe 13,3–15,7 y Brennwert 10,7–12,8 kWh/m³, densidad 0,55–0,65, azufre, H₂S, mercaptanos, O₂, CO₂, rocíos. Volumen Nm³ a 0 ºC (DIN 1343, verificado en E-Control)."
+      condiciones_referencia: "Volumen Nm³ a 0 ºC (273,15 K), 101,325 kPa (DIN 1343, verificado en E-Control); combustión 25 ºC (práctica ÖVGW/ISO 6976, no verbatim en fuente pública) → se trata @25/0"
+      nota: "Gas H. Austria delega legalmente (GMMO-VO 2020, Anlage 2) en la norma ÖVGW G B210 (de pago). Los valores proceden de una reproducción pública oficial de la norma y se corroboran con el documento del TSO Gas Connect Austria (Anhang 3, por punto). Volumen 0 ºC verificado en E-Control; la combustión 25 ºC sigue la práctica ÖVGW/ISO 6976."
+      ambito: "Especificaciones de calidad del gas H en la red austriaca (transporte/distribución)."
+
+    # --- Suiza ---
+    - id: NORM_CH_SVGW_G18
+      tipo: regla_tecnica_nacional
+      pais: CH
+      nombre: "SVGW/SSIGE Richtlinie G18 «Gasbeschaffenheit» — gas H"
+      organismo: "SVGW (Schweizerischer Verein des Gas- und Wasserfaches); sector: gazenergie/VSG"
+      publicacion: "SVGW G18, edición 06/2022. Datos brenntécnicos publicados en la gazette 1/2023 (publicación oficial del sector gasista suizo)"
+      url: "https://www.svgw.ch/de/shopregelwerk/produkte/g18-d-richtlinie-gasbeschaffenheit/"
+      descarga_auto: false  # norma de pago (CHF 90); solo los datos brenntécnicos son públicos (gazette 1/2023)
+      tabla_calidad: "G18 (gas H): Wobbe 13,25–15,81 y Brennwert 9,87–13,25 kWh/m³ (públicos vía gazette 1/2023). Azufre, H₂S, mercaptanos, O₂, CO₂ y rocíos constan solo en la G18 de pago → NO_VERIFICABLE."
+      condiciones_referencia: "Combustión 25 ºC; volumen Nm³ a 0 ºC (273,15 K), 1013,25 mbar (notación SVGW «25 ºC/0 ºC») → @25/0"
+      nota: "Gas H. La SVGW G18 es de PAGO; solo los datos brenntécnicos (Wobbe, Brennwert) se publican en la gazette 1/2023 del sector gasista suizo. El resto de parámetros consta solo en la G18 → NO_VERIFICABLE. No se usan valores de otros países."
+      ambito: "Especificaciones de calidad del gas H en Suiza (norma técnica nacional SVGW)."
+
+    # --- Chequia ---
+    - id: NORM_CZ_NET4GAS
+      tipo: regla_tecnica_nacional
+      pais: CZ
+      nombre: "Řád provozovatele přepravní soustavy (Network Code de NET4GAS), Příloha č. 2 «Kvalitativní parametry plynu» — gas H"
+      organismo: "NET4GAS, s.r.o. (TSO checo); regulador: ERÚ (vyhláška 545/2006 Sb. §5; vyhláška 108/2011 Sb. anexo 5)"
+      publicacion: "Řád PPS de NET4GAS, Příloha č. 2 (versión consolidada). Los valores constan también en el Anexo 5 del Decreto 108/2011 Sb."
+      pdf: "data/raw/CZ_NET4GAS_Rad_PPS.pdf"
+      url: "https://www.net4gas.cz/files/prepravni-rady-legislativa/n4g_rad_provozovatele.pdf"
+      tabla_calidad: "Příloha č. 2 (gas H): Wobbe 12,7–14,5 y spalné teplo 9,4–11,8 kWh/m³, densidad 0,56–0,70, S celkem ≤30, H₂S ≤6, RSH ≤5, O₂ ≤0,02 %, CO₂ ≤3 %, rocío agua ≤−7 ºC@40 bar, rocío HC ≤0 ºC. Verificado verbatim."
+      condiciones_referencia: "Vztaženo na normální podmínky: t2 = 15 ºC (volumen), p = 101,325 kPa, combustión t1 = 15 ºC, gas seco (φ=0) → @15/15. Cálculo según ČSN EN ISO 6976"
+      nota: "Gas H. La ley checa (vyhláška 545/2006 §5) delega los valores en el Řád del TSO NET4GAS. Valores LITERALES de la Příloha č. 2 (en data/raw). Wobbe/PCS @15/15; concentraciones a 15 ºC. H₂S es solo H₂S (no la suma con COS)."
+      ambito: "Especificaciones de calidad del gas H en la red de transporte checa (NET4GAS)."
+
+    # --- Grecia ---
+    - id: NORM_GR_DESFA
+      tipo: regla_tecnica_nacional
+      pais: GR
+      nombre: "Κώδικας Διαχείρισης ΕΣΦΑ (DESFA Network Code), ΠΑΡΑΡΤΗΜΑ I «Προδιαγραφές Ποιότητας Φυσικού Αερίου» — gas H"
+      organismo: "ΔΕΣΦΑ / DESFA (TSO griego); aprobado por ΡΑΕ/ΡΑΑΕΥ (Decisión RAE 1035/2020)"
+      publicacion: "Código de Gestión del ΕΣΦΑ, 5ª Revisión (Decisión RAE 1035/2020), Anexo I"
+      pdf: "data/raw/GR_DESFA_Network_Code_AnexoI.pdf"
+      url: "https://www.desfa.gr/en/our-services/transmission-services/transmission-user-information/natural-gas-quality-specification/"
+      tabla_calidad: "Anexo I (gas H): Wobbe 13,066–16,328 y GCV 10,174–13,674 kWh/Nm³, densidad 0,56–0,71, S total ≤80, H₂S ≤5,4, O₂ ≤0,2 %, CO₂ ≤3 %, rocío agua ≤+5 ºC@80 bar, rocío HC ≤+3 ºC. Verificado verbatim del PDF oficial RAAEY."
+      condiciones_referencia: "Nm³ a 0 ºC (273,15 K) y 1,01325 bar (volumen); combustión 25 ºC (PCS, agua líquida) → @25/0"
+      nota: "Gas H. Valores LITERALES del Anexo I del Código de Gestión del ΕΣΦΑ (en data/raw). Wobbe/PCS en kWh/Nm³ @25/0; concentraciones a 0 ºC. H₂S es solo H₂S (no +COS). Mercaptanos no figuran → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas H en la red de transporte griega (DESFA)."
+
+    # --- Irlanda ---
+    - id: NORM_IE_GNI
+      tipo: regla_tecnica_nacional
+      pais: IE
+      nombre: "Gas Networks Ireland — Code of Operations, Part G, Appendix 1 «Quality Specification of Natural Gas» — gas H"
+      organismo: "Gas Networks Ireland (GNI, TSO); regulador: CRU"
+      publicacion: "Code of Operations Part G, Appendix 1 (v5.04, May 2023) + Code Modification A113 (vigente 6-abr-2025: Wobbe inferior 46,5; densidad relativa ≤0,7)"
+      pdf: "data/raw/IE_GNI_Code_PartG.pdf"
+      url: "https://www.gasnetworks.ie/sites/default/files/docs/corporate/gas-regulation/Code-of-Operations-Part-G.pdf"
+      tabla_calidad: "Appendix 1 (gas H): Wobbe 46,5–51,41 y GCV 36,9–42,3 MJ/m³, densidad relativa ≤0,7, S total <50 (incl. H₂S), H₂S <5, O₂ <0,2 %, CO₂ <2,5 %, rocío HC <−2 ºC@85 bar. Verificado verbatim."
+      condiciones_referencia: "All measurements at 15 ºC and 101,325 kPa (Real Gross Dry) → @15/15"
+      nota: "Gas H. Valores LITERALES del Code of Operations Part G (en data/raw), con la modificación A113 vigente desde 6-abr-2025 (Wobbe inferior 46,5; densidad relativa ≤0,7 en sustitución de ICF/Soot Index). H₂S solo (no +COS). Mercaptanos: sin límite separado → NO_VERIFICABLE. Agua: Irlanda regula el CONTENIDO (<50 mg/m³), no un rocío → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas H en la red de transporte irlandesa (GNI)."
+
+    # --- Rumanía ---
+    - id: NORM_RO_ANRE
+      tipo: regla_tecnica_nacional
+      pais: RO
+      nombre: "Regulament de măsurare a gazelor naturale, Anexa nr. 5 «Cerințe minime de calitate» + Codul rețelei SNT — gas H"
+      organismo: "ANRE (regulador rumano); operador: Transgaz (TSO). Ordin 62/2008 mod. Ordin 80/2020"
+      publicacion: "Regulament de măsurare, Anexa nr. 5 (ANRE Ordin 62/2008, actualizado por Ordin 80/2020); Codul rețelei SNT, Cap. 5"
+      url: "https://www.transgaz.ro/en/clients/transmission-services/natural-gas-quality"
+      descarga_auto: false  # tabla vigente en la web del TSO; la Orden 80/2020 es un PDF escaneado (sin capa de texto)
+      tabla_calidad: "Anexa 5 (gas H): PCS mín. 7.840 kcal/m³, S total ≤100, H₂S ≤6,8, O₂ ≤0,02 %, CO₂ ≤8 %, rocío agua ≤−15 ºC, rocío HC ≤0 ºC. NO fija Wobbe ni densidad relativa → NO_VERIFICABLE."
+      condiciones_referencia: "Pcs a tref. medición = 15 ºC y tref. combustión = 15 ºC; volumen a 15 ºC y 1,01325 bar → @15/15 (SR ISO 13443 / SR ISO 6976)"
+      nota: "Gas H. Valores VIGENTES (post Ordin 80/2020) de la Anexa 5, reflejados en la web oficial de Transgaz. Rumanía NO fija banda de Wobbe ni densidad relativa (regula por composición + PCS mín. + rocíos) → NO_VERIFICABLE. PCS en kcal/m³. H₂S solo. Mercaptanos: solo hay un MÍNIMO de etilmercaptano para odorizar, no un máximo → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas H en el Sistema Național de Transport (Transgaz)."
+
+    # --- Eslovaquia ---
+    - id: NORM_SK_EUSTREAM
+      tipo: regla_tecnica_nacional
+      pais: SK
+      nombre: "Technické podmienky de eustream, a.s. (PPS), Príloha č. 1 «Kvalitatívne parametre Plynu» — gas H"
+      organismo: "eustream, a.s. (TSO eslovaco); regulador: ÚRSO"
+      publicacion: "Technické podmienky eustream, vigentes desde 07.01.2023, Príloha č. 1"
+      pdf: "data/raw/SK_eustream_Technicke_podmienky.pdf"
+      url: "https://www.urso.gov.sk/data/files/1166_480_tp_eustream.pdf"
+      tabla_calidad: "Príloha č. 1 (gas H): Wobbe 13,41–14,25 y spaľovacie teplo 9,96–11,92 kWh/m³, densidad 0,555–0,7, S celková ≤20, H₂S ≤2, metilmercaptano ≤5, O₂ ≤0,01 %, CO₂ ≤2 %, rocío agua ≤−8 ºC@40 bar, rocío HC ≤0 ºC (1–7 MPa). Verificado verbatim."
+      condiciones_referencia: "Základné podmienky: volumen 20 ºC, 101,325 kPa, gas seco (φ=0); combustión 25 ºC → @25/20 (caso atípico; ISO 13443 Anexo B para normalizar)"
+      nota: "Gas H. Valores LITERALES de la Príloha č. 1 (en data/raw). ATÍPICO: condiciones de referencia 25/20 (volumen a 20 ºC) → la normalización a España usa las ecuaciones del Anexo B de la ISO 13443. H₂S solo (no +COS). Mercaptanos como metilmercaptano (CH₄S)."
+      ambito: "Especificaciones de calidad del gas H en la red de transporte eslovaca (eustream)."
+
+    # --- Turquía ---
+    - id: NORM_TR_BOTAS
+      tipo: regla_tecnica_nacional
+      pais: TR
+      nombre: "BOTAŞ Şebeke İşleyiş Düzenlemelerine İlişkin Esaslar (ŞİD), EK-1 «Doğal Gaz Kalite Şartnamesi» — gas H"
+      organismo: "BOTAŞ (TSO turco); regulador: EPDK (Kurul Kararı 1384, 22/11/2007)"
+      publicacion: "BOTAŞ ŞİD (Network Code), anexo EK-1; revisión 21/12/2023. Tabla EK-1 establecida por Decisión EPDK 1384 (Resmi Gazete 28/11/2007)"
+      url: "https://www.botas.gov.tr/Sayfa/dogal-gaz-iletim-duzenlemeleri/30"
+      descarga_auto: false  # documento oficial en formato .doc (no PDF)
+      tabla_calidad: "EK-1 (gas H): Wobbe 10465–13000 y üst ısıl değer 8100–10427 kcal/m³, S total ≤115,50, H₂S ≤5,35, mercaptanos ≤16,07, O₂ ≤0,5 %, CO₂ ≤3 %, rocío agua 0/−5 ºC@44 bar, rocío HC 0 ºC@67,5 bar. Verificado verbatim (2 copias). NO fija densidad relativa → NO_VERIFICABLE."
+      condiciones_referencia: "m³ a 15 ºC y 1,01325 bar (absolutos); combustión (PCS) a 15 ºC → @15/15. Wobbe/PCS en kcal/m³"
+      nota: "Gas H. Valores LITERALES del EK-1 del ŞİD de BOTAŞ. Wobbe y PCS en kcal/m³ (1 kWh ≈ 859,85 kcal). H₂S solo (no +COS). Rocío de agua estacional (0 ºC verano / −5 ºC resto, a 44 bar). Densidad relativa no figura → NO_VERIFICABLE."
+      ambito: "Especificaciones de calidad del gas H en la red de transporte turca (BOTAŞ)."
+
+    # --- Reino Unido ---
+    - id: NORM_GB_GSMR
+      tipo: regla_tecnica_nacional
+      pais: GB
+      nombre: "The Gas Safety (Management) Regulations 1996 (GS(M)R), Schedule 3 + NTS Gas Entry Conditions — gas H"
+      organismo: "HSE / legislación del Reino Unido (SI 1996/551); TSO: National Gas Transmission (NTS)"
+      publicacion: "GS(M)R 1996, Schedule 3 (texto consolidado vigente 6-abr-2025, con enmienda SI 2023/284). Parámetros de transporte: NTS Gas Entry Conditions"
+      url: "https://www.legislation.gov.uk/uksi/1996/551/schedule/3"
+      descarga_auto: false  # legislación en HTML (legislation.gov.uk), no PDF directo
+      tabla_calidad: "GS(M)R Schedule 3 (gas H): Wobbe 46,50–51,41 MJ/m³, densidad relativa ≤0,700, azufre total ≤50 (incl. H₂S), H₂S ≤5, O₂ ≤0,2 % (transporte). NTS: PCS 36,9–42,3, CO₂ ≤2,0 %, rocío agua ≤−10 ºC@85 bar, rocío HC ≤−2 ºC@70 bar."
+      condiciones_referencia: "Reference conditions: 15 ºC y 1,01325 bar (volumen y poder calorífico) → equivalente a @15/15"
+      nota: "Gas H. La base legal es el GS(M)R 1996 Schedule 3 (Wobbe inferior bajó a 46,50 el 6-abr-2025). Los parámetros que el GS(M)R deja sin cifra (PCS, CO₂, rocíos) se toman de las NTS Gas Entry Conditions de National Gas Transmission. H₂S solo. Mercaptanos: sin límite separado → NO_VERIFICABLE. O₂ ≤0,2 % aplica a transporte (>38 barg); ≤1,0 % a baja presión."
+      ambito: "Especificaciones de calidad del gas H en la red de transporte británica (GS(M)R + NTS)."
+
     - id: EN_ISO_6976
       tipo: norma_tecnica
       pais: UE
@@ -433,6 +559,104 @@ parametros:
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
         nota: "Gas 2H. Wobbe calculado del PCS (felső hőérték). MJ/m³ @25/0 (por el ÜKSZ) → ÷3,6 e ISO 13443 (×1,0026) para comparar con España. Nominal 50,72 MJ/m³."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Brenntechnische Daten» (gas H)"
+        tipo_limite: rango
+        valor_min: 13.3
+        valor_max: 15.7
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbe-Index: 13,3 – 15,7 kWh/m³ (ÖVGW G B210/G31)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. kWh/m³ @25/0 → ISO 13443 (×1,0026) para comparar con España. Valor de reproducción pública de la norma ÖVGW (de pago)."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18, Tabelle 3 (gazette 1/2023)"
+        tipo_limite: rango
+        valor_min: 13.25
+        valor_max: 15.81
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbe-Index Ws: 13,25 – 15,81 kWh/m³"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. kWh/m³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: rango
+        valor_min: 12.7
+        valor_max: 14.5
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbeho index: min. 12,7 – max. 14,5 kWh/m³ (45,7–52,2 MJ/m³)"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. kWh/m³ @15/15 → ISO 13443 (×1,0569) para comparar con España (kWh/m³ @0/0)."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: rango
+        valor_min: 13.066
+        valor_max: 16.328
+        unidad: kWh_per_nm3
+        expresion_original: "Wobbe: 13,066 – 16,328 kWh/Nm³ (no menor que 13,066 ni mayor que 16,328)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code of Operations Part G, Appendix 1 (Mod. A113)"
+        tipo_limite: rango
+        valor_min: 46.5
+        valor_max: 51.41
+        unidad: MJ_per_nm3
+        expresion_original: "Wobbe Index (Real Gross Dry): 46,5 – 51,41 MJ/m³ (límite inferior 46,5 vigente desde 6-abr-2025)"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0569) para comparar con España."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Codul rețelei SNT, art. 5.2 (sin valor numérico)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: MJ_per_nm3
+        expresion_original: "El Wobbe se cita como propiedad (art. 5.2 «indicele Wobbe») pero ninguna fuente oficial rumana fija valor ni rango"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Rumanía no fija banda de Wobbe en ninguna fuente oficial (regula por composición + PCS mín. + rocíos) → NO_VERIFICABLE."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: rango
+        valor_min: 13.41
+        valor_max: 14.25
+        unidad: kWh_per_nm3
+        expresion_original: "celkový Wobbeho Index (WI): min. 13,41 – max. 14,25 kWh/m³"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 20, presion_bar: 1.01325, notacion: "@25/20" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. kWh/m³ @25/20 (volumen 20 ºC) → ISO 13443 Anexo B (×1,076) para comparar con España (@0/0)."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: rango
+        valor_min: 10465
+        valor_max: 13000
+        unidad: kcal_per_nm3
+        expresion_original: "Wobbe Sayısı: Maksimum 13000 / Minimum 10465 kCal/m³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H, en kcal/m³ @15/15 → /859,85 a kWh/m³ e ISO 13443 (×1,0569) para comparar con España."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "GS(M)R 1996, Schedule 3, Part I"
+        tipo_limite: rango
+        valor_min: 46.5
+        valor_max: 51.41
+        unidad: MJ_per_nm3
+        expresion_original: "WN: (i) ≤51,41 MJ/m³ y (ii) ≥46,50 MJ/m³ (límite inferior 46,50 vigente desde 6-abr-2025)"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Wobbe superior, gas H. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0569) para comparar con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (gas grupo E); página GAZ-SYSTEM"
@@ -578,6 +802,104 @@ parametros:
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
         nota: "Felső hőérték = GCV = PCS, gas 2H. Rango amplio; el valor concreto se fija por contrato. MJ/m³ @25/0 → ÷3,6 e ISO 13443 (×1,0026) para comparar con España. (PCI/alsó hőérték: 27,94–40,81 MJ/m³.)"
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Brennwert» (gas H)"
+        tipo_limite: rango
+        valor_min: 10.7
+        valor_max: 12.8
+        unidad: kWh_per_nm3
+        expresion_original: "Brennwert: 10,7 – 12,8 kWh/m³"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (Brennwert), gas H. kWh/m³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18, Tabelle 3 (gazette 1/2023)"
+        tipo_limite: rango
+        valor_min: 9.87
+        valor_max: 13.25
+        unidad: kWh_per_nm3
+        expresion_original: "Brennwert Hs: 9,87 – 13,25 kWh/m³"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (Brennwert Hs), gas H. kWh/m³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: rango
+        valor_min: 9.4
+        valor_max: 11.8
+        unidad: kWh_per_nm3
+        expresion_original: "Spalné teplo: min. 9,4 – max. 11,8 kWh/m³ (33,8–42,5 MJ/m³)"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (spalné teplo = GCV), gas H. kWh/m³ @15/15 → ISO 13443 (×1,0570) para comparar con España."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: rango
+        valor_min: 10.174
+        valor_max: 13.674
+        unidad: kWh_per_nm3
+        expresion_original: "Ανώτερη Θερμογόνος Δύναμη (GCV): 10,174 – 13,674 kWh/Nm³"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (GCV), gas H. kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code of Operations Part G, Appendix 1"
+        tipo_limite: rango
+        valor_min: 36.9
+        valor_max: 42.3
+        unidad: MJ_per_nm3
+        expresion_original: "Gross Calorific Value (Real Gross Dry): 36,9 – 42,3 MJ/m³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (GCV), gas H. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570) para comparar con España."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament de măsurare, Anexa nr. 5, pct. 4"
+        tipo_limite: minimo
+        valor: 7840
+        unidad: kcal_per_nm3
+        expresion_original: "Valoarea minimă admisă pentru puterea calorifică superioară repartizată la volum: 7.840 Kcal/m³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "Solo MÍNIMO de PCS (GCV) en kcal/m³ @15/15 → /859,85 a kWh/m³ e ISO 13443 (×1,0570) para comparar con España."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: rango
+        valor_min: 9.96
+        valor_max: 11.92
+        unidad: kWh_per_nm3
+        expresion_original: "spaľovacie teplo: min. 9,96 – max. 11,92 kWh/m³ (výhrevnosť/PCI mín. 9,3)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 20, presion_bar: 1.01325, notacion: "@25/20" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (spaľovacie teplo = GCV), gas H. kWh/m³ @25/20 → ISO 13443 Anexo B para comparar con España."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: rango
+        valor_min: 8100
+        valor_max: 10427
+        unidad: kcal_per_nm3
+        expresion_original: "Üst Isıl Değer: Maksimum 10427 / Minimum 8100 Kcal/m³"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (üst ısıl değer = GCV) en kcal/m³ @15/15 → /859,85 a kWh/m³ e ISO 13443 (×1,0570) para comparar con España."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "NTS Gas Entry Conditions §2.3(n) (GS(M)R no fija rango)"
+        tipo_limite: rango
+        valor_min: 36.9
+        valor_max: 42.3
+        unidad: MJ_per_nm3
+        expresion_original: "Gross Calorific Value within the range 36,9 to 42,3 MJ/m³ (real gross dry) — NTS"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (GCV), gas H. El GS(M)R no fija rango; valor de las NTS Gas Entry Conditions de transporte. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (ciepło spalania, gas grupo E)"
@@ -713,6 +1035,94 @@ parametros:
         expresion_original: "El Anexo 11 no fija densidad relativa; queda implícita vía Wobbe = PCS / √(densidad relativa)."
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "El 0,55–0,70 que circula procede de una tabla de distribuidor (TIGÁZ), no del Anexo 11 oficial → NO_VERIFICABLE."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Relative Dichte»"
+        tipo_limite: rango
+        valor_min: 0.55
+        valor_max: 0.65
+        unidad: adimensional
+        expresion_original: "Relative Dichte: 0,55 – 0,65"
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa (adimensional) → comparable directamente con España."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "La G18 usa un polígono Wobbe/Brennwert; no consta una banda de densidad relativa en fuente pública"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Densidad relativa no verificable en fuente pública (G18 de pago) → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: rango
+        valor_min: 0.56
+        valor_max: 0.7
+        unidad: adimensional
+        expresion_original: "Relativní hustota: min. 0,56 – max. 0,70"
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa (adimensional) → comparable directamente con España."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: rango
+        valor_min: 0.56
+        valor_max: 0.71
+        unidad: adimensional
+        expresion_original: "Σχετική Πυκνότητα: 0,56 – 0,71"
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa (adimensional) → comparable directamente con España."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1 (Mod. A113)"
+        tipo_limite: maximo
+        valor: 0.7
+        unidad: adimensional
+        expresion_original: "Relative Density (RD) ≤ 0,7 (vigente desde 6-abr-2025, en sustitución de ICF/Soot Index)"
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa ≤0,7 → comparable directamente con España."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Codul rețelei SNT, art. 5.2 (sin valor)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "La densidad relativa se cita como propiedad (art. 5.2) pero no se fija valor numérico"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Rumanía no fija densidad relativa numérica → NO_VERIFICABLE."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: rango
+        valor_min: 0.555
+        valor_max: 0.7
+        unidad: adimensional
+        expresion_original: "relatívna hustota (d): min. 0,555 – max. 0,7 (m³/m³)"
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa (adimensional) → comparable directamente con España."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1 (no incluye özgül ağırlık)"
+        tipo_limite: rango
+        valor_min: null
+        valor_max: null
+        unidad: adimensional
+        expresion_original: "El EK-1 no contiene una fila de densidad relativa (özgül ağırlık)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Turquía no fija densidad relativa en el EK-1 → NO_VERIFICABLE."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "GS(M)R 1996, Schedule 3, Part I"
+        tipo_limite: maximo
+        valor: 0.7
+        unidad: adimensional
+        expresion_original: "Relative Density (RD): ≤0,700 (insertado el 6-abr-2023 en sustitución de ICF/Soot Index)"
+        estado_verificacion: VERIFICADO
+        nota: "Densidad relativa ≤0,700 → comparable directamente con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie (densidad relativa no fijada para grupo E)"
@@ -838,6 +1248,96 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Azufre total (volátil), límite holgado (100 mg/m³). El «normál köbméter» húngaro se define a 15 ºC pero la energía se liquida a 0 ºC → tratado a 0 ºC para comparar con ES."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Gesamtschwefel»"
+        tipo_limite: maximo
+        valor: 30
+        unidad: mg_per_nm3
+        expresion_original: "Gesamtschwefel: 30 mg S/m³ (im Schnitt); 10 mg S/m³ (auf Dauer/continuo)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤30 mg/m³ (media; 10 en continuo). mg/m³ a 0 ºC → comparable con ES."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "La G18 fija el azufre total pero el valor solo consta en la norma de pago"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Azufre total no verificable en fuente pública (G18 de pago) → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: 30
+        unidad: mg_per_nm3
+        expresion_original: "Síra celkem: max. 30 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤30 mg/m³ a 15 ºC → se normaliza el volumen a 0 ºC para comparar con ES."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: maximo
+        valor: 80
+        unidad: mg_per_nm3
+        expresion_original: "Ολικό θείο (gas no odorizado): ≤80 mg/Nm³ (hasta 120 en casos excepcionales ≤48 h)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤80 mg/Nm³ (gas no odorizado). mg/Nm³ a 0 ºC → comparable con ES."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1"
+        tipo_limite: maximo
+        valor: 50
+        unidad: mg_per_nm3
+        expresion_original: "Total Sulphur < 50 mg/m³ (including H₂S)"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤50 mg/m³ (incluye H₂S). mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament de măsurare, Anexa nr. 5, pct. 1"
+        tipo_limite: maximo
+        valor: 100
+        unidad: mg_per_nm3
+        expresion_original: "sulf total pe o perioadă scurtă: maximum 100 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤100 mg/m³ (periodo corto). mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: 20
+        unidad: mg_per_nm3
+        expresion_original: "celková síra: max. 20 mg·m⁻³"
+        condiciones_referencia: { temperatura_volumen_C: 20, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤20 mg/m³ a 20 ºC → se normaliza a 0 ºC para comparar con ES."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 115.5
+        unidad: mg_per_nm3
+        expresion_original: "Toplam Kükürt: Maks. 115,50 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤115,50 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "GS(M)R 1996, Schedule 3, Part I"
+        tipo_limite: maximo
+        valor: 50
+        unidad: mg_per_nm3
+        expresion_original: "Total sulphur content: ≤50 mg/m³ (including H₂S)"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Azufre total ≤50 mg/m³ (incluye H₂S). mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (siarka całkowita, grupa E)"
@@ -967,6 +1467,96 @@ parametros:
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
         nota: "Hungría fija H₂S SOLO (no la suma con COS) ≤20 mg/m³. mg/m³ a 0 ºC → comparable con ES con la salvedad de que es H₂S, no H₂S+COS."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "Schwefelwasserstoff (H₂S): <5 mg/m³ (COS <5 por separado, no como suma)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "H₂S ≤5 mg/m³ (Austria lista H₂S y COS por separado, cada uno <5; no la suma). mg/m³ a 0 ºC → comparable con ES."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "La G18 fija H₂S pero el valor solo consta en la norma de pago"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "H₂S no verificable en fuente pública (G18 de pago) → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: 6
+        unidad: mg_per_nm3
+        expresion_original: "Sirovodík (H₂S): max. 6 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Chequia fija H₂S solo (no la suma con COS) ≤6 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: maximo
+        valor: 5.4
+        unidad: mg_per_nm3
+        expresion_original: "Υδρόθειο (H₂S): ≤5,4 mg/Nm³ (hasta 10,8 en casos ≤2 h)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Grecia fija H₂S solo (no +COS) ≤5,4 mg/Nm³ a 0 ºC → comparable con ES."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "Hydrogen Sulphide < 5 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Irlanda fija H₂S solo (no +COS) ≤5 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament de măsurare, Anexa nr. 5, pct. 1"
+        tipo_limite: maximo
+        valor: 6.8
+        unidad: mg_per_nm3
+        expresion_original: "hidrogen sulfurat (H₂S): maximum 6,8 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Rumanía fija H₂S solo (no +COS) ≤6,8 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: 2
+        unidad: mg_per_nm3
+        expresion_original: "sírovodík (H₂S): max. 2 mg·m⁻³"
+        condiciones_referencia: { temperatura_volumen_C: 20, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Eslovaquia fija H₂S solo (no +COS) ≤2 mg/m³ a 20 ºC → se normaliza a 0 ºC para comparar con ES."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 5.35
+        unidad: mg_per_nm3
+        expresion_original: "Hidrojen Sülfür (H₂S): Maks. 5,35 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Turquía fija H₂S solo (no +COS) ≤5,35 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "GS(M)R 1996, Schedule 3, Part I"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "Hydrogen sulphide content: ≤5 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Reino Unido fija H₂S solo (no +COS) ≤5 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (siarkowodór H₂S, grupa E)"
@@ -1098,6 +1688,96 @@ parametros:
         expresion_original: "El Anexo 11 no contiene un límite de mercaptanos."
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "El 15 mg/m³ que circula es práctica alemana citada por un distribuidor (TIGÁZ), no del Anexo 11 → NO_VERIFICABLE."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Mercaptanschwefel»"
+        tipo_limite: maximo
+        valor: 6
+        unidad: mg_per_nm3
+        expresion_original: "Mercaptanschwefel: <6 mg S/m³"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Mercaptanos como S ≤6 mg/m³ a 0 ºC → comparable con ES."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 / G13 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "No reproducido en fuente pública (G18/G13 de pago)"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Mercaptanos no verificables en fuente pública → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "Merkaptanová síra (RSH): max. 5 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Mercaptanos como S ≤5 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I (no incluye mercaptanos)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "El Anexo I no incluye un límite de mercaptanos como S"
+        condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Grecia no fija mercaptanos en el Anexo I → NO_VERIFICABLE."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1 (sin límite separado)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "No hay límite separado de mercaptanos (cubierto por Total Sulphur <50; odorización cualitativa)"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Irlanda no fija un máximo separado de mercaptanos → NO_VERIFICABLE."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament Anexa 5 (etilmercaptano = mínimo de odorización)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "etilmercaptan (C₂H₅SH): minimum 8 mg/m³ (es un MÍNIMO de odorización, no un máximo)"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Rumanía fija un MÍNIMO de etilmercaptano (8 mg/m³) para odorizar, no un máximo de mercaptanos como S → NO_VERIFICABLE."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "metylmerkaptán (CH₄S): max. 5 mg·m⁻³"
+        condiciones_referencia: { temperatura_volumen_C: 20, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Eslovaquia fija metilmercaptano (CH₄S) ≤5 mg/m³ (no «como S») a 20 ºC → se normaliza a 0 ºC para comparar con ES."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 16.07
+        unidad: mg_per_nm3
+        expresion_original: "Merkaptan Kükürt: Maks. 16,07 mg/m³"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: VERIFICADO
+        nota: "Mercaptanos como S ≤16,07 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "GS(M)R 1996, Schedule 3 (sin límite de mercaptanos)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "El GS(M)R no fija un límite separado de mercaptanos"
+        condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Reino Unido no fija un límite separado de mercaptanos → NO_VERIFICABLE."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (merkaptany, grupa E)"
@@ -1219,6 +1899,87 @@ parametros:
         expresion_original: "Oxigéntartalom (V/V): legfeljebb 0,2% (método MSZ ISO 6974)."
         estado_verificacion: VERIFICADO
         nota: "O₂ ≤0,2 % V/V (≈ % mol) → comparable directamente con España."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210"
+        tipo_limite: maximo
+        valor: 0.5
+        unidad: pct_mol
+        expresion_original: "Sauerstoff (O₂): <0,5 Vol. %"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,5 % vol (≈ % mol) → comparable directamente con España."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "La G18 06/2022 amplió el límite de O₂ para biometano; cifra solo en la norma de pago"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "O₂ no verificable en fuente pública (G18 de pago) → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: 0.02
+        unidad: pct_mol
+        expresion_original: "Kyslík (O₂): max. 0,02 %"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,02 % mol → comparable directamente con España."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: pct_mol
+        expresion_original: "O₂: ≤0,2 % mole"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,2 % mol → comparable directamente con España."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: pct_mol
+        expresion_original: "Oxygen < 0,2 mol%"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,2 % mol → comparable directamente con España."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament de măsurare, Anexa nr. 5, pct. 1"
+        tipo_limite: maximo
+        valor: 0.02
+        unidad: pct_mol
+        expresion_original: "oxigen (O₂): maximum 0,02 % molare"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,02 % mol → comparable directamente con España."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: 0.01
+        unidad: pct_mol
+        expresion_original: "kyslík (O₂): max. 0,01 % mol"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,01 % mol → comparable directamente con España."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 0.5
+        unidad: pct_mol
+        expresion_original: "Oksijen (O₂): Maks. % 0,5"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,5 % mol → comparable directamente con España."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "GS(M)R 1996, Schedule 3, Part I"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: pct_mol
+        expresion_original: "Oxygen: ≤0,2 % molar (tubería >38 barg); ≤1,0 % molar (≤38 barg)"
+        estado_verificacion: VERIFICADO
+        nota: "O₂ ≤0,2 % mol en transporte (>38 barg); ≤1,0 % a baja presión. % mol → comparable con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (tlen O₂, grupa E)"
@@ -1342,6 +2103,87 @@ parametros:
         expresion_original: "El Anexo 11 no fija CO₂. El <4,5 mol% que circula procede de la norma MSZ 1648:2016 (de pago) citada por terceros, no verificable directamente."
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "CO₂ no figura en el Anexo 11 → NO_VERIFICABLE."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210"
+        tipo_limite: maximo
+        valor: 2
+        unidad: pct_mol
+        expresion_original: "Kohlendioxid (CO₂): <2 Vol. %"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤2 % vol (≈ % mol) → comparable directamente con España."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "La G18 06/2022 amplió el límite de CO₂ para biometano; cifra solo en la norma de pago"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "CO₂ no verificable en fuente pública (G18 de pago) → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: 3
+        unidad: pct_mol
+        expresion_original: "Oxid uhličitý (CO₂): max. 3 %"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤3 % mol → comparable directamente con España."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: maximo
+        valor: 3
+        unidad: pct_mol
+        expresion_original: "CO₂: ≤3 % mole"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤3 % mol → comparable directamente con España."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1 (Note 1)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "Carbon Dioxide < 2,5 mol% (no se considera incumplido si los inertes totales <8 %)"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤2,5 % mol → comparable directamente con España."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament de măsurare, Anexa nr. 5, pct. 1 (Ordin 80/2020)"
+        tipo_limite: maximo
+        valor: 8
+        unidad: pct_mol
+        expresion_original: "dioxid de carbon (CO₂): maximum 8 % molare"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤8 % mol (valor vigente tras Ordin 80/2020) → comparable directamente con España."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: 2
+        unidad: pct_mol
+        expresion_original: "oxid uhličitý (CO₂): max. 2 % mol"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤2 % mol → comparable directamente con España."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 3
+        unidad: pct_mol
+        expresion_original: "Karbondioksit (CO₂): Maks. % 3"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤3 % mol → comparable directamente con España."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "NTS Gas Entry Conditions §2.3(k)"
+        tipo_limite: maximo
+        valor: 2.0
+        unidad: pct_mol
+        expresion_original: "Carbon Dioxide not more than 2,0 mol% (NTS)"
+        estado_verificacion: VERIFICADO
+        nota: "CO₂ ≤2,0 % mol (NTS de transporte; el GS(M)R no fija CO₂). % mol → comparable con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (dwutlenek węgla CO₂, grupa E)"
@@ -1472,6 +2314,93 @@ parametros:
         expresion_original: "Hungría regula el CONTENIDO de vapor de agua (vízgőztartalom) ≤0,17 g/m³ (red de transporte; ≤1,0 g/m³ en operación en isla), NO un punto de rocío de agua en ºC."
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "Hungría no fija punto de rocío de agua en ºC; limita el contenido de vapor de agua a ≤0,17 g/m³ → no comparable directamente con un rocío en ºC."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Wasser-Kondensationspunkt»"
+        tipo_limite: maximo
+        valor: -8
+        unidad: grados_C
+        presion_referencia_bar: 40
+        expresion_original: "Wasser: Kondensationspunkt maximal −8 ºC bei 40 bar"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤−8 ºC a 40 bar."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: grados_C
+        expresion_original: "La G18 fija el Wassertaupunkt (más estricto en transporte) pero el valor solo consta en la norma de pago"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Rocío de agua no verificable en fuente pública (G18 de pago) → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: -7
+        unidad: grados_C
+        presion_referencia_bar: 40
+        expresion_original: "Rosný bod vody vztažený na tlak 4 MPa nesmí být vyšší než −7 ºC"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤−7 ºC a 4 MPa (40 bar). Sin estacionalidad."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: maximo
+        valor: 5
+        unidad: grados_C
+        presion_referencia_bar: 80
+        expresion_original: "Σημείο Δρόσου Νερού (WDP): ≤+5 ºC σε πίεση αναφοράς 80 barg"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤+5 ºC a 80 bar. Sin estacionalidad."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1 (contenido de agua, no rocío)"
+        tipo_limite: maximo
+        valor: null
+        unidad: grados_C
+        expresion_original: "Irlanda regula el CONTENIDO de agua (Water Content <50 mg/m³), no un punto de rocío en ºC"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Irlanda no fija punto de rocío de agua en ºC; limita el contenido (<50 mg/m³, ≈ −8 ºC a 85 bar de forma orientativa) → NO_VERIFICABLE."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament Anexa 5 pct. 2 + Codul rețelei art. 5.6"
+        tipo_limite: maximo
+        valor: -15
+        unidad: grados_C
+        expresion_original: "Punct de rouă al apei: maximum −15 ºC, la presiunea din punctul de predare/preluare comercial"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤−15 ºC, a la presión del punto de entrega (no fija en bar). Sin estacionalidad."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: -8
+        unidad: grados_C
+        presion_referencia_bar: 40
+        expresion_original: "rosný bod vody: max. −8 ºC pri tlaku 4,00 MPa"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤−8 ºC a 4 MPa (40 bar). Sin estacionalidad."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 0
+        unidad: grados_C
+        presion_referencia_bar: 44
+        expresion_original: "Su Çiğlenme Noktası: Maksimum 0 ºC (verano), −5 ºC (resto del año), a 44 Barg"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ESTACIONAL: ≤0 ºC en verano, ≤−5 ºC el resto del año, a 44 bar(g). Se muestra el valor de verano (menos estricto)."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "NTS Gas Entry Conditions §2.3(f)"
+        tipo_limite: maximo
+        valor: -10
+        unidad: grados_C
+        presion_referencia_bar: 85
+        expresion_original: "Water dewpoint not more than −10 ºC at 85 barg (NTS)"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de agua ≤−10 ºC a 85 bar (NTS de transporte; el GS(M)R lo deja cualitativo)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (punkt rosy wody, grupa E)"
@@ -1603,6 +2532,92 @@ parametros:
         expresion_original: "Szénhidrogén harmatpont: legfeljebb 4 °C – 4 MPa nyomáson (método MSZ ISO 6974)."
         estado_verificacion: VERIFICADO
         nota: "Rocío de hidrocarburos ≤ +4 ºC a 4 MPa (40 bar). Presión de referencia 40 bar (distinta de los 70 bar de ES) → comparar con cautela."
+      AT:
+        fuente: NORM_AT_OVGW_GB210
+        articulo: "ÖVGW G B210 «Kohlenwasserstoff-Kondensationspunkt»"
+        tipo_limite: maximo
+        valor: 0
+        unidad: grados_C
+        expresion_original: "Kohlenwasserstoffe: Kondensationspunkt maximal 0 ºC beim Betriebsdruck"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤0 ºC a la presión de operación."
+      CH:
+        fuente: NORM_CH_SVGW_G18
+        articulo: "SVGW G18 (norma de pago)"
+        tipo_limite: maximo
+        valor: null
+        unidad: grados_C
+        expresion_original: "No reproducido en fuente pública (G18 de pago)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Rocío de HC no verificable en fuente pública → NO_VERIFICABLE."
+      CZ:
+        fuente: NORM_CZ_NET4GAS
+        articulo: "Řád PPS NET4GAS, Příloha č. 2"
+        tipo_limite: maximo
+        valor: 0
+        unidad: grados_C
+        expresion_original: "Rosný bod uhlovodíků nesmí být vyšší než 0 ºC v celém rozsahu provozních tlaků"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤0 ºC en todo el rango de presiones de operación."
+      GR:
+        fuente: NORM_GR_DESFA
+        articulo: "Κώδικας ΕΣΦΑ, ΠΑΡΑΡΤΗΜΑ I"
+        tipo_limite: maximo
+        valor: 3
+        unidad: grados_C
+        presion_referencia_bar: 80
+        expresion_original: "Σημείο Δρόσου Υδρογονανθράκων: ≤+3 ºC σε κάθε πίεση από 1 έως 80 barg"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤+3 ºC en cualquier presión de 1 a 80 bar."
+      IE:
+        fuente: NORM_IE_GNI
+        articulo: "GNI Code Part G, Appendix 1"
+        tipo_limite: maximo
+        valor: -2
+        unidad: grados_C
+        presion_referencia_bar: 85
+        expresion_original: "Hydrocarbon Dewpoint < −2 ºC up to 85 barg"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤−2 ºC hasta 85 bar(g)."
+      RO:
+        fuente: NORM_RO_ANRE
+        articulo: "Regulament Anexa 5 pct. 3 + Codul rețelei art. 5.6"
+        tipo_limite: maximo
+        valor: 0
+        unidad: grados_C
+        expresion_original: "Punct de rouă al hidrocarburilor: maximum 0 ºC, la presiunea din punctul de predare/preluare comercial"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤0 ºC, a la presión del punto de entrega (no fija en bar)."
+      SK:
+        fuente: NORM_SK_EUSTREAM
+        articulo: "Technické podmienky eustream, Príloha č. 1"
+        tipo_limite: maximo
+        valor: 0
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "rosný bod uhľovodíkov: maximálne 0 ºC v rozsahu tlaku od 1 do 7 MPa"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤0 ºC en el rango 1–7 MPa (10–70 bar)."
+      TR:
+        fuente: NORM_TR_BOTAS
+        articulo: "BOTAŞ ŞİD, EK-1"
+        tipo_limite: maximo
+        valor: 0
+        unidad: grados_C
+        presion_referencia_bar: 67.5
+        expresion_original: "Hidrokarbon Çiğlenme Noktası: Maksimum 0 ºC, hasta 67,5 Barg"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤0 ºC a 67,5 bar(g)."
+      GB:
+        fuente: NORM_GB_GSMR
+        articulo: "NTS Gas Entry Conditions §2.3(e)"
+        tipo_limite: maximo
+        valor: -2
+        unidad: grados_C
+        presion_referencia_bar: 70
+        expresion_original: "Hydrocarbon Dewpoint not more than −2 ºC at any pressure up to 70 barg (NTS)"
+        estado_verificacion: VERIFICADO
+        nota: "Rocío de hidrocarburos ≤−2 ºC hasta 70 bar (NTS de transporte; el GS(M)R lo deja cualitativo)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie (rocío de HC no fijado para grupo E)"

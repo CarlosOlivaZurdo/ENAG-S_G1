@@ -34,21 +34,32 @@ _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE",
                   "noruega": "NOR", "norway": "NOR", "norge": "NOR",
                   "polonia": "PL", "poland": "PL", "polska": "PL",
                   "dinamarca": "DK", "denmark": "DK", "danmark": "DK",
-                  "hungria": "HU", "hungary": "HU", "magyarorszag": "HU"}
+                  "hungria": "HU", "hungary": "HU", "magyarorszag": "HU",
+                  "austria": "AT", "osterreich": "AT",
+                  "suiza": "CH", "switzerland": "CH", "schweiz": "CH", "suisse": "CH",
+                  "chequia": "CZ", "republica checa": "CZ", "czech": "CZ", "czechia": "CZ", "cesko": "CZ",
+                  "grecia": "GR", "greece": "GR", "hellas": "GR",
+                  "irlanda": "IE", "ireland": "IE", "eire": "IE",
+                  "rumania": "RO", "romania": "RO",
+                  "eslovaquia": "SK", "slovakia": "SK", "slovensko": "SK",
+                  "turquia": "TR", "turkey": "TR", "turkiye": "TR",
+                  "reino unido": "GB", "united kingdom": "GB", "gran bretana": "GB", "britain": "GB"}
 _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE",
                   "IT": "Italia", "DE": "Alemania", "NL": "Países Bajos", "BE": "Bélgica",
-                  "NOR": "Noruega", "PL": "Polonia", "DK": "Dinamarca", "HU": "Hungría"}
+                  "NOR": "Noruega", "PL": "Polonia", "DK": "Dinamarca", "HU": "Hungría", "AT": "Austria", "CH": "Suiza", "CZ": "Chequia", "GR": "Grecia",
+                  "IE": "Irlanda", "RO": "Rumanía", "SK": "Eslovaquia", "TR": "Turquía", "GB": "Reino Unido"}
 # Condiciones de referencia (combustión/volumen) de cada país, aplicables a TODOS sus
 # parámetros. España y Francia: 0/0; Portugal: combustión 25 ºC (ISO 13443/96); UE (EN 16726): 15/15.
 # UE = EN 16726. El Wobbe se expresa a 15/15 (lo lleva su propia condicion_referencia);
 # concentraciones y fracciones molares: equivalentes a 0/0 (comparables directamente).
 _NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(0/0)",
                   "IT": "(15/15)", "DE": "(25/0)", "NL": "(25/0)", "BE": "(25/0)",
-                  "NOR": "(25/0)", "PL": "(25/0)", "DK": "(25/0)", "HU": "(25/0)"}
+                  "NOR": "(25/0)", "PL": "(25/0)", "DK": "(25/0)", "HU": "(25/0)", "AT": "(25/0)", "CH": "(25/0)", "CZ": "(15/15)",
+                  "GR": "(25/0)", "IE": "(15/15)", "RO": "(15/15)", "SK": "(25/20)", "TR": "(15/15)", "GB": "(15/15)"}
 
 # Código de unidad de la ontología -> símbolo legible (y convertible por el conversor)
 _UNIDAD_DISPLAY = {
-    "kWh_per_nm3": "kWh/m³", "MJ_per_nm3": "MJ/m³",
+    "kWh_per_nm3": "kWh/m³", "MJ_per_nm3": "MJ/m³", "kcal_per_nm3": "kcal/m³",
     "mg_per_nm3": "mg/Nm³", "mg_per_sm3": "mg/sm³",
     "pct_mol": "% molar", "pct_vol": "% vol", "ppm_vol": "ppm",
     "grados_C": "°C", "adimensional": "",

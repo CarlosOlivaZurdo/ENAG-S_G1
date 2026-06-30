@@ -39,7 +39,7 @@ try:
 except Exception:  # fallback si el paquete src no está en el path
     SYSTEM_PROMPT = (
         "Eres el Asistente Experto de Calidad de Gas Natural. Solo tratas la calidad "
-        "del gas natural (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, UE). Nunca inventas valores "
+        "del gas natural (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido, UE). Nunca inventas valores "
         "numéricos: los obtienes de las herramientas deterministas. Cita siempre la fuente."
     )
 
@@ -129,7 +129,7 @@ OPENAI_TOOLS = [
                 "type": "object",
                 "properties": {
                     "parametro": {"type": "string", "description": "Parámetro de calidad (p.ej. O2, PCS, Wobbe, S total)."},
-                    "pais": {"type": "string", "description": "País/jurisdicción (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, UE)."},
+                    "pais": {"type": "string", "description": "País/jurisdicción (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido, UE)."},
                 },
                 "required": ["parametro", "pais"],
             },
@@ -210,7 +210,7 @@ OPENAI_TOOLS = [
                 "properties": {
                     "valor": {"type": "number", "description": "Valor a convertir (en kWh/m³; convierte antes la unidad si hace falta)."},
                     "parametro": {"type": "string", "description": "PCS o Wobbe."},
-                    "pais_origen": {"type": "string", "description": "País de origen (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, UE)."},
+                    "pais_origen": {"type": "string", "description": "País de origen (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido, UE)."},
                 },
                 "required": ["valor", "parametro", "pais_origen"],
             },
@@ -507,7 +507,7 @@ def _parametro_no_reconocido_message() -> str:
         "No he reconocido el parámetro de tu consulta. "
         "Los parámetros disponibles son:\n\n"
         f"{opciones}\n\n"
-        "Indícame uno de ellos junto con el país (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría o UE) "
+        "Indícame uno de ellos junto con el país (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido o UE) "
         "para darte los valores o comprobar el cumplimiento."
     )
 
@@ -516,7 +516,7 @@ def _mensaje_capacidades() -> str:
     opciones = "\n".join(f"- {p}" for p in PARAMETROS_DISPONIBLES)
     return (
         "Puedo ayudarte con consultas sobre **calidad del gas natural** en España, "
-        "Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría y la UE. Los parámetros que puedes consultar son:\n\n"
+        "Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido y la UE. Los parámetros que puedes consultar son:\n\n"
         f"{opciones}\n\n"
         "Puedes pedirme, por ejemplo: los valores de un parámetro en un país, "
         "comprobar si un valor cumple la normativa, o comparar dos países."
@@ -565,7 +565,7 @@ def _evaluate_validated_comparison(parametro: str, pais: str, valor: float, unid
     return _evaluar_paises(parametro, valor, unidad, [pais])
 
 
-ALL_COUNTRIES = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "UE"]
+ALL_COUNTRIES = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]
 PAIS_BASE = "España"
 
 
@@ -710,7 +710,12 @@ _PAIS_FUZZY = {"espana": "España", "portugal": "Portugal", "francia": "Francia"
                "noruega": "Noruega", "norway": "Noruega",
                "polonia": "Polonia", "poland": "Polonia",
                "dinamarca": "Dinamarca", "denmark": "Dinamarca",
-               "hungria": "Hungría", "hungary": "Hungría"}
+               "hungria": "Hungría", "hungary": "Hungría",
+               "austria": "Austria", "suiza": "Suiza", "switzerland": "Suiza",
+               "chequia": "Chequia", "czech": "Chequia", "grecia": "Grecia", "greece": "Grecia",
+               "irlanda": "Irlanda", "ireland": "Irlanda", "rumania": "Rumanía", "romania": "Rumanía",
+               "eslovaquia": "Eslovaquia", "slovakia": "Eslovaquia", "turquia": "Turquía", "turkey": "Turquía",
+               "reino unido": "Reino Unido", "united kingdom": "Reino Unido"}
 
 
 def _detectar_paises(texto_norm: str) -> list:
@@ -731,6 +736,15 @@ def _detectar_paises(texto_norm: str) -> list:
                        ("polonia", "Polonia"), ("poland", "Polonia"), ("polska", "Polonia"),
                        ("dinamarca", "Dinamarca"), ("denmark", "Dinamarca"), ("danmark", "Dinamarca"),
                        ("hungria", "Hungría"), ("hungary", "Hungría"), ("magyar", "Hungría"),
+                       ("austria", "Austria"), ("osterreich", "Austria"),
+                       ("suiza", "Suiza"), ("switzerland", "Suiza"), ("schweiz", "Suiza"), ("suisse", "Suiza"),
+                       ("chequia", "Chequia"), ("republica checa", "Chequia"), ("checa", "Chequia"), ("czech", "Chequia"),
+                       ("grecia", "Grecia"), ("greece", "Grecia"),
+                       ("irlanda", "Irlanda"), ("ireland", "Irlanda"),
+                       ("rumania", "Rumanía"), ("romania", "Rumanía"),
+                       ("eslovaquia", "Eslovaquia"), ("slovakia", "Eslovaquia"),
+                       ("turquia", "Turquía"), ("turkey", "Turquía"), ("turkiye", "Turquía"),
+                       ("reino unido", "Reino Unido"), ("united kingdom", "Reino Unido"), ("gran bretana", "Reino Unido"),
                        ("europa", "UE"), ("union europea", "UE"), ("easee", "UE")]:
         if kw in t and nombre not in encontrados:
             encontrados.append(nombre)
@@ -1008,7 +1022,7 @@ PARAMETROS_UI = [
     {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"]},
     {"slug": "hc(rocío)", "label": "Punto de rocío de HC", "unidades": ["°C", "K", "°F"]},
 ]
-PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "UE"]  # España es siempre la base de referencia
+PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]  # España es siempre la base de referencia
 
 
 def _es_mg_por_volumen(unidad: str) -> bool:
@@ -1129,7 +1143,7 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
 # Filas = países, columnas = parámetros. Cada celda: rango normalizado a condiciones
 # de España, un NIVEL frente a España (para el color) y un FLAG si hubo diferencia
 # metodológica (unidad o condiciones distintas → se aplicó conversión).
-PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "UE"]
+PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]
 
 
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
@@ -1227,11 +1241,21 @@ _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE",
                   "noruega": "NOR", "norway": "NOR", "norge": "NOR",
                   "polonia": "PL", "poland": "PL", "polska": "PL",
                   "dinamarca": "DK", "denmark": "DK", "danmark": "DK",
-                  "hungria": "HU", "hungary": "HU", "magyarorszag": "HU"}
+                  "hungria": "HU", "hungary": "HU", "magyarorszag": "HU",
+                  "austria": "AT", "osterreich": "AT",
+                  "suiza": "CH", "switzerland": "CH", "schweiz": "CH", "suisse": "CH",
+                  "chequia": "CZ", "republica checa": "CZ", "czech": "CZ", "czechia": "CZ", "cesko": "CZ",
+                  "grecia": "GR", "greece": "GR", "hellas": "GR",
+                  "irlanda": "IE", "ireland": "IE", "eire": "IE",
+                  "rumania": "RO", "romania": "RO",
+                  "eslovaquia": "SK", "slovakia": "SK", "slovensko": "SK",
+                  "turquia": "TR", "turkey": "TR", "turkiye": "TR",
+                  "reino unido": "GB", "united kingdom": "GB", "gran bretana": "GB", "britain": "GB"}
 _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE",
                   "IT": "Italia", "DE": "Alemania", "NL": "Países Bajos", "BE": "Bélgica",
-                  "NOR": "Noruega", "PL": "Polonia", "DK": "Dinamarca", "HU": "Hungría"}
-_PAISES_FUENTE = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "UE"]
+                  "NOR": "Noruega", "PL": "Polonia", "DK": "Dinamarca", "HU": "Hungría", "AT": "Austria", "CH": "Suiza", "CZ": "Chequia", "GR": "Grecia",
+                  "IE": "Irlanda", "RO": "Rumanía", "SK": "Eslovaquia", "TR": "Turquía", "GB": "Reino Unido"}
+_PAISES_FUENTE = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]
 
 
 def _cargar_ontologia() -> Dict[str, Any]:

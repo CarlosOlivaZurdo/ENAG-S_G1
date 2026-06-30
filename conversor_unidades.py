@@ -56,6 +56,8 @@ _KWH = {"kwh/m3", "kwh/nm3", "kwh"}
 _ENERGIA_A_MJ = {
     "wh": 0.0036, "kwh": 3.6, "mwh": 3600.0, "gwh": 3_600_000.0,
     "j": 1e-6, "kj": 1e-3, "mj": 1.0, "gj": 1000.0,
+    # Caloría térmica (Turquía y Rumanía expresan PCS/Wobbe en kcal/m³). 1 kcal = 4,1868 kJ.
+    "cal": 4.1868e-6, "kcal": 4.1868e-3, "mcal": 4.1868, "gcal": 4186.8,
 }
 _VOL_ENERGIA = {"", "m3", "nm3"}
 
