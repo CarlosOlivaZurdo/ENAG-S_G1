@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1010" viewBox="0 0 1300 1010" font-family="Arial, Helvetica, sans-serif">
+<rect width="1300" height="1010" fill="#ffffff"/>
+<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#44515c"/></marker></defs>
+<text x="650.0" y="44" text-anchor="middle" font-size="26" font-weight="bold" fill="#013a57">Estructura de la Ontología — ontologia_enagas.yaml</text>
+<rect x="450" y="64" width="400" height="46" rx="9" fill="#013a57" stroke="#013a57" stroke-width="1.5"/>
+<text x="650.0" y="84" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">ontologia_enagas.yaml   ·   PyYAML (fuente de verdad)</text>
+<rect x="64" y="158" width="262" height="64" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
+<text x="195.0" y="178" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">1 · ontologia:</text>
+<text x="195.0" y="198" font-size="11.5" fill="#1b2a38" text-anchor="middle">fuentes_normativas[]  (las normas)</text>
+<rect x="360" y="158" width="262" height="64" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
+<text x="491.0" y="178" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">2 · parametros:</text>
+<text x="491.0" y="198" font-size="11.5" fill="#1b2a38" text-anchor="middle">los 10 índices de calidad</text>
+<rect x="656" y="158" width="240" height="64" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
+<text x="776.0" y="178" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">3 · unidades · flags</text>
+<text x="776.0" y="198" font-size="11.5" fill="#1b2a38" text-anchor="middle">catálogos auxiliares</text>
+<rect x="930" y="158" width="306" height="64" rx="9" fill="#fdf2e6" stroke="#d98326" stroke-width="1.5"/>
+<text x="1083.0" y="178" font-size="13" font-weight="bold" fill="#9a5a12" text-anchor="middle">4 · orquestador · motor_reglas · rag</text>
+<text x="1083.0" y="198" font-size="11.5" fill="#1b2a38" text-anchor="middle">diseño / parte aspiracional</text>
+<rect x="64" y="300" width="336" height="236" rx="9" fill="#f5f8fa" stroke="#0099d6" stroke-width="1.5"/>
+<path d="M73,300 h318 a9,9 0 0 1 9,9 v19 h-336 v-19 a9,9 0 0 1 9,-9 z" fill="#0099d6"/>
+<text x="232.0" y="319" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">FUENTE NORMATIVA  ·  fuentes_normativas[]</text>
+<text x="78" y="344" font-size="13" fill="#013a57" text-anchor="start">id:  p. ej. NORM_PL_GAZSYSTEM</text>
+<text x="78" y="364" font-size="11.5" fill="#1b2a38" text-anchor="start">nombre · organismo · publicacion</text>
+<text x="78" y="382.5" font-size="11.5" fill="#1b2a38" text-anchor="start">url:  cita en pantalla + descarga PDF</text>
+<text x="78" y="401.0" font-size="11.5" fill="#1b2a38" text-anchor="start">pdf:  copia local (data/raw/)</text>
+<text x="78" y="419.5" font-size="11.5" fill="#1b2a38" text-anchor="start">tabla_calidad · ambito</text>
+<text x="78" y="438.0" font-size="11.5" fill="#1b2a38" text-anchor="start">condiciones_referencia</text>
+<text x="78" y="456.5" font-size="10.5" fill="#5d7082" text-anchor="start">← fuente ÚNICA: el campo url lo usan</text>
+<text x="78" y="474.0" font-size="10.5" fill="#5d7082" text-anchor="start">a la vez la cita y actualizar_fuentes.py</text>
+<rect x="470" y="300" width="380" height="96" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
+<path d="M479,300 h362 a9,9 0 0 1 9,9 v19 h-380 v-19 a9,9 0 0 1 9,-9 z" fill="#013a57"/>
+<text x="660.0" y="319" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">parametros:  los 10 índices</text>
+<text x="660.0" y="344" font-size="11.5" fill="#1b2a38" text-anchor="middle">Wobbe · PCS · densidad rel. · S total · H₂S+COS</text>
+<text x="660.0" y="362.5" font-size="11.5" fill="#1b2a38" text-anchor="middle">RSH · O₂ · CO₂ · rocío H₂O · rocío HC</text>
+<text x="660.0" y="381.0" font-size="10.5" fill="#5d7082" text-anchor="middle">(c/u: nombre_completo · símbolo · grupo · unidad)</text>
+<rect x="470" y="426" width="380" height="66" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
+<path d="M479,426 h362 a9,9 0 0 1 9,9 v19 h-380 v-19 a9,9 0 0 1 9,-9 z" fill="#013a57"/>
+<text x="660.0" y="445" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">limites:  un bloque por PAÍS  (×10)</text>
+<text x="660.0" y="470" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">ES · PT · FR · IT · DE · NL · BE · NOR · PL · UE</text>
+<rect x="470" y="522" width="476" height="360" rx="9" fill="#ffffff" stroke="#013a57" stroke-width="1.5"/>
+<path d="M479,522 h458 a9,9 0 0 1 9,9 v19 h-476 v-19 a9,9 0 0 1 9,-9 z" fill="#013a57"/>
+<text x="708.0" y="541" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">cada LÍMITE  (un parámetro en un país)</text>
+<text x="484" y="566" font-size="13" fill="#1b2a38" text-anchor="start">tipo_limite:  rango · maximo · minimo</text>
+<text x="484" y="586" font-size="13" fill="#1b2a38" text-anchor="start">valor    |    valor_min · valor_max</text>
+<text x="484" y="606" font-size="11.5" fill="#1b2a38" text-anchor="start">unidad:  kWh/m³ · MJ/m³ · mg/Nm³ · % mol · ppm · °C</text>
+<text x="484" y="624.5" font-size="11.5" fill="#1b2a38" text-anchor="start">condiciones_referencia:  combustión/volumen ·</text>
+<text x="484" y="643.0" font-size="11.5" fill="#1b2a38" text-anchor="start">                         presión · notación</text>
+<text x="484" y="661.5" font-size="11.5" fill="#1b2a38" text-anchor="start">expresion_original:  «texto LITERAL de la norma»</text>
+<text x="484" y="680.0" font-size="13" font-weight="bold" fill="#5a9e2f" text-anchor="start">estado_verificacion:  VERIFICADO  /</text>
+<text x="484" y="700.0" font-size="13" font-weight="bold" fill="#b03a2e" text-anchor="start">                      NO_VERIFICABLE_SIN_FUENTE</text>
+<text x="484" y="720.0" font-size="13" font-weight="bold" fill="#0099d6" text-anchor="start">fuente:  → id de la fuente normativa</text>
+<text x="484" y="740.0" font-size="11.5" fill="#1b2a38" text-anchor="start">articulo:  artículo/sección + página</text>
+<text x="484" y="758.5" font-size="13" font-weight="bold" fill="#d98326" text-anchor="start">nota:  matices / «comentarios de la tabla»</text>
+<rect x="968" y="522" width="268" height="360" rx="9" fill="#eef2f6" stroke="#9aa7b3" stroke-width="1.5"/>
+<path d="M977,522 h250 a9,9 0 0 1 9,9 v19 h-268 v-19 a9,9 0 0 1 9,-9 z" fill="#6b7884"/>
+<text x="1102.0" y="541" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">EJEMPLO real — PL · Wobbe</text>
+<text x="982" y="566" font-size="11" font-weight="bold" font-family="Consolas, monospace" fill="#013a57" text-anchor="start">PL:</text>
+<text x="982" y="584" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  tipo_limite: rango</text>
+<text x="982" y="602" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  valor_min: 45.0</text>
+<text x="982" y="620" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  valor_max: 56.9</text>
+<text x="982" y="638" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  unidad: MJ_per_nm3</text>
+<text x="982" y="656" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  condiciones_referencia:</text>
+<text x="982" y="674" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">    {25/0 · 1.01325 bar}</text>
+<text x="982" y="692" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  expresion_original:</text>
+<text x="982" y="710" font-size="11" font-family="Consolas, monospace" fill="#5d7082" text-anchor="start">    "Liczba Wobbego</text>
+<text x="982" y="728" font-size="11" font-family="Consolas, monospace" fill="#5d7082" text-anchor="start">     (grupa E):45,0-56,9"</text>
+<text x="982" y="746" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  estado_verificacion:</text>
+<text x="982" y="764" font-size="11" font-weight="bold" font-family="Consolas, monospace" fill="#5a9e2f" text-anchor="start">    VERIFICADO</text>
+<text x="982" y="782" font-size="11" font-family="Consolas, monospace" fill="#1b2a38" text-anchor="start">  fuente:</text>
+<text x="982" y="800" font-size="11" font-family="Consolas, monospace" fill="#0099d6" text-anchor="start">    NORM_PL_GAZSYSTEM</text>
+<text x="982" y="818" font-size="11" font-family="Consolas, monospace" fill="#d98326" text-anchor="start">  nota: "Gas grupo E..."</text>
+<line x1="600" y1="110" x2="195" y2="158" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="620" y1="110" x2="491" y2="158" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="660" y1="110" x2="776" y2="158" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="690" y1="110" x2="1060" y2="158" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="195" y1="222" x2="210" y2="300" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="560" y1="222" x2="620" y2="300" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="660" y1="396" x2="660" y2="426" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="660" y1="492" x2="680" y2="522" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="946" y1="590" x2="968" y2="590" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="954.0" y="567.0" width="60" height="15" fill="#ffffff" opacity="0.95"/>
+<text x="957.0" y="578.0" font-size="10.5" fill="#44515c" text-anchor="middle">instancia</text>
+<line x1="470" y1="738" x2="402" y2="430" stroke="#44515c" stroke-width="2.2" stroke-dasharray="7,5" marker-end="url(#ah)"/>
+<rect x="373.5" y="573.0" width="72" height="15" fill="#ffffff" opacity="0.95"/>
+<text x="434.0" y="584.0" font-size="10.5" fill="#44515c" text-anchor="end">fuente → id</text>
+<text x="64" y="920" font-size="11.5" fill="#3a4754" text-anchor="start">VERIFICADO = consta en fuente oficial.   NO_VERIFICABLE_SIN_FUENTE = no se inventa (se deja en blanco).</text>
+<text x="64" y="944" font-size="11.5" fill="#3a4754" text-anchor="start">El motor determinista LEE de aquí. Cada límite es trazable a su fuente: documento · artículo · página · URL.</text>
+</svg>
