@@ -42,7 +42,7 @@ _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE"
 # concentraciones y fracciones molares: equivalentes a 0/0 (comparables directamente).
 _NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(0/0)",
                   "IT": "(15/15)", "DE": "(25/0)", "NL": "(25/0)", "BE": "(25/0)",
-                  "NOR": "(25/0)", "PL": "(0/0)"}
+                  "NOR": "(25/0)", "PL": "(25/0)"}
 
 # Código de unidad de la ontología -> símbolo legible (y convertible por el conversor)
 _UNIDAD_DISPLAY = {

@@ -256,9 +256,9 @@ ontologia:
       pdf: "data/raw/PL_Rozporzadzenie_system_gazowy.pdf"
       url: "https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU20250001382/O/D20251382.pdf"
       descarga_auto: false  # ISAP bloquea la descarga automática (HTTP 403); enlace de cita, descarga manual
-      tabla_calidad: "Rozdział 8 (gas grupo E): Wobbe 45,0–56,9 MJ/m³, ciepło spalania ≥38 MJ/m³, azufre, H₂S, mercaptanos, O₂, CO₂, rocío de agua. Verificado también en la página de GAZ-SYSTEM."
-      condiciones_referencia: "Wobbe/PCS a combustión 15 ºC y volumen 15 ºC (15/15); concentraciones a 0 ºC (273,15 K), 101,325 kPa"
-      nota: "Gaz wysokometanowy grupy E (alto metano = gas H). Wobbe/PCS en MJ/m³ @15/15; concentraciones (mg/m³, % mol) a 0 ºC (comparables con España). El rocío de HC y la densidad no se fijan para grupo E → NO_VERIFICABLE."
+      tabla_calidad: "Rozdział 8 (gas grupo E): Wobbe 45,0–56,9 MJ/m³, ciepło spalania (GCV/PCS) ≥34,0 MJ/m³, azufre, H₂S, mercaptanos, O₂, CO₂, rocío de agua. Verificado verbatim contra el texto consolidado del Rozporządzenie."
+      condiciones_referencia: "warunki odniesienia del reglamento — combustión: 298,15 K (25 ºC); volumen: 273,15 K (0 ºC); 101,325 kPa → Wobbe/PCS @25/0; concentraciones (mg/m³, % mol) a 0 ºC"
+      nota: "Gaz wysokometanowy grupy E (alto metano = gas H; equivale a grupo E/EASEE = H-gas). Se descartan los nitrogenados Lw/Ls/Ln/Lm (sin equivalente en España). Wobbe/PCS en MJ/m³ @25/0; concentraciones (mg/m³, % mol) a 0 ºC (comparables con España). El rocío de HC y la densidad no se fijan para grupo E → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas grupo E en la red de transmisión polaca (GAZ-SYSTEM)."
 
     - id: EN_ISO_6976
@@ -391,9 +391,9 @@ parametros:
         valor_max: 56.9
         unidad: MJ_per_nm3
         expresion_original: "Liczba Wobbego (grupa E): 45,0 – 56,9 MJ/m³"
-        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas grupo E. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0569) para comparar con España (kWh/m³ @0/0)."
+        nota: "Gas grupo E. MJ/m³ @25/0 (combustión 25 ºC, volumen 0 ºC, según las warunki odniesienia del reglamento) → ÷3,6 e ISO 13443 (×1,0026) para comparar con España (kWh/m³ @0/0)."
 
   # ---------------------------------------------------------------------------
   PCS:
@@ -511,12 +511,12 @@ parametros:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (ciepło spalania, gas grupo E)"
         tipo_limite: minimo
-        valor: 38.0
+        valor: 34.0
         unidad: MJ_per_nm3
-        expresion_original: "Ciepło spalania (GCV) grupa E: nie mniejsze niż 38,0 MJ/m³"
-        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        expresion_original: "ciepło spalania powinno wynosić nie mniej niż 34,0 MJ/m³ - dla gazu ziemnego wysokometanowego grupy E (Wobbe 45,0–56,9 MJ/m³)"
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Solo MÍNIMO (el máximo se controla vía Wobbe). 38,0 MJ/m³ es el ciepło spalania (GCV); la wartość opałowa (NCV) mínima es 34,0. @15/15 → ISO 13443 para comparar con España."
+        nota: "Solo MÍNIMO (el máximo se controla vía Wobbe). El ciepło spalania (= GCV = PCS) del grupo E es ≥34,0 MJ/m³ (texto literal del Rozdział 8; los nitrogenados Lw/Ls/Ln/Lm bajan a 30/26/22/18). Condiciones de referencia del propio reglamento: combustión 298,15 K (25 ºC), volumen 273,15 K (0 ºC) → @25/0; ISO 13443 (×1,0026) para comparar con España (@0/0)."
     conversion:
       MJ_a_kWh: { formula: "kWh/Nm³ = MJ/Nm³ / 3.6", factor: 0.27778 }
       correccion_condiciones_referencia:
