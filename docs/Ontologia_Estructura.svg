@@ -33,10 +33,11 @@
 <text x="660.0" y="344" font-size="11.5" fill="#1b2a38" text-anchor="middle">Wobbe · PCS · densidad rel. · S total · H₂S+COS</text>
 <text x="660.0" y="362.5" font-size="11.5" fill="#1b2a38" text-anchor="middle">RSH · O₂ · CO₂ · rocío H₂O · rocío HC</text>
 <text x="660.0" y="381.0" font-size="10.5" fill="#5d7082" text-anchor="middle">(c/u: nombre_completo · símbolo · grupo · unidad)</text>
-<rect x="470" y="426" width="380" height="66" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
-<path d="M479,426 h362 a9,9 0 0 1 9,9 v19 h-380 v-19 a9,9 0 0 1 9,-9 z" fill="#013a57"/>
-<text x="660.0" y="445" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">limites:  un bloque por PAÍS  (×12)</text>
-<text x="660.0" y="470" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">ES · PT · FR · IT · DE · NL · BE · NOR · PL · DK · HU · UE</text>
+<rect x="470" y="420" width="380" height="80" rx="9" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
+<path d="M479,420 h362 a9,9 0 0 1 9,9 v19 h-380 v-19 a9,9 0 0 1 9,-9 z" fill="#013a57"/>
+<text x="660.0" y="439" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">limites:  un bloque por PAÍS  (×21)</text>
+<text x="660.0" y="464" font-size="11.5" fill="#013a57" text-anchor="middle">ES·PT·FR·IT·DE·NL·BE·NOR·PL·DK·HU</text>
+<text x="660.0" y="482.5" font-size="11.5" fill="#013a57" text-anchor="middle">AT·CH·CZ·GR·IE·RO·SK·TR·GB · UE</text>
 <rect x="470" y="522" width="476" height="360" rx="9" fill="#ffffff" stroke="#013a57" stroke-width="1.5"/>
 <path d="M479,522 h458 a9,9 0 0 1 9,9 v19 h-476 v-19 a9,9 0 0 1 9,-9 z" fill="#013a57"/>
 <text x="708.0" y="541" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">cada LÍMITE  (un parámetro en un país)</text>
@@ -75,8 +76,8 @@
 <line x1="690" y1="110" x2="1060" y2="158" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
 <line x1="195" y1="222" x2="210" y2="300" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
 <line x1="560" y1="222" x2="620" y2="300" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<line x1="660" y1="396" x2="660" y2="426" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<line x1="660" y1="492" x2="680" y2="522" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="660" y1="396" x2="660" y2="420" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
+<line x1="660" y1="500" x2="680" y2="522" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
 <line x1="946" y1="590" x2="968" y2="590" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
 <rect x="954.0" y="567.0" width="60" height="15" fill="#ffffff" opacity="0.95"/>
 <text x="957.0" y="578.0" font-size="10.5" fill="#44515c" text-anchor="middle">instancia</text>

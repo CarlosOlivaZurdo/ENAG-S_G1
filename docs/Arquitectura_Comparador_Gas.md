@@ -76,7 +76,7 @@ Es la **fuente primaria de verdad**: la extracción verificada de los PDF oficia
 ### Cobertura actual
 
 - **10 parámetros:** Índice de Wobbe, PCS, densidad relativa, azufre total, H₂S+COS, mercaptanos (RSH), O₂, CO₂, punto de rocío del agua, punto de rocío de hidrocarburos.
-- **Jurisdicciones (12):** España (base), Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría y la UE (EN 16726).
+- **Jurisdicciones (21):** España (base), Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido y la UE (EN 16726).
 
 > El campo `url` de cada fuente es **fuente única**: lo usan a la vez la cita en pantalla (`fuente_oficial.url_de`) y el descargador de PDFs (`actualizar_fuentes.py`).
 
@@ -97,9 +97,12 @@ Para comparar PCS e Índice de Wobbe entre países con distinta temperatura de c
 
 | Conversión a España (0/0) | PCS | Wobbe | PCI |
 |---|---|---|---|
-| **25/0 → 0/0** (Portugal, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría) | 1,0026 | 1,0026 | 1,0003 |
-| **15/15 → 0/0** (Italia, UE) | 1,0570 | 1,0569 | 1,0555 |
+| **25/0 → 0/0** (Portugal, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Grecia) | 1,0026 | 1,0026 | 1,0003 |
+| **15/15 → 0/0** (Italia, UE, Chequia, Irlanda, Rumanía, Turquía, Reino Unido) | 1,0570 | 1,0569 | 1,0555 |
+| **25/20 → 0/0** (Eslovaquia — par no tabulado) | ≈1,076 (Anexo B) | ≈1,076 | |
 | 0/0 → 0/0 (España, Francia) | identidad (×1) | | |
+
+> **Unidades de energía:** además de kWh/m³ y MJ/m³, el conversor admite **kcal/m³** (Turquía y Rumanía expresan el Wobbe/PCS en kcal; 1 kWh ≈ 859,85 kcal). El par **25/20** de Eslovaquia (volumen a 20 °C) no está en la Tabla A.1, así que se resuelve con las **ecuaciones del Anexo B** de la ISO 13443.
 
 Las concentraciones másicas (mg/m³) referidas a un volumen distinto de 0 °C (p. ej. Italia a 15 °C) se normalizan con el factor de gas ideal `(273,15+T)/273,15`. El % mol, lo adimensional y los puntos de rocío no dependen de la temperatura del volumen.
 

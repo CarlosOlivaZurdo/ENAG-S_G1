@@ -83,7 +83,7 @@ BOXES = [
          header="5 · ONTOLOGÍA (YAML)  —  FUENTE DE VERDAD",
          hfill=VERDE, hcolor="#ffffff",
          body=[("ontologia_enagas.yaml", "bodybold", AZUL),
-               ("10 parámetros × 12 países + cita + estado_verificación", "small", TINTA)], align="center"),
+               ("10 parámetros × 21 países + cita + estado_verificación", "small", TINTA)], align="center"),
 
     dict(x=700, y=668, w=420, h=108, fill=NARAN_BG, stroke=NARANJA,
          header="6 · RAG  —  agente_pdf.py + SQLite",

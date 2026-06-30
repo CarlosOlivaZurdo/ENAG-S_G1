@@ -67,10 +67,11 @@ BOXES = [
                ("RSH · O₂ · CO₂ · rocío H₂O · rocío HC", "small", TINTA),
                ("(c/u: nombre_completo · símbolo · grupo · unidad)", "tiny", "#5d7082")], align="center"),
 
-    dict(x=470, y=426, w=380, h=66, fill=AZUL_BG, stroke=CIAN,
-         header="limites:  un bloque por PAÍS  (×12)",
+    dict(x=470, y=420, w=380, h=80, fill=AZUL_BG, stroke=CIAN,
+         header="limites:  un bloque por PAÍS  (×21)",
          hfill=AZUL, hcolor="#ffffff",
-         body=[("ES · PT · FR · IT · DE · NL · BE · NOR · PL · DK · HU · UE", "bodybold", AZUL)], align="center"),
+         body=[("ES·PT·FR·IT·DE·NL·BE·NOR·PL·DK·HU", "small", AZUL),
+               ("AT·CH·CZ·GR·IE·RO·SK·TR·GB · UE", "small", AZUL)], align="center"),
 
     dict(x=470, y=522, w=476, h=360, fill="#ffffff", stroke=AZUL,
          header="cada LÍMITE  (un parámetro en un país)",
@@ -115,8 +116,8 @@ ARROWS = [
     dict(x1=690, y1=110, x2=1060, y2=158, label="", anc="lm"),
     dict(x1=195, y1=222, x2=210, y2=300, label="", anc="lm"),
     dict(x1=560, y1=222, x2=620, y2=300, label="", anc="lm"),
-    dict(x1=660, y1=396, x2=660, y2=426, label="", anc="lm"),
-    dict(x1=660, y1=492, x2=680, y2=522, label="", anc="lm"),
+    dict(x1=660, y1=396, x2=660, y2=420, label="", anc="lm"),
+    dict(x1=660, y1=500, x2=680, y2=522, label="", anc="lm"),
     dict(x1=946, y1=590, x2=968, y2=590, label="instancia", ldx=0, ldy=-12, anc="cb"),
     # cross-link: el campo "fuente" del limite referencia un id de fuentes_normativas
     dict(x1=470, y1=738, x2=402, y2=430, label="fuente → id", ldx=-2, ldy=0, anc="rm", dashed=True),
