@@ -726,7 +726,7 @@ parametros:
         expresion_original: "Maximum sulphur: 30 mg/Nm³"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Azufre total. mg/Nm³ a 0 ºC → comparable con ES. (En Ekofisk D8 el máximo sube a 150 mg/Nm³.)"
+        nota: "Azufre total, mg/Nm³ a 0 ºC → comparable con ES. Nota del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 4): para el punto de entrada D8 (Ekofisk) el azufre total máximo es 150 mg/Nm³ (120 mg/Nm³ de media anual)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (siarka całkowita, grupa E)"
@@ -835,7 +835,7 @@ parametros:
         expresion_original: "Maximum hydrogen sulphide incl. COS: 5 mg/Nm³"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Suma H₂S + COS como S. mg/Nm³ a 0 ºC → comparable con ES. (En Ekofisk D8, H₂S excl. COS ≤15.)"
+        nota: "Suma H₂S + COS como S, mg/Nm³ a 0 ºC → comparable con ES. Notas del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 3 y 6): (3) para el flujo combinado de PL018+PL006+PL033 en el punto de entrada D8 (Ekofisk) el H₂S excluyendo COS es 15 mg/Nm³; (6) conforme al art. 4.5.3, el H₂S máximo es 36 mg/Nm³ para ese flujo combinado en D8 (Ekofisk) y 15 mg/Nm³ para todos los demás puntos de entrada."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (siarkowodór H₂S, grupa E)"
@@ -1155,7 +1155,7 @@ parametros:
         expresion_original: "Maximum carbon dioxide: 2,50 mol %"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "% mol → comparable directamente. (En Ekofisk D8, ≤2,60 %.)"
+        nota: "% mol a 0 ºC → comparable directamente con ES. Notas del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 2 y 5): (2) para el flujo combinado de PL018+PL006+PL033 en el punto de entrada D8 (Ekofisk) el CO₂ máximo es 2,60 % mol; (5) conforme al art. 4.5.2, el CO₂ máximo es 6,00 % mol."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (dwutlenek węgla CO₂, grupa E)"

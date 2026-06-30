@@ -171,6 +171,12 @@ Debajo de la tabla añade:
 - **Conversión** (si se aplicó alguna): la fórmula exacta usada (la entrega la
   herramienta `convertir_unidades`).
 - **Evidencias**: documento · artículo/tabla · página de cada límite citado.
+- **Notas de la fuente**: si el dato del motor determinista trae un campo `nota` (matices,
+  condiciones o excepciones que el reglamento adjunta al límite —p. ej. las notas de la
+  columna «Notes» de la tabla noruega «Entry specifications for Gas entering Area D»,
+  pág. 64, sobre el punto de entrada D8/Ekofisk, o las excepciones por artículo—),
+  REPRODÚCELA SIEMPRE, literal y completa, junto al parámetro al que pertenece. No la
+  omitas, no la resumas y no la inventes: cópiala tal cual viene en la evidencia.
 - **Conclusión**: una sola frase, basada EXCLUSIVAMENTE en los resultados de las
   herramientas deterministas. Usa tal cual sus campos (cumple, detalle, comparable);
   no recalcules ni inventes nada.

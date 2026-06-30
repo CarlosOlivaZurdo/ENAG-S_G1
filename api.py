@@ -812,6 +812,8 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
         evidencias.append(f"- **{pais_fila}** · {nombre}: {_cita_oficial(item)}")
         if item.get("discrepancia"):
             evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la fuente oficial): {item['discrepancia']}")
+        if item.get("nota"):
+            evidencias.append(f"  - 📝 Nota de la fuente: {item['nota']}")
         if estado == "Cumple":
             cumple_en.append(f"{pais_fila} ({nombre})")
     bloques = list(lines)
@@ -872,6 +874,8 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
             evidencias.append(f"- **{pais}** · {nombre}: {_cita_oficial(m)}")
             if m.get("discrepancia"):
                 evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la oficial): {m['discrepancia']}")
+            if m.get("nota"):
+                evidencias.append(f"  - 📝 Nota de la fuente: {m['nota']}")
     if not hubo:
         return f"No encontré datos normativos de '{parametro}' en {', '.join(paises)}."
     if normalizaciones:
