@@ -354,7 +354,7 @@ ontologia:
       publicacion: "Code of Operations Part G, Appendix 1 (v5.04, May 2023) + Code Modification A113 (vigente 6-abr-2025: Wobbe inferior 46,5; densidad relativa ≤0,7)"
       pdf: "data/raw/IE_GNI_Code_PartG.pdf"
       url: "https://www.gasnetworks.ie/sites/default/files/docs/corporate/gas-regulation/Code-of-Operations-Part-G.pdf"
-      tabla_calidad: "Appendix 1 (gas H): Wobbe 46,5–51,41 y GCV 36,9–42,3 MJ/m³, densidad relativa ≤0,7, S total <50 (incl. H₂S), H₂S <5, O₂ <0,2 %, CO₂ <2,5 %, rocío HC <−2 ºC@85 bar. Verificado verbatim."
+      tabla_calidad: "Appendix 1 (gas H): Wobbe 47,2–51,41 y GCV 36,9–42,3 MJ/m³, densidad relativa ≤0,7, S total <50 (incl. H₂S), H₂S <5, O₂ <0,2 %, CO₂ <2,5 %, rocío HC <−2 ºC@85 bar. Verificado verbatim (la modificación A113 baja el Wobbe mínimo a 46,5, pero el Part G publicado muestra 47,2)."
       condiciones_referencia: "All measurements at 15 ºC and 101,325 kPa (Real Gross Dry) → @15/15"
       nota: "Gas H. Valores LITERALES del Code of Operations Part G (en data/raw), con la modificación A113 vigente desde 6-abr-2025 (Wobbe inferior 46,5; densidad relativa ≤0,7 en sustitución de ICF/Soot Index). H₂S solo (no +COS). Mercaptanos: sin límite separado → NO_VERIFICABLE. Agua: Irlanda regula el CONTENIDO (<50 mg/m³), no un rocío → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas H en la red de transporte irlandesa (GNI)."
@@ -605,15 +605,15 @@ parametros:
         nota: "Wobbe superior, gas H. kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
       IE:
         fuente: NORM_IE_GNI
-        articulo: "GNI Code of Operations Part G, Appendix 1 (Mod. A113)"
+        articulo: "GNI Code of Operations Part G, Appendix 1 (pág. 38)"
         tipo_limite: rango
-        valor_min: 46.5
+        valor_min: 47.2
         valor_max: 51.41
         unidad: MJ_per_nm3
-        expresion_original: "Wobbe Index (Real Gross Dry): 46,5 – 51,41 MJ/m³ (límite inferior 46,5 vigente desde 6-abr-2025)"
+        expresion_original: "Wobbe Index (Real Gross Dry): 47,2 – 51,41 MJ/m³ (Appendix 1, Entry Points)"
         condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         estado_verificacion: VERIFICADO
-        nota: "Wobbe superior, gas H. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0569) para comparar con España."
+        nota: "Wobbe superior, gas H. Valor LITERAL del PDF oficial de GNI (Part G, Appendix 1, en data/raw): 47,2–51,41 MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0569) para comparar con España. La modificación A113 (vigente 6-abr-2025) baja el mínimo a 46,5 MJ/m³, pero el Part G publicado que se cita aún muestra 47,2."
       RO:
         fuente: NORM_RO_ANRE
         articulo: "Codul rețelei SNT, art. 5.2 (sin valor numérico)"
