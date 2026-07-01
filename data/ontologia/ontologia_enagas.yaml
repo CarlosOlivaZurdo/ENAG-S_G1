@@ -364,13 +364,13 @@ ontologia:
       tipo: regla_tecnica_nacional
       pais: RO
       nombre: "Regulament de măsurare a gazelor naturale, Anexa nr. 5 «Cerințe minime de calitate» + Codul rețelei SNT — gas H"
-      organismo: "ANRE (regulador rumano); operador: Transgaz (TSO). Ordin 62/2008 mod. Ordin 80/2020"
-      publicacion: "Regulament de măsurare, Anexa nr. 5 (ANRE Ordin 62/2008, actualizado por Ordin 80/2020); Codul rețelei SNT, Cap. 5"
+      organismo: "ANRE (regulador rumano); operador: Transgaz (TSO). Ordin 62/2008, mod. Ordin 80/2020 y completado por Ordin ANRE 64/2023"
+      publicacion: "Regulament de măsurare, Anexa nr. 5 (ANRE Ordin 62/2008), actualizado por Ordin 80/2020 y completado por Ordin ANRE 64/2023 (MO 360/27-abr-2023); texto consolidado a 14-dic-2025. Norma de calidad de referencia: SR 3317. Codul rețelei SNT, Cap. 5"
       url: "https://www.transgaz.ro/en/clients/transmission-services/natural-gas-quality"
       descarga_auto: false  # tabla vigente en la web del TSO; la Orden 80/2020 es un PDF escaneado (sin capa de texto)
       tabla_calidad: "Anexa 5 (gas H): PCS mín. 7.840 kcal/m³, S total ≤100, H₂S ≤6,8, O₂ ≤0,02 %, CO₂ ≤8 %, rocío agua ≤−15 ºC, rocío HC ≤0 ºC. NO fija Wobbe ni densidad relativa → NO_VERIFICABLE."
       condiciones_referencia: "Pcs a tref. medición = 15 ºC y tref. combustión = 15 ºC; volumen a 15 ºC y 1,01325 bar → @15/15 (SR ISO 13443 / SR ISO 6976)"
-      nota: "Gas H. Valores VIGENTES (post Ordin 80/2020) de la Anexa 5, reflejados en la web oficial de Transgaz. Rumanía NO fija banda de Wobbe ni densidad relativa (regula por composición + PCS mín. + rocíos) → NO_VERIFICABLE. PCS en kcal/m³. H₂S solo. Mercaptanos: solo hay un MÍNIMO de etilmercaptano para odorizar, no un máximo → NO_VERIFICABLE."
+      nota: "Gas H. Valores VIGENTES (texto consolidado a 14-dic-2025, que incluye el Ordin ANRE 64/2023 posterior al 80/2020; los parámetros de la Anexa 5 no cambian) reflejados en la web oficial de Transgaz. Rumanía NO fija banda de Wobbe ni densidad relativa (regula por composición + PCS mín. + rocíos) → NO_VERIFICABLE. PCS en kcal/m³. H₂S solo. Mercaptanos: solo hay un MÍNIMO de etilmercaptano para odorizar, no un máximo → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas H en el Sistema Național de Transport (Transgaz)."
 
     # --- Eslovaquia ---
@@ -393,10 +393,10 @@ ontologia:
       pais: TR
       nombre: "BOTAŞ Şebeke İşleyiş Düzenlemelerine İlişkin Esaslar (ŞİD), EK-1 «Doğal Gaz Kalite Şartnamesi» — gas H"
       organismo: "BOTAŞ (TSO turco); regulador: EPDK (Kurul Kararı 1384, 22/11/2007)"
-      publicacion: "BOTAŞ ŞİD (Network Code), anexo EK-1; revisión 21/12/2023. Tabla EK-1 establecida por Decisión EPDK 1384 (Resmi Gazete 28/11/2007)"
+      publicacion: "BOTAŞ ŞİD (Network Code), anexo EK-1; consolidado 21/12/2023 (EPDK Kurul Kararı 12275, Resmî Gazete 23/12/2023 nº 32408) — sin revisión posterior (2024-2026). Tabla EK-1 establecida por Decisión EPDK 1384 (Resmi Gazete 28/11/2007)"
       url: "https://www.botas.gov.tr/Sayfa/dogal-gaz-iletim-duzenlemeleri/30"
       descarga_auto: false  # documento oficial en formato .doc (no PDF)
-      tabla_calidad: "EK-1 (gas H): Wobbe 10465–13000 y üst ısıl değer 8100–10427 kcal/m³, S total ≤115,50, H₂S ≤5,35, mercaptanos ≤16,07, O₂ ≤0,5 %, CO₂ ≤3 %, rocío agua 0/−5 ºC@44 bar, rocío HC 0 ºC@67,5 bar. Verificado verbatim (2 copias). NO fija densidad relativa → NO_VERIFICABLE."
+      tabla_calidad: "EK-1 (gas H): Wobbe 10465–13000 y üst ısıl değer 8250–10427 kcal/m³, S total ≤110, H₂S ≤5,10, mercaptanos ≤15,30, O₂ ≤0,5 %, CO₂ ≤3 %, rocío agua 0/−5 ºC@44 bar, rocío HC 0 ºC@67,5 bar. El Ek-1 NO incorpora límite de hidrógeno. NO fija densidad relativa → NO_VERIFICABLE."
       condiciones_referencia: "m³ a 15 ºC y 1,01325 bar (absolutos); combustión (PCS) a 15 ºC → @15/15. Wobbe/PCS en kcal/m³"
       nota: "Gas H. Valores LITERALES del EK-1 del ŞİD de BOTAŞ. Wobbe y PCS en kcal/m³ (1 kWh ≈ 859,85 kcal). H₂S solo (no +COS). Rocío de agua estacional (0 ºC verano / −5 ºC resto, a 44 bar). Densidad relativa no figura → NO_VERIFICABLE."
       ambito: "Especificaciones de calidad del gas H en la red de transporte turca (BOTAŞ)."
