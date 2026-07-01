@@ -2306,14 +2306,13 @@ parametros:
         nota: "Rocío de agua ≤ −8 ºC a cualquier presión hasta 70 bar abs. Sin valores estacionales."
       HU:
         fuente: NORM_HU_KORM_19_2009
-        articulo: "Anexo 11, «3. Egyéb követelmények» (contenido de agua, no rocío)"
+        articulo: "Anexo 11, «3. Egyéb követelmények» (vízgőztartalom / contenido de vapor de agua)"
         tipo_limite: maximo
-        valor: null
-        unidad: grados_C
-        presion_referencia_bar: null
-        expresion_original: "Hungría regula el CONTENIDO de vapor de agua (vízgőztartalom) ≤0,17 g/m³ (red de transporte; ≤1,0 g/m³ en operación en isla), NO un punto de rocío de agua en ºC."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "Hungría no fija punto de rocío de agua en ºC; limita el contenido de vapor de agua a ≤0,17 g/m³ → no comparable directamente con un rocío en ºC."
+        valor: 0.17
+        unidad: g_per_nm3
+        expresion_original: "Vízgőztartalom: legfeljebb 0,17 g/m³ (Szállítóvezetéki / red de transporte); legfeljebb 1,0 g/m³ (Szigetüzemi / operación en isla). Método MSZ ISO 11541."
+        estado_verificacion: VERIFICADO
+        nota: "Hungría regula el agua como CONTENIDO de vapor (vízgőztartalom), NO como punto de rocío en ºC: ≤0,17 g/m³ en red de transporte (≤1,0 g/m³ en operación en isla). Método MSZ ISO 11541. Es un requisito real de agua, pero expresado en g/m³, así que NO es directamente comparable con un punto de rocío en ºC (para convertirlo a ºC haría falta fijar una presión de referencia, que el decreto no da)."
       AT:
         fuente: NORM_AT_OVGW_GB210
         articulo: "ÖVGW G B210 «Wasser-Kondensationspunkt»"

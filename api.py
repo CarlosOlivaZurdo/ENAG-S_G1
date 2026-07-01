@@ -1868,6 +1868,8 @@ def _es_consulta_limite(texto_norm: str) -> bool:
         "maximo", "máximo", "minimo", "mínimo", "cuanto", "cuánto", "umbral",
         "tope", "especificac", "requisito", "requisitos", "que valor", "qué valor",
         "exige", "permite", "permitido", "admite", "admitido", "establece",
+        # "¿Cuál es el [parámetro] en [país]?" → mostrar el límite (antes caía en el LLM).
+        "cual es", "cuál es", "cuanto vale", "cuánto vale", "cuales son", "cuáles son",
     )
     return any(k in texto_norm for k in claves)
 

@@ -60,7 +60,7 @@ _NOTACION_PAIS = {"ES": "(0/0)", "PT": "(25/0)", "FR": "(0/0)", "UE": "(0/0)",
 # Código de unidad de la ontología -> símbolo legible (y convertible por el conversor)
 _UNIDAD_DISPLAY = {
     "kWh_per_nm3": "kWh/m³", "MJ_per_nm3": "MJ/m³", "kcal_per_nm3": "kcal/m³",
-    "mg_per_nm3": "mg/Nm³", "mg_per_sm3": "mg/sm³",
+    "mg_per_nm3": "mg/Nm³", "mg_per_sm3": "mg/sm³", "g_per_nm3": "g/Nm³",
     "pct_mol": "% molar", "pct_vol": "% vol", "ppm_vol": "ppm",
     "grados_C": "°C", "adimensional": "",
 }
