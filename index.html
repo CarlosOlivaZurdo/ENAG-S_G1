@@ -519,7 +519,7 @@
     selP.innerHTML = PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("");
     $("cmpPaises").innerHTML =
       '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
-      PAISES_OPC.map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'" checked> '+esc(p)+'</label>').join("");
+      PAISES_OPC.slice().sort((a,b)=>a.localeCompare(b,'es')).map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'"> '+esc(p)+'</label>').join("");
     selP.onchange = fillUnidades;
     fillUnidades();
     cmpReady = true;
@@ -535,6 +535,10 @@
     const unidad = $("cmpUnidad").value;
     const paises = Array.from(document.querySelectorAll('#cmpPaises input:not([disabled]):checked')).map(c => c.value);
     const res = $("cmpResult");
+    if(paises.length === 0){
+      res.innerHTML = '<div class="cmp-empty">Selecciona al menos un país para comparar con España.</div>';
+      return;
+    }
     res.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Calculando comparativa…</div></div>';
     try{
       const r = await fetch(api("/api/comparar"),{
