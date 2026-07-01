@@ -657,7 +657,10 @@
     params.forEach(p => head += '<th>'+esc(p.label)+(p.unidad?'<span class="hm-unit">'+esc(p.unidad)+'</span>':'')+'</th>');
     head += '</tr>';
     let body = '';
-    filas.forEach(f => {
+    // España primera (es la base); el resto, orden alfabético (respeta acentos).
+    const filasOrd = filas.slice().sort((a,b) =>
+      a.pais==="España" ? -1 : b.pais==="España" ? 1 : a.pais.localeCompare(b.pais,'es'));
+    filasOrd.forEach(f => {
       let r = '<tr><td class="hm-pais">'+esc(f.pais)+'</td>';
       params.forEach(p => {
         const c = f.celdas[p.slug] || {valor:"—",nivel:"sin_dato",flag:false};
