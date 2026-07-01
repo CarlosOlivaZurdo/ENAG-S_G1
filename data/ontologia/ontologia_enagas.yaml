@@ -882,10 +882,10 @@ parametros:
         fuente: NORM_TR_BOTAS
         articulo: "BOTAŞ ŞİD, EK-1"
         tipo_limite: rango
-        valor_min: 8100
+        valor_min: 8250
         valor_max: 10427
         unidad: kcal_per_nm3
-        expresion_original: "Üst Isıl Değer: Maksimum 10427 / Minimum 8100 Kcal/m³"
+        expresion_original: "Üst Isıl Değer: Maksimum 10427 / Minimum 8250 Kcal/m³ (valor de cálculo/nominal 9.155 kcal/Sm³)"
         condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         estado_verificacion: VERIFICADO
         nota: "PCS (üst ısıl değer = GCV) en kcal/m³ @15/15 → /859,85 a kWh/m³ e ISO 13443 (×1,0570) para comparar con España."
@@ -1250,14 +1250,14 @@ parametros:
         nota: "Azufre total (volátil), límite holgado (100 mg/m³). El «normál köbméter» húngaro se define a 15 ºC pero la energía se liquida a 0 ºC → tratado a 0 ºC para comparar con ES."
       AT:
         fuente: NORM_AT_OVGW_GB210
-        articulo: "Gas Connect Austria, Anexo 2 (Entry Point Baumgarten GCA); ÖVGW G B210"
+        articulo: "ÖVGW G B210/G31 «Gesamtschwefel»; Gas Connect Austria, Anexo 2 (valores por punto)"
         tipo_limite: maximo
         valor: 30
         unidad: mg_per_nm3
-        expresion_original: "Total sulfur (Baumgarten GCA): in case of incidences ≤105,0 mgS/Nm³; yearly average ≤30,0 mgS/Nm³; continuously ≤10,0 mgS/Nm³ (Gas Connect Austria, Anexo 2)"
+        expresion_original: "Gesamtschwefel (ÖVGW G B210/G31): 10 mg S/m³ (permanente/continuo); 30 mg S/m³ (media); 150 mg S/m³ (fallos/incidencias). Sin contar el azufre del odorizante."
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Azufre total, gas H (punto de entrada Baumgarten GCA de Gas Connect Austria). El reglamento fija TRES criterios de cumplimiento: casos de incidencia (in case of incidences) ≤105 mgS/Nm³; promedio anual (yearly average) ≤30 mgS/Nm³; continuo (continuously) ≤10 mgS/Nm³. Se toma el promedio anual (30 mgS/Nm³) como límite comparable. mg/Nm³ a 0 ºC → comparable con ES. (En los demás puntos de entrada de GCA el azufre total es un único ≤120 mgS/Nm³, sin desglose por criterio.)"
+        nota: "Azufre total, gas H. La norma ÖVGW G B210/G31 fija TRES criterios de cumplimiento: permanente/continuo ≤10 mgS/m³; media ≤30 mgS/m³; fallos/incidencias ≤150 mgS/m³ (sin contar el azufre del odorizante). Se toma la media (30 mgS/m³) como límite comparable. mg/m³ a 0 ºC → comparable con ES. (El operador Gas Connect Austria da valores por punto de entrada que coinciden con la norma; p. ej. en Baumgarten GCA: incidencias ≤105, media ≤30, continuo ≤10 mgS/Nm³.)"
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18 (norma de pago)"
@@ -1322,12 +1322,12 @@ parametros:
         fuente: NORM_TR_BOTAS
         articulo: "BOTAŞ ŞİD, EK-1"
         tipo_limite: maximo
-        valor: 115.5
+        valor: 110.0
         unidad: mg_per_nm3
-        expresion_original: "Toplam Kükürt: Maks. 115,50 mg/m³"
+        expresion_original: "Toplam Kükürt: Maks. 110,00 mg/m³"
         condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Azufre total ≤115,50 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+        nota: "Azufre total ≤110 mg/m³ (valor garantizado por BOTAŞ) a 15 ºC → se normaliza a 0 ºC para comparar con ES."
       GB:
         fuente: NORM_GB_GSMR
         articulo: "GS(M)R 1996, Schedule 3, Part I"
@@ -1541,12 +1541,12 @@ parametros:
         fuente: NORM_TR_BOTAS
         articulo: "BOTAŞ ŞİD, EK-1"
         tipo_limite: maximo
-        valor: 5.35
+        valor: 5.1
         unidad: mg_per_nm3
-        expresion_original: "Hidrojen Sülfür (H₂S): Maks. 5,35 mg/m³"
+        expresion_original: "Hidrojen Sülfür (H₂S): Maks. 5,10 mg/m³"
         condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Turquía fija H₂S solo (no +COS) ≤5,35 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+        nota: "Turquía fija H₂S solo (no +COS) ≤5,10 mg/m³ (valor garantizado por BOTAŞ) a 15 ºC → se normaliza a 0 ºC para comparar con ES."
       GB:
         fuente: NORM_GB_GSMR
         articulo: "GS(M)R 1996, Schedule 3, Part I"
@@ -1762,12 +1762,12 @@ parametros:
         fuente: NORM_TR_BOTAS
         articulo: "BOTAŞ ŞİD, EK-1"
         tipo_limite: maximo
-        valor: 16.07
+        valor: 15.3
         unidad: mg_per_nm3
-        expresion_original: "Merkaptan Kükürt: Maks. 16,07 mg/m³"
+        expresion_original: "Merkaptan Kükürt: Maks. 15,30 mg/m³"
         condiciones_referencia: { temperatura_volumen_C: 15, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Mercaptanos como S ≤16,07 mg/m³ a 15 ºC → se normaliza a 0 ºC para comparar con ES."
+        nota: "Mercaptanos como S ≤15,30 mg/m³ (valor garantizado por BOTAŞ) a 15 ºC → se normaliza a 0 ºC para comparar con ES."
       GB:
         fuente: NORM_GB_GSMR
         articulo: "GS(M)R 1996, Schedule 3 (sin límite de mercaptanos)"
