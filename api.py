@@ -1202,10 +1202,11 @@ def matriz_comparativa() -> Dict[str, Any]:
     filas = {p: {} for p in PAISES_MATRIZ}
     for pinfo in PARAMETROS_UI:
         slug = pinfo["slug"]
-        cols.append({"slug": slug, "label": pinfo["label"]})
         es = fuente_oficial.consultar(slug, PAIS_BASE)
         esm = es["matches"][0] if es.get("matches") else None
         unidad_es = (esm.get("unidad") if esm else "") or ""
+        # La unidad (la de España, a la que se normaliza todo) se muestra en la cabecera.
+        cols.append({"slug": slug, "label": pinfo["label"], "unidad": unidad_es})
         notac_es = esm.get("notacion") if esm else None
         es_rng = _rango_de_match(esm, slug, PAIS_BASE, unidad_es) if esm else {"estado": "sin_datos"}
         es_maximo = es_rng.get("estado") == "ok" and es_rng.get("lo") is None

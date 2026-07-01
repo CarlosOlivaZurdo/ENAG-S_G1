@@ -195,6 +195,7 @@
   .hm-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
   .hm{border-collapse:separate;border-spacing:3px;width:100%;font-size:12px}
   .hm th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--navy);padding:6px 8px;text-align:center;vertical-align:bottom}
+  .hm th .hm-unit{display:block;margin-top:3px;font-size:9.5px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--cyan)}
   .hm th.hm-corner{text-align:left}
   .hm td.hm-pais{font-weight:700;color:var(--navy-2);white-space:nowrap;padding:6px 10px;background:var(--panel-2);border-radius:5px}
   .hm td.cell{padding:7px 8px;border-radius:5px;text-align:center;min-width:78px;position:relative;border:1px solid transparent}
@@ -649,7 +650,7 @@
     const params = d.parametros||[], filas = d.filas||[];
     if(!params.length || !filas.length) return '<div class="cmp-empty">Sin datos para la matriz.</div>';
     let head = '<tr><th class="hm-corner">País \\ Parámetro</th>';
-    params.forEach(p => head += '<th>'+esc(p.label)+'</th>');
+    params.forEach(p => head += '<th>'+esc(p.label)+(p.unidad?'<span class="hm-unit">'+esc(p.unidad)+'</span>':'')+'</th>');
     head += '</tr>';
     let body = '';
     filas.forEach(f => {
