@@ -1250,14 +1250,14 @@ parametros:
         nota: "Azufre total (volátil), límite holgado (100 mg/m³). El «normál köbméter» húngaro se define a 15 ºC pero la energía se liquida a 0 ºC → tratado a 0 ºC para comparar con ES."
       AT:
         fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Gesamtschwefel»"
+        articulo: "Gas Connect Austria, Anexo 2 (Entry Point Baumgarten GCA); ÖVGW G B210"
         tipo_limite: maximo
         valor: 30
         unidad: mg_per_nm3
-        expresion_original: "Gesamtschwefel: 30 mg S/m³ (im Schnitt); 10 mg S/m³ (auf Dauer/continuo)"
+        expresion_original: "Total sulfur (Baumgarten GCA): in case of incidences ≤105,0 mgS/Nm³; yearly average ≤30,0 mgS/Nm³; continuously ≤10,0 mgS/Nm³ (Gas Connect Austria, Anexo 2)"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Azufre total ≤30 mg/m³ (media; 10 en continuo). mg/m³ a 0 ºC → comparable con ES."
+        nota: "Azufre total, gas H (punto de entrada Baumgarten GCA de Gas Connect Austria). El reglamento fija TRES criterios de cumplimiento: casos de incidencia (in case of incidences) ≤105 mgS/Nm³; promedio anual (yearly average) ≤30 mgS/Nm³; continuo (continuously) ≤10 mgS/Nm³. Se toma el promedio anual (30 mgS/Nm³) como límite comparable. mg/Nm³ a 0 ºC → comparable con ES. (En los demás puntos de entrada de GCA el azufre total es un único ≤120 mgS/Nm³, sin desglose por criterio.)"
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18 (norma de pago)"
