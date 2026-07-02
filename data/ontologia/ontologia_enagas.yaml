@@ -210,13 +210,14 @@ ontologia:
     - id: FR_GRTGAZ
       tipo: prescripcion_tecnica
       pais: FR
-      nombre: "GRTgaz — Annexe 4: caractéristiques physico-chimiques du méthane de synthèse destiné à être injecté"
+      nombre: "GRTgaz — Annexe 4: «Caractéristiques physico-chimiques des gaz injectés dans les installations de GRTgaz» (tabla por tipo de gas H y B). El documento se titula para el «méthane de synthèse», pero la tabla fija los requisitos de calidad de la RED que debe cumplir todo gas inyectado, INCLUIDO EL GAS NATURAL tipo H."
       organismo: "GRTgaz (gestor de transporte, Francia)"
       pdf: "data/raw/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
       url: "https://www.natrangroupe.com/sites/default/files/2024-07/annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
-      tabla_calidad: "Tabla «Prescriptions techniques» (pág. 1)"
+      tabla_calidad: "Tabla «Prescriptions techniques» (pág. 1), columnas «Gaz de type H» y «Gaz de type B». Gas natural tipo H: PCS 10,7–12,8 y Wobbe 13,64–15,7 kWh/m³(n); S total ≤30; H₂S+COS ≤5; mercaptanos ≤6; CO₂ ≤2,5 %; O₂ ≤0,01 %; rocío agua ≤−5 ºC; rocío HC ≤−2 ºC (1–70 bar)."
       condiciones_referencia: "Combustión 0 ºC y 1,01325 bar; volumen m³(n)"
-      nota: "Alcance: inyección de metano de síntesis en la red de transporte. Distingue gas tipo H y tipo B."
+      nota: "La tabla da las «caractéristiques physico-chimiques des gaz injectés dans les installations de GRTgaz» POR TIPO DE GAS (H y B): son los requisitos de calidad de la RED de transporte que debe cumplir cualquier gas inyectado, incluido el GAS NATURAL tipo H (sus valores coinciden con la spec de gas natural H). Se toma el tipo H como referencia. La DENSIDAD NO se toma de aquí (esta tabla da 0,500–0,70, que admite metano de síntesis/H₂), sino de la spec GRDF de gas natural convencional (0,555) → fuente FR_GRDF."
+      ambito: "Requisitos de calidad del gas natural tipo H en la red de transporte francesa (GRTgaz). Todos los parámetros salvo la densidad (que viene de FR_GRDF, gas natural convencional)."
 
     - id: FR_GRDF
       tipo: prescripcion_tecnica
