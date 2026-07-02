@@ -206,8 +206,34 @@ def _store_document(conn: sqlite3.Connection, pdf_path: Path, pages: List[str], 
     }
 
 
+def _ya_indexado(conn: sqlite3.Connection, pdf_path: Path, force: bool) -> bool:
+    """True si el PDF ya está indexado con el mismo mtime (no hay que re-extraerlo).
+
+    Permite omitir la extracción (cara, con ``layout=True``) de los PDF ya indexados en
+    cada arranque: solo se re-extrae lo nuevo o modificado. Con ``force=True`` nunca se
+    omite. Es el mismo criterio de omisión que aplica ``_store_document`` (comparación de
+    ``mtime``), pero comprobado ANTES de extraer para no malgastar tiempo.
+    """
+    if force:
+        return False
+    try:
+        mtime = pdf_path.stat().st_mtime
+    except OSError:
+        return False
+    row = conn.execute(
+        "SELECT mtime FROM pdf_documents WHERE path = ?",
+        (str(pdf_path.resolve()),),
+    ).fetchone()
+    return row is not None and float(row["mtime"]) == float(mtime)
+
+
 def indexar_pdfs(force: bool = False) -> Dict[str, Any]:
-    """Lee los PDF de data/raw, extrae texto con pdfplumber y lo guarda en SQLite."""
+    """Lee los PDF de data/raw, extrae texto con pdfplumber y lo guarda en SQLite.
+
+    Los PDF ya indexados cuyo ``mtime`` no ha cambiado se omiten SIN volver a extraer su
+    texto (arranque rápido): solo se procesa lo nuevo o modificado. Usa ``force=True``
+    para reindexar todo.
+    """
     pdf_paths = _find_pdf_paths()
     if not pdf_paths:
         return {"count": 0, "indexed": 0, "skipped": 0, "database": str(PDF_DB_PATH), "documents": []}
@@ -219,6 +245,10 @@ def indexar_pdfs(force: bool = False) -> Dict[str, Any]:
         _ensure_schema(conn)
         for pdf_path in pdf_paths:
             try:
+                if _ya_indexado(conn, pdf_path, force):
+                    documents.append({"status": "skipped", "path": str(pdf_path.resolve()), "name": pdf_path.name})
+                    skipped += 1
+                    continue
                 pages, metadata = _extract_pdf_pages(pdf_path)
                 result = _store_document(conn, pdf_path, pages, metadata, force=force)
                 documents.append(result)
