@@ -407,13 +407,13 @@ ontologia:
       pais: CH
       nombre: "SVGW/SSIGE Richtlinie G18 «Gasbeschaffenheit» — gas H"
       organismo: "SVGW (Schweizerischer Verein des Gas- und Wasserfaches); sector: gazenergie/VSG"
-      publicacion: "SVGW G18, edición 06/2022 (vigente). La tabla de límites la reproduce la propia SVGW en la directriz G13 «Einspeisung erneuerbarer Gase» (borrador de consulta, julio 2024), Tab. 5 y 6, columna «Grenzwert G18 [2022]». Datos brenntécnicos también en la gazette 1/2023"
+      publicacion: "SVGW G18, edición 06/2022 (VIGENTE en julio 2026; para 2026 solo se prevén pequeños ajustes, no una nueva edición). Ancla legal PÚBLICA: la Rohrleitungssicherheitsverordnung (RLSV/OSITC, SR 746.12), cuyo Anexo 1 «Technische Regeln» incorpora la G18:2022 (RLSV consolidada a 15/11/2025). La tabla de límites la reproduce la propia SVGW en la directriz G13 «Einspeisung erneuerbarer Gase» (borrador de consulta, julio 2024), Tab. 5 y 6, columna «Grenzwert G18 [2022]». Datos brenntécnicos también en la gazette 1/2023"
       pdf: "data/raw/CH_SVGW_G13_Entwurf_2024.pdf"
-      url: "https://www.svgw.ch/de/shopregelwerk/produkte/g18-d-richtlinie-gasbeschaffenheit/"
+      url: "https://www.fedlex.admin.ch/eli/cc/2021/348/de"
       descarga_auto: false  # la G18 es de pago (CHF 90); los valores se toman de la G13 (SVGW) que los reproduce, en data/raw
       tabla_calidad: "G18:2022 (gas H): Wobbe 13,25–15,81 y Brennwert 9,87–13,25 kWh/m³; densidad 0,55–0,70; azufre total ≤20 (sin odorizar)/30; H₂S+COS ≤5; mercaptanos ≤6 mg/m³; O₂ ≤1 % (red CH) / ≤0,001 % (transfronterizo); CO₂ ≤4,0 % (red CH) / ≤2,5 % (transfronterizo); H₂O contenido ≤50 mg/m³ (MOP≥10 bar); rocío HC ≤−2 ºC (1–70 bar)."
       condiciones_referencia: "Combustión 25 ºC; volumen Nm³ a 0 ºC (273,15 K), 1013,25 mbar (Normzustand «25 ºC/0 ºC», verbatim G13) → @25/0"
-      nota: "Gas H. La SVGW G18:2022 es de PAGO, pero sus límites los REPRODUCE la propia SVGW en la directriz G13 (borrador julio 2024, en data/raw), columna «Grenzwert G18 [2022]» — verificado verbatim y corroborado por las specs transfronterizas de Snam (Passo Gries) y GRTgaz (Oltingue). O₂ y CO₂ son escalonados (red suiza vs transporte transfronterizo). El agua se regula como CONTENIDO (mg/m³), no como rocío en ºC. No se usan valores de otros países."
+      nota: "Gas H. La SVGW G18:2022 es de PAGO, pero sus límites los REPRODUCE la propia SVGW en la directriz G13 (borrador julio 2024, en data/raw), columna «Grenzwert G18 [2022]» — verificado verbatim y corroborado por las specs transfronterizas de Snam (Passo Gries) y GRTgaz (Oltingue). O₂ y CO₂ son escalonados (red suiza vs transporte transfronterizo). El agua se regula como CONTENIDO (mg/m³), no como rocío en ºC. No se usan valores de otros países. La URL apunta al texto federal PÚBLICO (RLSV, fedlex.admin.ch) porque la ficha de la G18 en la tienda SVGW dejó de resolver (404); la G18:2022 sigue vigente (verificado julio 2026)."
       ambito: "Especificaciones de calidad del gas H en Suiza (norma técnica nacional SVGW)."
 
     # --- Chequia ---
@@ -492,7 +492,7 @@ ontologia:
       pais: TR
       nombre: "BOTAŞ Şebeke İşleyiş Düzenlemelerine İlişkin Esaslar (ŞİD), EK-1 «Doğal Gaz Kalite Şartnamesi» — gas H"
       organismo: "BOTAŞ (TSO turco); regulador: EPDK (Kurul Kararı 1384, 22/11/2007)"
-      publicacion: "BOTAŞ ŞİD (Network Code), anexo EK-1; consolidado 21/12/2023 (EPDK Kurul Kararı 12275, Resmî Gazete 23/12/2023 nº 32408) — sin revisión posterior (2024-2026). Tabla EK-1 establecida por Decisión EPDK 1384 (Resmi Gazete 28/11/2007)"
+      publicacion: "BOTAŞ ŞİD (Network Code), anexo EK-1; consolidado 21/12/2023 (EPDK Kurul Kararı 12275, Resmî Gazete 23/12/2023 nº 32408) — sin revisión posterior (2024-2026). Tabla EK-1 establecida por Decisión EPDK 1384 (Resmi Gazete 28/11/2007). Documento consolidado directo (verificable): https://www.botas.gov.tr/uploads/sayfaResim/191307-d_21122023_12275_kk.doc"
       url: "https://www.botas.gov.tr/Sayfa/dogal-gaz-iletim-duzenlemeleri/30"
       descarga_auto: false  # documento oficial en formato .doc (no PDF)
       tabla_calidad: "EK-1 (gas H): Wobbe 10465–13000 y üst ısıl değer 8250–10427 kcal/m³, S total ≤110, H₂S ≤5,10, mercaptanos ≤15,30, O₂ ≤0,5 %, CO₂ ≤3 %, rocío agua 0/−5 ºC@44 bar, rocío HC 0 ºC@67,5 bar. El Ek-1 NO incorpora límite de hidrógeno. NO fija densidad relativa → NO_VERIFICABLE."
