@@ -1911,13 +1911,13 @@ parametros:
         nota: "O₂ ≤0,5 % vol (≈ % mol) → comparable directamente con España."
       CH:
         fuente: NORM_CH_SVGW_G18
-        articulo: "SVGW G18:2022 «Sauerstoff» (vía directriz G13 ed. 2024)"
+        articulo: "SVGW G18:2022 «Sauerstoff» — Grenzüberschreitender Transport (vía directriz G13 ed. 2024)"
         tipo_limite: maximo
-        valor: 1.0
+        valor: 0.001
         unidad: pct_mol
-        expresion_original: "O2 «Innerhalb der CH»: 1 mol %; «Grenzüberschreitender Transport»: 0,001 mol %. SVGW G18:2022"
+        expresion_original: "O2 «Grenzüberschreitender Transport»: 0,001 mol % (media móvil 24 h). «Innerhalb der CH» (distribución/biometano): 1 mol %. SVGW G18:2022"
         estado_verificacion: VERIFICADO
-        nota: "O₂ ≤1 % mol en la red suiza (tolerancia por inyección de biometano). En el TRANSPORTE TRANSFRONTERIZO el límite es mucho más estricto: ≤0,001 % mol (10 ppm). % mol → comparable con España."
+        nota: "O₂ ≤0,001 % mol (10 ppm) en el TRANSPORTE TRANSFRONTERIZO (nivel de transmisión, comparable con España). Dentro de la red suiza de distribución se tolera hasta 1 % mol por la inyección de biometano; se usa el valor de transporte por ser el equiparable a una red de transmisión como la española."
       CZ:
         fuente: NORM_CZ_NET4GAS
         articulo: "Řád PPS NET4GAS, Příloha č. 2"
@@ -2115,13 +2115,13 @@ parametros:
         nota: "CO₂ ≤2 % vol (≈ % mol) → comparable directamente con España."
       CH:
         fuente: NORM_CH_SVGW_G18
-        articulo: "SVGW G18:2022 «Kohlendioxid» (vía directriz G13 ed. 2024)"
+        articulo: "SVGW G18:2022 «Kohlendioxid» — Grenzüberschreitender Transport (vía directriz G13 ed. 2024)"
         tipo_limite: maximo
-        valor: 4.0
+        valor: 2.5
         unidad: pct_mol
-        expresion_original: "CO2 «Innerhalb der CH»: 4,0 mol %; «Grenzüberschreitender Transport»: 2,5 mol %. SVGW G18:2022"
+        expresion_original: "CO2 «Grenzüberschreitender Transport»: 2,5 mol %. «Innerhalb der CH» (distribución/biometano): 4,0 mol %. SVGW G18:2022"
         estado_verificacion: VERIFICADO
-        nota: "CO₂ ≤4,0 % mol en la red suiza (tolerancia por biometano). En el TRANSPORTE TRANSFRONTERIZO el límite es ≤2,5 % mol. % mol → comparable con España."
+        nota: "CO₂ ≤2,5 % mol en el TRANSPORTE TRANSFRONTERIZO (nivel de transmisión, comparable con España). Dentro de la red suiza de distribución se tolera hasta 4,0 % mol por la inyección de biometano; se usa el valor de transporte por ser el equiparable a una red de transmisión. Corroborado por las specs de Snam (Passo Gries) y GRTgaz (Oltingue): CO₂ ≤2,5 %."
       CZ:
         fuente: NORM_CZ_NET4GAS
         articulo: "Řád PPS NET4GAS, Příloha č. 2"
