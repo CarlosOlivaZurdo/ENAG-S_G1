@@ -74,7 +74,92 @@ ontologia:
       nivel: 2
       fuente_principal: NC_INT
       condiciones_referencia_defecto: "@25/0 (sólo condiciones de reporte; sin límites numéricos)"
-    # Nivel 3: añadir aquí nuevos códigos de país y su bloque de límites homólogo.
+    # Nivel 3: resto de jurisdicciones europeas (mismo esquema de límites).
+    - codigo: IT
+      nombre: Italia
+      nivel: 3
+      fuente_principal: NORM_IT_GAS
+      condiciones_referencia_defecto: "@15/15 — combustión 15 ºC, volumen 15 ºC, 1,01325 bar"
+    - codigo: DE
+      nombre: Alemania
+      nivel: 3
+      fuente_principal: DVGW_G260
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: NL
+      nombre: Países Bajos
+      nivel: 3
+      fuente_principal: NORM_NL_GAS
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: BE
+      nombre: Bélgica
+      nivel: 3
+      fuente_principal: NORM_BE_FLUXYS
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: NOR
+      nombre: Noruega
+      nivel: 3
+      fuente_principal: NORM_NO_GASSCO
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: PL
+      nombre: Polonia
+      nivel: 3
+      fuente_principal: NORM_PL_GAZSYSTEM
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: DK
+      nombre: Dinamarca
+      nivel: 3
+      fuente_principal: NORM_DK_BEK230
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: HU
+      nombre: Hungría
+      nivel: 3
+      fuente_principal: NORM_HU_KORM_19_2009
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: AT
+      nombre: Austria
+      nivel: 3
+      fuente_principal: NORM_AT_OVGW_GB210
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: CH
+      nombre: Suiza
+      nivel: 3
+      fuente_principal: NORM_CH_SVGW_G18
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: CZ
+      nombre: Chequia
+      nivel: 3
+      fuente_principal: NORM_CZ_NET4GAS
+      condiciones_referencia_defecto: "@15/15 — combustión 15 ºC, volumen 15 ºC, 1,01325 bar"
+    - codigo: GR
+      nombre: Grecia
+      nivel: 3
+      fuente_principal: NORM_GR_DESFA
+      condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
+    - codigo: IE
+      nombre: Irlanda
+      nivel: 3
+      fuente_principal: NORM_IE_GNI
+      condiciones_referencia_defecto: "@15/15 — combustión 15 ºC, volumen 15 ºC, 1,01325 bar"
+    - codigo: RO
+      nombre: Rumanía
+      nivel: 3
+      fuente_principal: NORM_RO_ANRE
+      condiciones_referencia_defecto: "@15/15 — combustión 15 ºC, volumen 15 ºC, 1,01325 bar"
+    - codigo: SK
+      nombre: Eslovaquia
+      nivel: 3
+      fuente_principal: NORM_SK_EUSTREAM
+      condiciones_referencia_defecto: "@25/20 — combustión 25 ºC, volumen 20 ºC, 1,01325 bar (ISO 13443, Anexo B)"
+    - codigo: TR
+      nombre: Turquía
+      nivel: 3
+      fuente_principal: NORM_TR_BOTAS
+      condiciones_referencia_defecto: "@15/15 — combustión 15 ºC, volumen 15 ºC, 1,01325 bar"
+    - codigo: GB
+      nombre: Reino Unido
+      nivel: 3
+      fuente_principal: NORM_GB_GSMR
+      condiciones_referencia_defecto: "@15/15 — combustión 15 ºC, volumen 15 ºC, 1,01325 bar"
 
   estados_verificacion:
     VERIFICADO: Cifra contrastada verbatim contra su fuente oficial.
