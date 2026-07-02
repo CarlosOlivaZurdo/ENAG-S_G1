@@ -922,6 +922,17 @@ def _coma(x: Any) -> str:
         return str(x)
 
 
+def _coma2(x: Any) -> str:
+    """Como _coma pero a 2 decimales. Se usa para los valores DERIVADOS (conversión de
+    unidad y normalización ISO 13443 a condiciones de España): a 4 decimales dan una falsa
+    precisión (p. ej. 13,6516) cuyo último dígito depende del orden del cálculo. Los valores
+    NATIVOS de cada norma se muestran con _coma (su precisión regulatoria)."""
+    try:
+        return f"{round(float(x), 2):g}".replace(".", ",")
+    except (TypeError, ValueError):
+        return str(x)
+
+
 def _es_consulta_condiciones(texto_norm: str) -> bool:
     """¿Pide llevar un valor a las condiciones de referencia (combustión) de España?"""
     claves = (
@@ -1064,22 +1075,32 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
                     # No depende de la temperatura de combustión ni del volumen: mismo valor, referido a 0/0.
                     vi_es, vs_es = vi, vs
 
-            def rng(a, b):
+            # ¿El límite mostrado es un valor DERIVADO (hubo conversión de unidad)? Entonces
+            # se muestra a 2 decimales (evita la falsa precisión); si es el valor nativo de la
+            # norma, se muestra con su precisión (_coma). La normalización a España es SIEMPRE
+            # derivada → 2 decimales.
+            hubo_conversion = bool(
+                unidad_destino and unidad_destino != "adimensional" and unidad_reg
+                and _normalize_unit(unidad_destino) != _normalize_unit(unidad_reg)
+            )
+
+            def rng(a, b, dec=4):
                 if sin_lim:
                     return "Sin límite numérico"
-                return f"{_coma(a) if a is not None else '—'} / {_coma(b) if b is not None else '—'}"
+                fmt = _coma2 if dec == 2 else _coma
+                return f"{fmt(a) if a is not None else '—'} / {fmt(b) if b is not None else '—'}"
 
             filas.append({
                 "pais": pais,
                 "parametro": nombre,
-                "limite": rng(vi, vs),
+                "limite": rng(vi, vs, 2 if hubo_conversion else 4),
                 "unidad": "—" if sin_lim else unidad_out,
                 "condiciones": cond_txt,
                 "es_base": es_base,
                 "limite_espana": (
                     None if es_base
                     else ("Sin límite numérico" if sin_lim
-                          else (rng(vi_es, vs_es) if (vi_es is not None or vs_es is not None) else None))
+                          else (rng(vi_es, vs_es, 2) if (vi_es is not None or vs_es is not None) else None))
                 ),
                 "factor_iso": (factor if (es_combustion and not es_base and factor != 1.0) else None),
                 # Cita de la fuente oficial (para mostrar en el frontend).
