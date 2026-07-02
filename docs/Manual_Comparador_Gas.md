@@ -61,7 +61,7 @@ Cada país aporta sus límites desde su **fuente oficial** (boletín, norma téc
 | Polonia | PL | Rozporządzenie w sprawie szczegółowych warunków funkcjonowania systemu… | 25/0 |
 | Dinamarca | DK | Bekendtgørelse om gaskvalitet (BEK nr 230 af 21/03/2018) | 25/0 |
 | Hungría | HU | 19/2009. (I. 30.) Korm. rendelet, 11. számú melléklet «A földgáz minős… | 25/0 |
-| Austria | AT | ÖVGW Richtlinie G B210 «Gasbeschaffenheit» (antes G31) | 25/0 |
+| Austria | AT | Gas Connect Austria | 25/0 |
 | Suiza | CH | SVGW/SSIGE Richtlinie G18 «Gasbeschaffenheit» | 25/0 |
 | Chequia | CZ | Řád provozovatele přepravní soustavy (Network Code de NET4GAS), Příloh… | 15/15 |
 | Grecia | GR | Κώδικας Διαχείρισης ΕΣΦΑ (DESFA Network Code), ΠΑΡΑΡΤΗΜΑ I «Προδιαγραφ… | 25/0 |
@@ -175,7 +175,7 @@ Además de kWh/m³ y MJ/m³, el conversor admite **kcal/m³** (Turquía y Ruman�
 
 ## 9. Estado real de los datos
 
-Cobertura actual: **176 celdas VERIFICADO**, **34 NO_VERIFICABLE_SIN_FUENTE**, 0 pendientes, sobre 210 celdas (10 parámetros × 21 jurisdicciones). Las 210 celdas resuelven por la ruta real de la aplicación.
+Cobertura actual: **175 celdas VERIFICADO**, **35 NO_VERIFICABLE_SIN_FUENTE**, 0 pendientes, sobre 210 celdas (10 parámetros × 21 jurisdicciones). Las 210 celdas resuelven por la ruta real de la aplicación.
 
 **✓** = verificado verbatim · **○** = la norma no fija ese parámetro (hueco honesto)
 
@@ -183,7 +183,7 @@ Cobertura actual: **176 celdas VERIFICADO**, **34 NO_VERIFICABLE_SIN_FUENTE**, 0
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | Índice de Wobbe | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ |
 | PCS | ✓ | ○ | ✓ | ✓ | ○ | ○ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ |
-| Densidad relativa | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ○ | ○ | ○ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ○ | ✓ | ✓ |
+| Densidad relativa | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ○ | ○ | ○ | ✓ | ○ | ○ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ○ | ✓ | ✓ |
 | Azufre total | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | H₂S + COS | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Mercaptanos | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ○ | ○ | ○ | ✓ | ✓ | ○ | ✓ |
@@ -204,6 +204,7 @@ Los huecos **no** son errores: son parámetros que **la norma de ese país no fi
 | Polonia | Densidad relativa, Punto de rocío de hidrocarburos |
 | Dinamarca | PCS, O₂, CO₂ |
 | Hungría | Densidad relativa, Mercaptanos, CO₂ |
+| Austria | Densidad relativa |
 | Grecia | Mercaptanos |
 | Irlanda | Mercaptanos, Punto de rocío del agua |
 | Rumanía | Índice de Wobbe, Densidad relativa, Mercaptanos |

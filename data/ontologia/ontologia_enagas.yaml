@@ -118,7 +118,7 @@ ontologia:
     - codigo: AT
       nombre: Austria
       nivel: 3
-      fuente_principal: NORM_AT_OVGW_GB210
+      fuente_principal: NORM_AT_GASCONNECT
       condiciones_referencia_defecto: "@25/0 — combustión 25 ºC (ISO 13443), volumen 0 ºC, 1,01325 bar"
     - codigo: CH
       nombre: Suiza
@@ -387,6 +387,19 @@ ontologia:
       condiciones_referencia: "Volumen Nm³ a 0 ºC (273,15 K), 101,325 kPa (DIN 1343, verificado en E-Control); combustión 25 ºC (práctica ÖVGW/ISO 6976, no verbatim en fuente pública) → se trata @25/0"
       nota: "Gas H. Austria delega legalmente (GMMO-VO 2020, Anlage 2) en la norma ÖVGW G B210 (de pago). Los valores proceden de una reproducción pública oficial de la norma y se corroboran con el documento del TSO Gas Connect Austria (Anhang 3, por punto). Volumen 0 ºC verificado en E-Control; la combustión 25 ºC sigue la práctica ÖVGW/ISO 6976."
       ambito: "Especificaciones de calidad del gas H en la red austriaca (transporte/distribución)."
+      estado: "SECUNDARIA — norma de pago (Austrian Standards); sustituida como fuente citable por NORM_AT_GASCONNECT (pública)."
+
+    - id: NORM_AT_GASCONNECT
+      tipo: prescripcion_tecnica
+      pais: AT
+      nombre: "Gas Connect Austria — Annex 2 «Quality and Pressure Specifications» (Annexes to the Frame Capacity Contract)"
+      organismo: "Gas Connect Austria GmbH (gestor de transporte, Austria)"
+      publicacion: "Anexo 2 al Frame Capacity Contract; especificaciones de calidad y presión por punto de entrada (Überackern ABG/Sudal/7-fields, Baumgarten GCA/WAG, Oberkappel). Documento público."
+      pdf: "data/raw/AT_GasConnect_ROHUAT_Annexes.pdf"
+      url: "https://www.gasconnect.at/fileadmin/Fachabteilungen/ST/EN/ROHUAT_Annexes_to_the_Frame_Capacity_Contract.pdf"
+      condiciones_referencia: "Volumen Nm³ a 273,15 K (0 ºC) y 101,325 kPa; combustión 25 ºC (convención austriaca ÖVGW/ISO 13443) → se trata @25/0"
+      ambito: "Fuente PÚBLICA y verificable de las especificaciones de calidad del gas natural en la red de transporte austriaca. Sustituye a la ÖVGW G B210 (de pago) como fuente citable. Espec representativa: punto de entrada Überackern (ABG/Sudal/7-fields)."
+      nota: "Los valores son del punto de entrada Überackern, representativos de la red de transporte. Otros puntos aplican límites más estrictos: p. ej. Baumgarten GCA fija CO₂ ≤1,575 %, «no oxygen content» y RSH ≤6 mgS/Nm³."
 
     # --- Suiza ---
     - id: NORM_CH_SVGW_G18
@@ -646,16 +659,16 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Gas 2H. Wobbe superior (calculado del felső hőérték/PCS). Valores oficiales del Decreto en kWh/m³ @25/0 (decimales literales: 12,68–15,21; nominal 14,09) → ISO 13443 (×1,0026) para comparar con España (@0/0). Equivale a 45,66–54,76 MJ/m³."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Brenntechnische Daten» (gas H)"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» d) Wobbe-Index (pt. entrada Überackern)"
         tipo_limite: rango
-        valor_min: 13.3
-        valor_max: 15.7
+        valor_min: 13.5
+        valor_max: 15.5
         unidad: kWh_per_nm3
-        expresion_original: "Wobbe-Index: 13,3 – 15,7 kWh/m³ (ÖVGW G B210/G31)"
+        expresion_original: "Wobbe-Index: Minimum 13,5 kWh/Nm³ — Maximum 15,5 kWh/Nm³ (Gas Connect Austria, Annex 2, pt. Überackern)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Wobbe superior, gas H. kWh/m³ @25/0 → ISO 13443 (×1,0026) para comparar con España. Valor de reproducción pública de la norma ÖVGW (de pago)."
+        nota: "Wobbe superior, gas H, red de transporte (Gas Connect Austria, pt. Überackern). kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España. Otros puntos (p. ej. Baumgarten WAG) usan 13,3–15,5."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18, Tabelle 3 (gazette 1/2023)"
@@ -889,16 +902,16 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Felső hőérték = GCV = PCS, gas 2H. Valores oficiales en kWh/m³ @25/0 (decimales literales: 8,61–12,58) → ISO 13443 (×1,0026) para comparar con España. Equivale a 31,00–45,28 MJ/m³; el valor concreto se fija por contrato (PCI/alsó hőérték: 27,94–40,81 MJ/m³ = 7,76–11,34 kWh/m³)."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Brennwert» (gas H)"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» c) Gross calorific value (pt. entrada Überackern)"
         tipo_limite: rango
         valor_min: 10.7
         valor_max: 12.8
         unidad: kWh_per_nm3
-        expresion_original: "Brennwert: 10,7 – 12,8 kWh/m³"
+        expresion_original: "Gross calorific value: Minimum 10,7 kWh/Nm³ — Maximum 12,8 kWh/Nm³ (Gas Connect Austria, Annex 2)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "PCS (Brennwert), gas H. kWh/m³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
+        nota: "PCS (gross calorific value), gas H, red de transporte (Gas Connect Austria). kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18, Tabelle 3 (gazette 1/2023)"
@@ -1122,15 +1135,15 @@ parametros:
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "El 0,55–0,70 que circula procede de una tabla de distribuidor (TIGÁZ), no del Anexo 11 oficial → NO_VERIFICABLE."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Relative Dichte»"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 (la especificación pública no fija densidad relativa)"
         tipo_limite: rango
-        valor_min: 0.55
-        valor_max: 0.65
+        valor_min: null
+        valor_max: null
         unidad: adimensional
-        expresion_original: "Relative Dichte: 0,55 – 0,65"
-        estado_verificacion: VERIFICADO
-        nota: "Densidad relativa (adimensional) → comparable directamente con España."
+        expresion_original: "El documento público de Gas Connect Austria (Annex 2) no fija la densidad relativa. La ÖVGW G B210 sí la fija (0,55–0,65), pero es norma de pago no verificable públicamente."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "La especificación pública de Gas Connect Austria no incluye densidad relativa → NO_VERIFICABLE (no se inventa). La ÖVGW G B210 la fija en 0,55–0,65, pero es de pago."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 (reproducida en la directriz G13, ed. 2024, col. «Grenzwert G18 [2022]»)"
@@ -1335,15 +1348,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Azufre total (volátil), límite holgado (100 mg/m³). El «normál köbméter» húngaro se define a 15 ºC pero la energía se liquida a 0 ºC → tratado a 0 ºC para comparar con ES."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210/G31 «Gesamtschwefel»; Gas Connect Austria, Anexo 2 (valores por punto)"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» b) Total sulfur (pt. entrada Überackern)"
         tipo_limite: maximo
-        valor: 30
+        valor: 120
         unidad: mg_per_nm3
-        expresion_original: "Gesamtschwefel (ÖVGW G B210/G31): 10 mg S/m³ (permanente/continuo); 30 mg S/m³ (media); 150 mg S/m³ (fallos/incidencias). Sin contar el azufre del odorizante."
+        expresion_original: "Total sulfur: Maximum 120,0 mgS/Nm³ (Gas Connect Austria, Annex 2, pt. Überackern)"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Azufre total, gas H. La norma ÖVGW G B210/G31 fija TRES criterios de cumplimiento: permanente/continuo ≤10 mgS/m³; media ≤30 mgS/m³; fallos/incidencias ≤150 mgS/m³ (sin contar el azufre del odorizante). Se toma la media (30 mgS/m³) como límite comparable. mg/m³ a 0 ºC → comparable con ES. (El operador Gas Connect Austria da valores por punto de entrada que coinciden con la norma; p. ej. en Baumgarten GCA: incidencias ≤105, media ≤30, continuo ≤10 mgS/Nm³.)"
+        nota: "Azufre total ≤120 mgS/Nm³ en la red de transporte (Gas Connect Austria, pt. Überackern). mg/Nm³ a 0 ºC → comparable con ES. La norma de distribución ÖVGW G B210 es más estricta (media ≤30, incidencias ≤150 mgS/m³) pero es de pago. Baumgarten GCA aplica ≤105 mgS/Nm³."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 «Gesamtschwefel» (vía directriz G13 ed. 2024, col. Grenzwert G18)"
@@ -1554,15 +1567,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Hungría fija H₂S SOLO (no la suma con COS) ≤20 mg/m³. mg/m³ a 0 ºC → comparable con ES con la salvedad de que es H₂S, no H₂S+COS."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» b) Hydrogen sulfide"
         tipo_limite: maximo
-        valor: 5
+        valor: 6.8
         unidad: mg_per_nm3
-        expresion_original: "Schwefelwasserstoff (H₂S): <5 mg/m³ (COS <5 por separado, no como suma)"
+        expresion_original: "Hydrogen sulfide (H₂S): Maximum 6,8 mg/Nm³ (Gas Connect Austria, Annex 2)"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "H₂S ≤5 mg/m³ (Austria lista H₂S y COS por separado, cada uno <5; no la suma). mg/m³ a 0 ºC → comparable con ES."
+        nota: "H₂S ≤6,8 mg/Nm³ en la red de transporte (Gas Connect Austria). El documento fija H₂S por separado; no da la suma H₂S+COS. mg/Nm³ a 0 ºC → comparable con ES."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 (H₂S + COS als Schwefel; vía G13 ed. 2024)"
@@ -1775,15 +1788,15 @@ parametros:
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "El 15 mg/m³ que circula es práctica alemana citada por un distribuidor (TIGÁZ), no del Anexo 11 → NO_VERIFICABLE."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Mercaptanschwefel»"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» b) Mercaptan sulfur (pt. entrada Überackern)"
         tipo_limite: maximo
-        valor: 6
+        valor: 16.9
         unidad: mg_per_nm3
-        expresion_original: "Mercaptanschwefel: <6 mg S/m³"
+        expresion_original: "Mercaptan sulfur (RSH): Maximum 16,9 mgS/Nm³ (Gas Connect Austria, Annex 2, pt. Überackern)"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Mercaptanos como S ≤6 mg/m³ a 0 ºC → comparable con ES."
+        nota: "Mercaptanos como S ≤16,9 mgS/Nm³ en la red de transporte (Gas Connect Austria, pt. Überackern). mg/Nm³ a 0 ºC → comparable con ES. Baumgarten GCA es más estricto (≤6)."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 «Mercaptanschwefel» (vía directriz G13 ed. 2024)"
@@ -1986,14 +1999,14 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "O₂ ≤0,2 % V/V (≈ % mol) → comparable directamente con España."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» a) Oxygen"
         tipo_limite: maximo
-        valor: 0.5
+        valor: 0.02
         unidad: pct_mol
-        expresion_original: "Sauerstoff (O₂): <0,5 Vol. %"
+        expresion_original: "Oxygen (O₂): Maximum 0,02 % (mol) (Gas Connect Austria, Annex 2)"
         estado_verificacion: VERIFICADO
-        nota: "O₂ ≤0,5 % vol (≈ % mol) → comparable directamente con España."
+        nota: "O₂ ≤0,02 % mol en la red de transporte (Gas Connect Austria). % mol → comparable con España. Baumgarten GCA: «no oxygen content»."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 «Sauerstoff» — Grenzüberschreitender Transport (vía directriz G13 ed. 2024)"
@@ -2190,14 +2203,14 @@ parametros:
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "CO₂ no figura en el Anexo 11 → NO_VERIFICABLE."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» a) Carbon dioxide"
         tipo_limite: maximo
-        valor: 2
+        valor: 2.0
         unidad: pct_mol
-        expresion_original: "Kohlendioxid (CO₂): <2 Vol. %"
+        expresion_original: "Carbon dioxide (CO₂): Maximum 2,0 % (mol) (Gas Connect Austria, Annex 2)"
         estado_verificacion: VERIFICADO
-        nota: "CO₂ ≤2 % vol (≈ % mol) → comparable directamente con España."
+        nota: "CO₂ ≤2,0 % mol en la red de transporte (Gas Connect Austria). % mol → comparable con España. Baumgarten GCA es más estricto (≤1,575 %)."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 «Kohlendioxid» — Grenzüberschreitender Transport (vía directriz G13 ed. 2024)"
@@ -2400,15 +2413,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Hungría regula el agua como CONTENIDO de vapor (vízgőztartalom), NO como punto de rocío en ºC: ≤0,17 g/m³ en red de transporte (≤1,0 g/m³ en operación en isla). Método MSZ ISO 11541. Es un requisito real de agua, pero expresado en g/m³, así que NO es directamente comparable con un punto de rocío en ºC (para convertirlo a ºC haría falta fijar una presión de referencia, que el decreto no da)."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Wasser-Kondensationspunkt»"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» f) Water dew point"
         tipo_limite: maximo
         valor: -8
         unidad: grados_C
-        presion_referencia_bar: 40
-        expresion_original: "Wasser: Kondensationspunkt maximal −8 ºC bei 40 bar"
+        presion_referencia_bar: 64
+        expresion_original: "Water dew point: not higher than −8 ºC at a pressure of 64,0 bar (Gas Connect Austria, Annex 2)"
         estado_verificacion: VERIFICADO
-        nota: "Rocío de agua ≤−8 ºC a 40 bar."
+        nota: "Rocío de agua ≤−8 ºC a 64 bar (Gas Connect Austria)."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 (contenido de H₂O, no rocío; vía G13 ed. 2024)"
@@ -2618,14 +2631,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Rocío de hidrocarburos ≤ +4 ºC a 4 MPa (40 bar). Presión de referencia 40 bar (distinta de los 70 bar de ES) → comparar con cautela."
       AT:
-        fuente: NORM_AT_OVGW_GB210
-        articulo: "ÖVGW G B210 «Kohlenwasserstoff-Kondensationspunkt»"
+        fuente: NORM_AT_GASCONNECT
+        articulo: "Gas Connect Austria, Annex 2 «Quality specifications» e) Hydrocarbon dew point"
         tipo_limite: maximo
         valor: 0
         unidad: grados_C
-        expresion_original: "Kohlenwasserstoffe: Kondensationspunkt maximal 0 ºC beim Betriebsdruck"
+        presion_referencia_bar: 70
+        expresion_original: "Hydrocarbon dew point: not higher than 0 ºC at pressures between 1,0 and 70,0 bar (Gas Connect Austria, Annex 2)"
         estado_verificacion: VERIFICADO
-        nota: "Rocío de hidrocarburos ≤0 ºC a la presión de operación."
+        nota: "Rocío de hidrocarburos ≤0 ºC en el rango 1–70 bar (Gas Connect Austria)."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18:2022 «Kohlenwasserstoff-Kondensationspunkt» (vía directriz G13 ed. 2024)"
