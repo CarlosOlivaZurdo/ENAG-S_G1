@@ -11,7 +11,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from openai import OpenAI
+
+from llm_interface import get_provider
 
 from motor_determinista import (
     buscar_pdfs,
@@ -45,19 +46,12 @@ except Exception:  # fallback si el paquete src no está en el path
 
 load_dotenv()
 
-# --- Modelo de lenguaje: SOLO OpenAI ---------------------------------------
-# Clave leída de la variable de entorno API_OPENAI (patrón acordado por el equipo):
-#     clave = os.environ.get("API_OPENAI")
-#     client = OpenAI(api_key=clave)
-clave = os.environ.get("API_OPENAI")
-if clave:
-    clave = clave.strip()
-    # Las claves válidas de OpenAI empiezan por "sk-". Descarta placeholders/inválidas
-    # para no romper el chat (caería al motor determinista).
-    if clave in {"", "tu_clave_aqui"} or not clave.startswith("sk-"):
-        clave = None
-client = OpenAI(api_key=clave) if clave else None
-MODELO_OPENAI = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+# --- Modelo de lenguaje: proveedor abstracto (ver llm_interface.py) ---------
+# TODO el acoplamiento a un proveedor concreto (OpenAI, Anthropic, Ollama…) vive
+# en `llm_interface.py`. Aquí solo se pide el proveedor configurado y se usa su
+# interfaz genérica. Para cambiar de proveedor basta con la variable de entorno
+# LLM_PROVIDER (por defecto "openai"); api.py NO necesita cambios.
+provider = get_provider()
 
 
 class PeticionChat(BaseModel):
@@ -118,8 +112,10 @@ def get_session_history(session_id: str) -> List[Dict[str, Any]]:
     return session_histories[session_id]
 
 
-# --- Herramientas deterministas expuestas a OpenAI (function calling) ------
-OPENAI_TOOLS = [
+# --- Herramientas deterministas expuestas al LLM (function calling) --------
+# Formato "estilo función de OpenAI", usado como formato de intercambio común.
+# Cada adaptador de llm_interface.py lo traduce a su proveedor si hace falta.
+LLM_TOOLS = [
     {
         "type": "function",
         "function": {
@@ -256,67 +252,35 @@ TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
 }
 
 
-def responder_con_openai(mensaje: str, session_id: str) -> str:
-    """Redacta la respuesta con OpenAI usando las herramientas deterministas.
+def responder_con_llm(mensaje: str, session_id: str) -> str:
+    """Redacta la respuesta con el LLM configurado usando las herramientas deterministas.
 
     El modelo NUNCA inventa cifras: los números provienen de las herramientas
-    (Excel/PDF). El LLM solo interpreta la pregunta y redacta el resultado.
+    (ontología/Excel/PDF). El LLM solo interpreta la pregunta y redacta el
+    resultado. El bucle de tool-calling vive en `llm_interface.py`; aquí solo se
+    pasa el system prompt, el historial, el mensaje, los esquemas de herramientas
+    y el mapa de funciones deterministas.
     """
     history = get_session_history(session_id)
-    mensajes: List[Dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}]
-    mensajes.extend(history)
-    mensajes.append({"role": "user", "content": mensaje})
-
-    texto_final = ""
-    for _ in range(5):  # límite de iteraciones de tool-calling
-        respuesta = client.chat.completions.create(
-            model=MODELO_OPENAI,
-            messages=mensajes,
-            tools=OPENAI_TOOLS,
-            temperature=0,
-        )
-        msg = respuesta.choices[0].message
-        if not msg.tool_calls:
-            texto_final = msg.content or ""
-            break
-        mensajes.append({
-            "role": "assistant",
-            "content": msg.content or "",
-            "tool_calls": [
-                {
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
-                }
-                for tc in msg.tool_calls
-            ],
-        })
-        for tc in msg.tool_calls:
-            func = TOOL_FUNCS.get(tc.function.name)
-            try:
-                args = json.loads(tc.function.arguments or "{}")
-            except json.JSONDecodeError:
-                args = {}
-            try:
-                resultado = func(**args) if func else {"error": "herramienta desconocida"}
-            except Exception as exc:  # noqa: BLE001
-                resultado = {"error": str(exc)}
-            mensajes.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": json.dumps(resultado, ensure_ascii=False, default=str),
-            })
-
+    texto_final = provider.chat(
+        system_prompt=SYSTEM_PROMPT,
+        history=history,
+        user_message=mensaje,
+        tools=LLM_TOOLS,
+        tool_functions=TOOL_FUNCS,
+        temperature=0,
+        max_tool_iterations=5,
+    )
     # Persistir el turno en el historial de la sesión.
     history.append({"role": "user", "content": mensaje})
     history.append({"role": "assistant", "content": texto_final})
     return texto_final
 
 
-backend_mode = "ia" if client is not None else "determinista"
+backend_mode = "ia" if provider.is_available() else "determinista"
 backend_detail = (
-    "Agente OpenAI operativo" if backend_mode == "ia"
-    else "Sin clave API_OPENAI válida: usando fallback determinista"
+    f"Agente LLM operativo — {provider.display_name()}" if backend_mode == "ia"
+    else "Sin LLM disponible: usando fallback determinista"
 )
 
 app = FastAPI()
@@ -2023,17 +1987,17 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
     if validation_response is not None:
         return RespuestaChat(respuesta=validation_response, modo="determinista")
 
-    if client is None:
+    if not provider.is_available():
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
-    # Si OpenAI falla (clave inválida, red, límite…), NO rompemos el chat:
+    # Si el LLM falla (clave inválida, red, límite…), NO rompemos el chat:
     # caemos al motor determinista en vez de devolver un error 500.
     try:
-        texto = responder_con_openai(request.mensaje, request.session_id)
+        texto = responder_con_llm(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=texto, modo="ia")
     except Exception as exc:  # noqa: BLE001
-        print(f"[chat] OpenAI no disponible ({exc}); usando motor determinista.")
+        print(f"[chat] LLM no disponible ({exc}); usando motor determinista.")
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
