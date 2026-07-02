@@ -504,15 +504,27 @@ ontologia:
     - id: NORM_GB_GSMR
       tipo: regla_tecnica_nacional
       pais: GB
-      nombre: "The Gas Safety (Management) Regulations 1996 (GS(M)R), Schedule 3 + NTS Gas Entry Conditions — gas H"
+      nombre: "The Gas Safety (Management) Regulations 1996 (GS(M)R), Schedule 3 — gas H (Wobbe, azufre, H₂S, O₂, densidad)"
       organismo: "HSE / legislación del Reino Unido (SI 1996/551); TSO: National Gas Transmission (NTS)"
       publicacion: "GS(M)R 1996, Schedule 3 (texto consolidado vigente 6-abr-2025, con enmienda SI 2023/284). Parámetros de transporte: NTS Gas Entry Conditions"
       url: "https://www.legislation.gov.uk/uksi/1996/551/schedule/3"
       descarga_auto: false  # legislación en HTML (legislation.gov.uk), no PDF directo
-      tabla_calidad: "GS(M)R Schedule 3 (gas H): Wobbe 46,50–51,41 MJ/m³, densidad relativa ≤0,700, azufre total ≤50 (incl. H₂S), H₂S ≤5, O₂ ≤0,2 % (transporte). NTS: PCS 36,9–42,3, CO₂ ≤2,0 %, rocío agua ≤−10 ºC@85 bar, rocío HC ≤−2 ºC@70 bar."
+      tabla_calidad: "GS(M)R Schedule 3, Part I (gas H): Wobbe 46,50–51,41 MJ/m³, densidad relativa ≤0,700, azufre total ≤50 (incl. H₂S), H₂S ≤5, O₂ ≤0,2 % (>38 barg). PCS, CO₂ y rocíos NO los fija la ley → ver NORM_GB_NTS."
       condiciones_referencia: "Reference conditions: 15 ºC y 1,01325 bar (volumen y poder calorífico) → equivalente a @15/15"
-      nota: "Gas H. La base legal es el GS(M)R 1996 Schedule 3 (Wobbe inferior bajó a 46,50 el 6-abr-2025). Los parámetros que el GS(M)R deja sin cifra (PCS, CO₂, rocíos) se toman de las NTS Gas Entry Conditions de National Gas Transmission. H₂S solo. Mercaptanos: sin límite separado → NO_VERIFICABLE. O₂ ≤0,2 % aplica a transporte (>38 barg); ≤1,0 % a baja presión."
-      ambito: "Especificaciones de calidad del gas H en la red de transporte británica (GS(M)R + NTS)."
+      nota: "Gas H. La base legal es el GS(M)R 1996 Schedule 3 (Wobbe inferior bajó a 46,50 el 6-abr-2025). Los parámetros que el GS(M)R deja sin cifra (PCS, CO₂, rocíos) se toman del documento público «Gas Quality Parameters at NTS Entry Points» de National Grid (fuente NORM_GB_NTS). H₂S solo. Mercaptanos: sin límite separado → NO_VERIFICABLE. O₂ ≤0,2 % aplica a transporte (>38 barg); ≤1,0 % a baja presión."
+      ambito: "Parámetros de calidad del gas H fijados por LEY en Reino Unido (GS(M)R Schedule 3, Part I): Wobbe, azufre total, H₂S, O₂ y densidad. Verificado verbatim contra legislation.gov.uk."
+
+    - id: NORM_GB_NTS
+      tipo: prescripcion_tecnica
+      pais: GB
+      nombre: "National Grid — «Gas Quality Parameters at NTS Entry Points» (octubre 2022)"
+      organismo: "National Grid Gas Transmission (hoy National Gas Transmission), operador del NTS"
+      publicacion: "«Gas Quality Parameters at NTS Entry Points», National Grid, versión 2 (octubre 2022). Publica los límites de calidad vigentes POR PUNTO DE ENTRADA. Documento PÚBLICO (Joint Office of Gas Transporters, gasgovernance.co.uk)."
+      pdf: "data/raw/GB_NTS_GasQualityParameters_2022.pdf"
+      url: "https://www.gasgovernance.co.uk/sites/default/files/related-files/2023-08/NTS%20Gas%20Quality%20Parameters%20at%20NTS%20Entry%20Points%20(October%202022).pdf"
+      descarga_auto: false  # PDF público ya en data/raw
+      condiciones_referencia: "Volumen y poder calorífico a 15 ºC y 1,01325 bar → @15/15. Los límites VARÍAN por punto de entrada."
+      ambito: "Fuente PÚBLICA de los parámetros que el GS(M)R no cuantifica (PCS/GCV, CO₂, rocíos). Valores usados = punto de entrada Isle of Grain (GCV 36,9–42,3 MJ/m³; CO₂ ≤2,0 %; rocío agua −10 ºC@85 bar; rocío HC −2 ºC@70 bar), representativos del espec estándar. Otros puntos difieren (p. ej. Easington-Langeled: GCV 36,9–43,7; CO₂ ≤2,5 %; Bacton-BBL: GCV 38,93–44,62)."
 
     - id: EN_ISO_6976
       tipo: norma_tecnica
@@ -989,16 +1001,16 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "PCS (üst ısıl değer = GCV) en kcal/m³ @15/15 → /859,85 a kWh/m³ e ISO 13443 (×1,0570) para comparar con España."
       GB:
-        fuente: NORM_GB_GSMR
-        articulo: "NTS Gas Entry Conditions §2.3(n) (GS(M)R no fija rango)"
+        fuente: NORM_GB_NTS
+        articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — punto Isle of Grain, Gross Calorific Value"
         tipo_limite: rango
         valor_min: 36.9
         valor_max: 42.3
         unidad: MJ_per_nm3
-        expresion_original: "Gross Calorific Value within the range 36,9 to 42,3 MJ/m³ (real gross dry) — NTS"
+        expresion_original: "Gross Calorific Value shall be within the range 36.9 to 42.3 MJ/SCM (real gross dry) — NTS, Isle of Grain"
         condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         estado_verificacion: VERIFICADO
-        nota: "PCS (GCV), gas H. El GS(M)R no fija rango; valor de las NTS Gas Entry Conditions de transporte. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570)."
+        nota: "PCS (GCV), gas H. El GS(M)R no fija rango; valor PÚBLICO de las NTS Gas Quality Parameters (National Grid oct-2022), punto Isle of Grain. Varía por punto (Easington-Langeled 36,9–43,7). MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (ciepło spalania, gas grupo E)"
@@ -2275,14 +2287,14 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "CO₂ ≤3 % mol → comparable directamente con España."
       GB:
-        fuente: NORM_GB_GSMR
-        articulo: "NTS Gas Entry Conditions §2.3(k)"
+        fuente: NORM_GB_NTS
+        articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — punto Isle of Grain, Carbon Dioxide"
         tipo_limite: maximo
         valor: 2.0
         unidad: pct_mol
-        expresion_original: "Carbon Dioxide not more than 2,0 mol% (NTS)"
+        expresion_original: "Carbon Dioxide not more than 2.0 mol% — NTS, Isle of Grain"
         estado_verificacion: VERIFICADO
-        nota: "CO₂ ≤2,0 % mol (NTS de transporte; el GS(M)R no fija CO₂). % mol → comparable con España."
+        nota: "CO₂ ≤2,0 % mol (el GS(M)R no fija CO₂; valor público de las NTS Gas Quality Parameters, punto Isle of Grain). Varía por punto (varios ≤2,5 %). % mol → comparable con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (dwutlenek węgla CO₂, grupa E)"
@@ -2490,15 +2502,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Rocío de agua ESTACIONAL: ≤0 ºC en verano, ≤−5 ºC el resto del año, a 44 bar(g). Se muestra el valor de verano (menos estricto)."
       GB:
-        fuente: NORM_GB_GSMR
-        articulo: "NTS Gas Entry Conditions §2.3(f)"
+        fuente: NORM_GB_NTS
+        articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — punto Isle of Grain, Water Content"
         tipo_limite: maximo
         valor: -10
         unidad: grados_C
         presion_referencia_bar: 85
-        expresion_original: "Water dewpoint not more than −10 ºC at 85 barg (NTS)"
+        expresion_original: "Water dewpoint not more than −10 °C at eighty five bar gauge (85 barg) — NTS, Isle of Grain"
         estado_verificacion: VERIFICADO
-        nota: "Rocío de agua ≤−10 ºC a 85 bar (NTS de transporte; el GS(M)R lo deja cualitativo)."
+        nota: "Rocío de agua ≤−10 ºC a 85 bar (el GS(M)R lo deja cualitativo; valor público de las NTS Gas Quality Parameters, punto Isle of Grain)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (punkt rosy wody, grupa E)"
@@ -2709,15 +2721,15 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Rocío de hidrocarburos ≤0 ºC a 67,5 bar(g)."
       GB:
-        fuente: NORM_GB_GSMR
-        articulo: "NTS Gas Entry Conditions §2.3(e)"
+        fuente: NORM_GB_NTS
+        articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — Hydrocarbon Dewpoint"
         tipo_limite: maximo
         valor: -2
         unidad: grados_C
         presion_referencia_bar: 70
-        expresion_original: "Hydrocarbon Dewpoint not more than −2 ºC at any pressure up to 70 barg (NTS)"
+        expresion_original: "Hydrocarbon Dewpoint not more than −2 °C at any pressure up to seventy bar gauge (70 barg) — NTS"
         estado_verificacion: VERIFICADO
-        nota: "Rocío de hidrocarburos ≤−2 ºC hasta 70 bar (NTS de transporte; el GS(M)R lo deja cualitativo)."
+        nota: "Rocío de hidrocarburos ≤−2 ºC hasta 70 bar (el GS(M)R lo deja cualitativo; valor público de las NTS Gas Quality Parameters de transporte)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie (rocío de HC no fijado para grupo E)"
