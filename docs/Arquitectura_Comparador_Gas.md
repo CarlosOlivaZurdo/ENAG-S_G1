@@ -158,13 +158,14 @@ Si reconoce la intención → responde con `modo: "determinista"`. Si **no** la 
 | RAG con **Vector DB + similitud coseno + reranking** | **Búsqueda léxica** SQLite `LIKE` (sin vectores) |
 | Normalización **"con `pint`"** | `pint` **no se importa en ningún módulo** (dependencia muerta); las conversiones son tablas verificadas a mano |
 | Respuesta del LLM en **"7 secciones"** | El prompt pide tabla + evidencias; las preguntas estructuradas las redacta el **código**, no el LLM |
-| Historial de conversación | **En memoria** (`session_histories`); se pierde al reiniciar. No hay base de datos de conversaciones |
+| Historial de conversación | **Persistente en el navegador** (`localStorage`): se restaura al recargar la página y sobrevive al reinicio del servidor. El backend además registra **todos** los turnos —incluidos los deterministas— en RAM por sesión (acotados a los últimos 40 mensajes). No hay base de datos de conversaciones en servidor |
 
 ---
 
 ## 9. Frontend, despliegue y mantenimiento
 
 - **`index.html`** — SPA en **JavaScript puro** (sin framework). Render de Markdown con `marked` + saneado con `DOMPurify`. Identidad visual Enagás (azul + verde). Dos pestañas: *Consulta libre* (chat) y *Comparativa* (puntual + matriz/heatmap).
+- **Historial persistente** — cada turno (pregunta + respuesta) se guarda por sesión en el navegador (`localStorage`) y se **restaura al recargar la página** o tras reiniciar el servidor; así el usuario no pierde sus consultas. El botón *«Nueva consulta»* empieza una sesión limpia. En el backend, `_registrar_turno` guarda **todos** los turnos (deterministas y de IA) para que el asistente tenga contexto en las preguntas de seguimiento.
 - **`iniciar_chatbot.bat`** — lanzador para los compañeros: **se auto-actualiza** (`git pull --ff-only`), **libera el puerto 8000** si quedó un servidor anterior y arranca `uvicorn`. La web se sirve **sin caché** (siempre la última versión).
 - **`actualizar_fuentes.py`** — descarga los PDF desde el campo `url` de la ontología (fuente única); las fuentes HTML/sin PDF directo se marcan para descarga manual.
 

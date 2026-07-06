@@ -250,6 +250,9 @@ Los términos técnicos se explican la primera vez que aparecen.*
 **"¿Se puede añadir más países o parámetros?"**
 > Sí. La estructura está pensada para eso: se añade el bloque del país nuevo con el mismo formato y su fuente.
 
+**"¿Se guarda la conversación / el historial?"**
+> Sí. Cada pregunta y respuesta se guarda en el navegador y se **restaura al recargar la página o tras reiniciar el servidor**: el usuario no pierde sus consultas. El botón «Nueva consulta» empieza una conversación limpia. Además, el asistente recuerda el contexto de la conversación para las preguntas de seguimiento.
+
 ---
 
 ## Glosario (una línea por término)

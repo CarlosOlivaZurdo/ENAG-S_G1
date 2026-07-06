@@ -69,7 +69,7 @@ Cada país aporta sus límites desde su **fuente oficial** (boletín, norma téc
 | Rumanía | RO | Regulament de măsurare a gazelor naturale, Anexa nr. 5 «Cerințe minime… | 15/15 |
 | Eslovaquia | SK | Technické podmienky de eustream, a.s. (PPS), Príloha č. 1 «Kvalitatívn… | 25/20 |
 | Turquía | TR | BOTAŞ Şebeke İşleyiş Düzenlemelerine İlişkin Esaslar (ŞİD), EK-1 «Doğa… | 15/15 |
-| Reino Unido | GB | The Gas Safety (Management) Regulations 1996 (GS(M)R), Schedule 3 + NT… | 15/15 |
+| Reino Unido | GB | The Gas Safety (Management) Regulations 1996 (GS(M)R), Schedule 3 | 15/15 |
 | UE | UE | EN 16726:2025 | 15/15 |
 
 > **Condiciones comb/vol** = temperatura de combustión / temperatura del volumen de referencia, en °C. Determinan si un PCS/Wobbe o una concentración másica necesita normalización (§6).
@@ -220,12 +220,12 @@ Los huecos **no** son errores: son parámetros que **la norma de ese país no fi
 |---|---|
 | RAG con **Vector DB + similitud coseno** | **Búsqueda léxica** SQLite `LIKE` (sin vectores) |
 | Normalización **"con `pint`"** | `pint` no se importa; conversiones = tablas verificadas a mano |
-| Historial de conversación persistente | **En memoria**; se pierde al reiniciar |
 
 ---
 
-## 11. Cómo se ejecuta y se mantiene
+## 11. El chat, la ejecución y el mantenimiento
 
+- **Frontend (`index.html`):** SPA en JavaScript puro; dos pestañas (chat y comparativa). **El historial del chat es persistente**: cada pregunta y respuesta se guarda en el navegador (`localStorage`) y se **restaura al recargar la página o tras reiniciar el servidor**, así el usuario no pierde sus consultas. El botón «Nueva consulta» abre una sesión limpia. En el backend, `_registrar_turno` guarda **todos** los turnos (deterministas y de IA, acotados a los últimos 40 mensajes por sesión) para dar contexto a las preguntas de seguimiento.
 - **`iniciar_chatbot.bat`** — lanzador del equipo: se auto-actualiza (`git pull --ff-only`), libera el puerto 8000 y arranca `uvicorn`. La web se sirve **sin caché** (siempre la última versión tras un `git pull`).
 - **`actualizar_fuentes.py`** — descarga los PDF desde el campo `url` de la ontología (fuente única de la cita y de la descarga).
 - **Stack:** Python · FastAPI · uvicorn · OpenAI SDK · PyYAML · pdfplumber · sqlite3. Frontend: HTML + JavaScript vanilla (marked + DOMPurify).
