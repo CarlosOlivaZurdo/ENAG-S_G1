@@ -377,6 +377,13 @@
 
   let recCount = 0;
 
+  // --- Persistencia de la conversación: el historial NO se pierde al recargar ni al
+  //     reiniciar el servidor. Se guarda por sesión en el navegador (localStorage). ---
+  const logKey = () => "gas_chat_log_" + sessionId;
+  function loadLog(){ try{ return JSON.parse(localStorage.getItem(logKey()) || "[]"); }catch(e){ return []; } }
+  let convLog = loadLog();
+  function saveLog(){ try{ localStorage.setItem(logKey(), JSON.stringify(convLog)); }catch(e){} }
+
   function md(text){
     try{ if(window.marked){ let h = marked.parse(text,{breaks:true,gfm:true}); if(window.DOMPurify) h = DOMPurify.sanitize(h); return {html:h}; } }catch(e){}
     return {text};
@@ -454,6 +461,27 @@
     stream.appendChild(es);
   }
 
+  // Restaura la conversación guardada (preguntas + respuestas) al cargar la página.
+  function restoreRecord(q, a, ts){
+    if(stream.querySelector(".empty-state")) stream.innerHTML = "";
+    recCount++;
+    const id = "rec-"+recCount;
+    const rec = document.createElement("article");
+    rec.className = "record"; rec.id = id;
+    const r = md(a);
+    const body = (r.html !== undefined ? r.html : '<div style="white-space:pre-wrap">'+esc(r.text)+'</div>');
+    rec.innerHTML =
+      '<div class="rec-q"><span class="lab">Consulta</span><span class="qx">'+esc(q)+'</span><span class="ts">'+esc(ts||"")+'</span></div>'+
+      '<div class="rec-a">'+body+'</div>';
+    stream.appendChild(rec);
+    addHistory(q, id);
+  }
+  function restoreConversation(){
+    convLog = loadLog();
+    if(convLog.length){ convLog.forEach(t => restoreRecord(t.q, t.a, t.ts)); scrollDown(); }
+    else { showEmpty(); }
+  }
+
   async function checkStatus(){
     const dot = $("statusDot"), txt = $("statusText"), foot = $("footStatus");
     try{
@@ -472,6 +500,7 @@
     enviando = true; $("sendBtn").disabled = true;
     const rec = addRecord(mensaje);
     input.value = ""; input.style.height = "auto";
+    let respuesta;
     try{
       const r = await fetch(api("/api/chat"),{
         method:"POST", headers:{"Content-Type":"application/json"},
@@ -479,10 +508,15 @@
       });
       if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
-      fillRecord(rec, d.respuesta || "No se recibió respuesta.");
+      respuesta = d.respuesta || "No se recibió respuesta.";
     }catch(e){
-      fillRecord(rec, "No se pudo conectar con el servidor en `"+backendUrl+"`. Verifique que el backend está en marcha (ejecute `iniciar_chatbot.bat`).\n\nDetalle: "+e.message);
-    }finally{ enviando = false; $("sendBtn").disabled = false; $("input").focus(); }
+      respuesta = "No se pudo conectar con el servidor en `"+backendUrl+"`. Verifique que el backend está en marcha (ejecute `iniciar_chatbot.bat`).\n\nDetalle: "+e.message;
+    }
+    fillRecord(rec, respuesta);
+    convLog.push({ q: mensaje, a: respuesta, ts: hora() });
+    if(convLog.length > 100) convLog = convLog.slice(-100);
+    saveLog();
+    enviando = false; $("sendBtn").disabled = false; $("input").focus();
   }
 
   $("sendBtn").onclick = enviar;
@@ -491,8 +525,10 @@
   $("gearBtn").onclick = () => $("settings").classList.toggle("open");
   $("saveUrl").onclick = () => { const v=$("backendUrl").value.trim(); if(v){ backendUrl=v; localStorage.setItem("gas_chat_backend",v); } $("settings").classList.remove("open"); checkStatus(); };
   $("newBtn").onclick = () => {
+    try{ localStorage.removeItem(logKey()); }catch(e){}
     sessionId = (crypto.randomUUID && crypto.randomUUID()) || ("s-"+Date.now());
     localStorage.setItem("gas_chat_session", sessionId);
+    convLog = [];
     $("history").innerHTML = '<li class="empty">Sin consultas todavía</li>';
     showEmpty(); $("input").focus();
   };
@@ -682,7 +718,7 @@
       leg+'</div>';
   }
 
-  showEmpty(); checkStatus(); setInterval(checkStatus, 15000);
+  restoreConversation(); checkStatus(); setInterval(checkStatus, 15000);
 </script>
 </body>
 </html>

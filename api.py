@@ -112,6 +112,24 @@ def get_session_history(session_id: str) -> List[Dict[str, Any]]:
     return session_histories[session_id]
 
 
+# Tope de mensajes por sesión (~20 turnos): el historial se conserva, pero se acota para
+# no crecer sin límite ni desbordar el contexto del LLM.
+_MAX_HISTORY_MSGS = 40
+
+
+def _registrar_turno(session_id: str, mensaje: str, respuesta: str) -> None:
+    """Guarda un turno (pregunta + respuesta) en el historial de la sesión.
+
+    Se usa TAMBIÉN para las respuestas deterministas: antes solo se guardaban los turnos
+    que pasaban por el LLM, así que el asistente no recordaba las respuestas de cifras.
+    """
+    history = get_session_history(session_id)
+    history.append({"role": "user", "content": mensaje})
+    history.append({"role": "assistant", "content": respuesta})
+    if len(history) > _MAX_HISTORY_MSGS:
+        del history[: len(history) - _MAX_HISTORY_MSGS]
+
+
 # --- Herramientas deterministas expuestas al LLM (function calling) --------
 # Formato "estilo función de OpenAI", usado como formato de intercambio común.
 # Cada adaptador de llm_interface.py lo traduce a su proveedor si hace falta.
@@ -272,8 +290,7 @@ def responder_con_llm(mensaje: str, session_id: str) -> str:
         max_tool_iterations=5,
     )
     # Persistir el turno en el historial de la sesión.
-    history.append({"role": "user", "content": mensaje})
-    history.append({"role": "assistant", "content": texto_final})
+    _registrar_turno(session_id, mensaje, texto_final)
     return texto_final
 
 
@@ -2006,10 +2023,12 @@ async def status_endpoint() -> StatusResponse:
 async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
     validation_response = _validate_measurement_gate(request.session_id, request.mensaje)
     if validation_response is not None:
+        _registrar_turno(request.session_id, request.mensaje, validation_response)
         return RespuestaChat(respuesta=validation_response, modo="determinista")
 
     if not provider.is_available():
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
+        _registrar_turno(request.session_id, request.mensaje, respuesta)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
     # Si el LLM falla (clave inválida, red, límite…), NO rompemos el chat:
@@ -2020,6 +2039,7 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
     except Exception as exc:  # noqa: BLE001
         print(f"[chat] LLM no disponible ({exc}); usando motor determinista.")
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
+        _registrar_turno(request.session_id, request.mensaje, respuesta)
         return RespuestaChat(respuesta=respuesta, modo="determinista")
 
 
