@@ -1,273 +1,265 @@
-# Guion para explicar el Comparador de Calidad de Gas a Enagás
+# Guion de presentación — Comparador Regulatorio de Calidad de Gas Natural
 
-*Documento de apoyo para presentar el sistema. Está pensado para leerse casi tal cual.
-Cada apartado tiene lo que **decir** (texto llano) y, debajo, el **detalle** por si preguntan.
-Los términos técnicos se explican la primera vez que aparecen.*
-
----
-
-## Cómo usar este guion
-
-- Los bloques **"Decir:"** son el discurso: se pueden leer en voz alta.
-- Los bloques **"Detalle / si preguntan:"** son munición para las preguntas; no hace falta contarlos si no los piden.
-- Hay una **analogía del restaurante** que se usa de principio a fin: es la forma más fácil de que se entienda. Conviene presentarla pronto y volver a ella.
-- Al final hay un **glosario** de una línea por término.
-
-**Orden sugerido (agenda):**
-1. Qué problema resuelve y la idea central.
-2. La foto general: las piezas y cómo encajan.
-3. Las tres capas de datos (documentos, ontología, buscador).
-4. La ontología a fondo (dónde viven las cifras).
-5. El servidor (FastAPI): qué hace.
-6. El cerebro determinista: cómo decide.
-7. La normalización (ISO 13443): comparar de forma justa.
-8. La IA (OpenAI) y sus límites.
-9. El RAG: buscar dentro de los documentos.
-10. Cómo se construyó (metodología).
-11. Por qué es fiable.
-12. Preguntas frecuentes + glosario.
+*Documento de apoyo para exponer el sistema ante Enagás. Cada apartado incluye el
+**guion** para exponer y, debajo, el **detalle técnico** por si se solicita mayor
+profundidad. Los términos especializados se definen la primera vez que aparecen y se
+recogen en el glosario final.*
 
 ---
 
-## 1. Qué problema resuelve y la idea central
+## Cómo utilizar este guion
 
-**Decir:**
-> "Cada país tiene su propia normativa sobre qué calidad debe tener el gas natural: cuánta energía, cuánto azufre, cuánto CO2, etc. Están en boletines oficiales distintos, en idiomas distintos, en unidades distintas y con criterios distintos. Comparar dos países a mano es lento y fácil de equivocar.
+- **Guion:** texto redactado para exponerse de forma directa.
+- **Detalle técnico:** información de respaldo para responder a preguntas; no es necesario exponerla salvo que se solicite.
+- El documento sigue un hilo por **componentes y capas**, que es el modo habitual de describir la arquitectura de un sistema.
+
+**Estructura de la presentación:**
+1. Contexto y objetivo.
+2. Arquitectura general del sistema.
+3. Las tres capas de datos.
+4. La base de conocimiento (ontología).
+5. El servidor de aplicación (FastAPI) y su distinción respecto a la API de OpenAI.
+6. El motor determinista: enrutado de consultas.
+7. Normalización de condiciones (ISO 13443).
+8. La capa de inteligencia artificial y sus salvaguardas.
+9. Recuperación documental (RAG).
+10. Metodología de construcción y verificación.
+11. Garantías del sistema.
+12. Preguntas frecuentes y glosario.
+
+---
+
+## 1. Contexto y objetivo
+
+**Guion:**
+> "Cada país regula la calidad admisible del gas natural mediante su propia normativa: poder calorífico, índice de Wobbe, contenido de azufre, de CO2, puntos de rocío, etc. Esas especificaciones están dispersas en boletines oficiales distintos, en varios idiomas, con unidades y condiciones de referencia diferentes. Comparar dos marcos regulatorios de forma manual es laborioso y propenso a error.
 >
-> Hemos hecho un asistente que compara esa calidad regulatoria entre **21 países** y **10 parámetros**, y responde en lenguaje natural. La clave de su diseño es una regla de oro: **cero cifras inventadas**. La inteligencia artificial **nunca** se saca un número de la manga; todos los números salen de una base verificada contra los boletines oficiales, y siempre con su cita."
+> Hemos desarrollado un sistema que compara esa calidad regulatoria entre **21 jurisdicciones** y **10 parámetros**, y que responde en lenguaje natural. Su principio de diseño es la **ausencia de cifras no verificadas**: el sistema no genera ningún valor por estimación; todas las cifras proceden de una base contrastada frente a la normativa oficial y se presentan con su cita correspondiente."
 
-**Detalle / si preguntan:**
-- Los 10 parámetros: índice de Wobbe, poder calorífico (PCS), densidad relativa, azufre total, H2S+COS, mercaptanos, oxígeno (O2), dióxido de carbono (CO2), punto de rocío del agua y punto de rocío de hidrocarburos.
-- En total hay **210 valores** (21 países x 10 parámetros).
+**Detalle técnico:**
+- Los 10 parámetros: índice de Wobbe, poder calorífico superior (PCS), densidad relativa, azufre total, H2S+COS, mercaptanos, oxígeno, dióxido de carbono, punto de rocío del agua y punto de rocío de hidrocarburos.
+- Cobertura: 210 valores (21 jurisdicciones x 10 parámetros).
 
 ---
 
-## 2. La foto general: las piezas y cómo encajan
+## 2. Arquitectura general del sistema
 
-**Decir:**
-> "El sistema tiene cuatro piezas. Una que ve el usuario y tres por detrás."
+**Guion:**
+> "El sistema se estructura en cuatro componentes con responsabilidades bien delimitadas."
 
 ```
-   [ NAVEGADOR ]  La página web: el usuario escribe su pregunta.
-        |  (envía la pregunta por internet)
+   INTERFAZ WEB          El usuario formula su consulta en lenguaje natural.
+        |  (petición HTTP)
         v
-   [ SERVIDOR ]   Nuestro programa (hecho con FastAPI). Es el cerebro que
-        |          organiza todo: recibe la pregunta y decide qué hacer.
+   SERVIDOR DE           Núcleo de la aplicación (desarrollado con FastAPI).
+   APLICACIÓN            Recibe la consulta, aplica la lógica y orquesta la respuesta.
         |
-        +--> [ DATOS ]   La ontología: la "base de datos" con las 210 cifras
-        |                verificadas, cada una con su fuente oficial.
+        +--> BASE DE CONOCIMIENTO   La ontología: repositorio estructurado con las
+        |    (ontología)            210 cifras verificadas y sus fuentes oficiales.
         |
-        +--> [ IA ]      OpenAI: un ayudante externo al que se llama SOLO
-                         para preguntas de texto abierto, y con prohibición
-                         de inventar números.
+        +--> SERVICIO DE IA         OpenAI: proveedor externo de lenguaje, invocado
+             (externo, controlado)  únicamente para consultas de texto abierto y sin
+                                     capacidad de generar cifras.
 ```
 
-**Decir (la analogía, presentarla aquí):**
-> "Pensadlo como un **restaurante**:
-> - La **página web** es la mesa donde el cliente hace su pedido.
-> - El **servidor (FastAPI)** es el restaurante entero: el camarero que toma la nota y la cocina que coordina todo.
-> - La **ontología** es la despensa con las recetas exactas: de ahí salen los platos de cifras.
-> - **OpenAI** es un consultor externo al que llamamos por teléfono solo para ciertas preguntas, y al que no dejamos inventarse los ingredientes."
+**Guion:**
+> "La responsabilidad de cada componente es la siguiente: la interfaz web presenta la información al usuario; el servidor de aplicación concentra toda la lógica y decide cómo resolver cada consulta; la base de conocimiento almacena los datos verificados; y el servicio de inteligencia artificial se emplea de forma acotada, solo para redactar respuestas de texto."
+
+**Detalle técnico:**
+- Es una aplicación web de página única (SPA) servida por el propio backend. El backend expone un conjunto reducido de servicios (endpoints): interfaz, chat, comparación puntual y matriz comparativa.
 
 ---
 
-## 3. Las tres capas de datos (esto es lo que suele confundir)
+## 3. Las tres capas de datos
 
-**Decir:**
-> "Mucha gente piensa que hay una gran base de datos gigante. No es así. Hay **tres capas**, cada una con un papel distinto:"
+**Guion:**
+> "Es habitual asumir que existe una gran base de datos única. No es el caso: la información se organiza en **tres capas**, cada una con una función distinta."
 
-| Capa | Qué es | Para qué sirve |
+| Capa | Contenido | Función |
 |---|---|---|
-| **1. Documentos oficiales** | Los PDF de las normas (BOE, ERSE, DVGW, Fluxys, National Grid...) | La **fuente de verdad**. El original. |
-| **2. Ontología** | Un fichero estructurado con las **210 cifras** sacadas de esos PDF | La **base de datos real** de la que salen las respuestas. |
-| **3. Buscador (RAG)** | Un índice del **texto** de los PDF, troceado por página | Solo un **buscador** dentro de los documentos, para preguntas abiertas. |
+| **1. Documentos oficiales** | Los PDF de las normas (BOE, ERSE, DVGW, Fluxys, National Grid, etc.) | Fuente primaria y última de verdad. |
+| **2. Ontología** | Fichero estructurado con las **210 cifras** extraídas de esos PDF | Repositorio operativo del que proceden todas las respuestas. |
+| **3. Índice documental (RAG)** | Índice del **texto** de los PDF, segmentado por página | Buscador interno de los documentos, para consultas abiertas. |
 
-**Decir (lo importante):**
-> "El mensaje clave: las **cifras** viven en la capa 2 (la ontología), y cada cifra apunta a su PDF oficial de la capa 1. La capa 3 **no guarda ni una cifra**: solo sirve para buscar texto dentro de los documentos cuando alguien hace una pregunta abierta."
+**Guion:**
+> "El punto clave: las cifras residen en la capa 2, la ontología, y cada una referencia su documento oficial de la capa 1. La capa 3 no almacena ninguna cifra; es un índice de búsqueda sobre el texto de los documentos."
 
-**Detalle / si preguntan:**
-- Documentos: ~22 PDF oficiales guardados localmente (carpeta `data/raw`). Se guardan en local para no depender de que una web esté caída.
-- Fuentes normativas catalogadas: 27 (algunos países tienen norma principal + complementaria).
+**Detalle técnico:**
+- Aproximadamente 22 documentos oficiales, almacenados localmente (`data/raw`) para no depender de la disponibilidad de sitios web externos.
+- Fuentes normativas catalogadas: 27 (varias jurisdicciones combinan norma principal y complementaria).
 
 ---
 
-## 4. La ontología a fondo (dónde viven las cifras)
+## 4. La base de conocimiento (ontología)
 
-**Decir:**
-> "La ontología es el corazón del sistema. Es un fichero de texto muy ordenado donde, para cada país y cada parámetro, guardamos no solo el número, sino **todo su contexto**."
+**Guion:**
+> "La ontología es el elemento central del sistema. Es un fichero estructurado en el que, para cada jurisdicción y cada parámetro, se registra no solo el valor, sino todo su contexto normativo."
 
-**Decir (qué guarda cada valor):**
-> "De cada valor guardamos siete cosas:
-> 1. El **número** (o el rango mínimo-máximo).
-> 2. La **unidad** (kWh por metro cúbico, miligramos, porcentaje...).
-> 3. Las **condiciones de referencia** (a qué temperatura se mide).
-> 4. El **texto literal** de la norma, tal cual está escrito.
-> 5. La **cita**: qué norma, qué artículo, qué página y el enlace.
-> 6. Una **nota** que explica matices.
-> 7. El **estado de verificación**."
+**Guion:**
+> "De cada valor se almacenan siete elementos: el valor numérico (o su rango), la unidad, las condiciones de referencia, el texto literal de la norma, la cita completa (norma, artículo, página y enlace), una nota aclaratoria y el estado de verificación."
 
-**Decir (los estados de verificación, esto da mucha confianza):**
-> "Cada cifra está en uno de dos estados:
-> - **VERIFICADO**: la hemos contrastado palabra por palabra contra su boletín oficial. Hay **175** valores así.
-> - **NO VERIFICABLE**: la norma de ese país **no fija** ese parámetro. Entonces **no lo inventamos**: lo marcamos como hueco honesto y explicamos por qué. Hay **35** valores así.
+**Guion:**
+> "El estado de verificación es la garantía frente a la invención de datos. Cada cifra se encuentra en uno de dos estados:
+> - **Verificado**: contrastado literalmente contra su boletín oficial. Son 175 valores.
+> - **No verificable**: la normativa de esa jurisdicción no fija ese parámetro. En ese caso no se completa con una estimación; se marca como tal y se explica el motivo. Son 35 valores.
 >
-> Nunca hay un tercer estado tipo 'me lo he estimado'. O está en la norma, o se dice claramente que la norma no lo fija."
+> No existe un tercer estado intermedio. Un valor o consta en la norma, o se declara explícitamente que la norma no lo establece."
 
-**Detalle / si preguntan — por qué un fichero y no una base de datos SQL "normal":**
-- Los datos son pocos (210) y muy estructurados, pero con mucho matiz por celda (texto de la norma, condiciones, notas). Un fichero de texto ordenado (formato YAML) es más fácil de **leer, revisar y auditar por una persona** que una base de datos SQL, y se versiona en el control de cambios (git) igual que el código. Para este tamaño, una base SQL sería complejidad innecesaria.
+**Detalle técnico — elección del formato:**
+- El volumen de datos es reducido (210 registros) pero con abundante matiz por celda. Un fichero estructurado en formato YAML (legible por una persona) resulta más auditable y trazable que una base de datos relacional, y se versiona en el control de cambios junto con el código. Para esta escala, una base de datos relacional añadiría complejidad sin beneficio.
 
-**Detalle / ejemplo real — un hueco honesto:**
-- En Dinamarca, la norma tiene límites de oxígeno y CO2... pero son para el **biogás** inyectado en distribución, no para el gas natural de transporte. Así que en gas natural se dejaron como **NO VERIFICABLE**, en vez de copiar un número que era de otra cosa.
+**Detalle técnico — ejemplo de rigor:**
+- En la normativa danesa constan límites de oxígeno y CO2, pero corresponden al biogás inyectado en distribución, no al gas natural de transporte. Por ello, para gas natural se registraron como "no verificable", en lugar de trasladar un valor perteneciente a otro contexto.
 
 ---
 
-## 5. El servidor (FastAPI): qué hace y por qué hace falta
+## 5. El servidor de aplicación (FastAPI) y su distinción respecto a la API de OpenAI
 
-**Decir:**
-> "FastAPI es la herramienta con la que hemos construido **nuestro servidor**. Ojo, aquí viene la confusión típica: 'FastAPI' y 'la API de OpenAI' se llaman parecido pero son cosas distintas."
+**Guion:**
+> "Conviene distinguir dos componentes que a veces se confunden por su denominación, ya que ambos incluyen el término 'API'."
 
 | | **FastAPI** | **API de OpenAI** |
 |---|---|---|
-| Qué es | Una herramienta para **construir nuestro servidor** | Un **servicio externo** que llamamos |
-| De quién es | Nuestra (es nuestro backend) | De OpenAI (somos clientes) |
-| Coste | Gratis (código abierto) | Se paga por uso |
+| Naturaleza | Framework con el que **desarrollamos nuestro servidor** | **Servicio externo** que consumimos |
+| Titularidad | Propia (es nuestro backend) | De OpenAI (somos cliente) |
+| Coste | Sin coste (código abierto) | De pago, por uso |
+| Papel | Núcleo de la aplicación | Proveedor auxiliar, invocado de forma controlada |
 
-**Decir (por qué hace falta el servidor si ya tenemos OpenAI):**
-> "OpenAI por sí solo no puede casi nada de lo que necesitamos:
-> 1. **Alguien tiene que atender la web.** La página necesita hablar con un servidor. Ese servidor es FastAPI.
-> 2. **OpenAI no conoce los datos del gas.** Están en nuestra ontología. El servidor es quien la lee.
-> 3. **Las cuentas exactas** (conversiones de unidades) las hace nuestro código, no la IA.
-> 4. **Decidir cuándo usar la IA**: el servidor mira la pregunta y, el 90% de las veces, la resuelve solo, sin llamar a OpenAI.
-> 5. **Seguridad**: la clave de pago de OpenAI vive en nuestro servidor, nunca en el navegador."
+**Guion:**
+> "Son componentes de niveles distintos. FastAPI constituye el núcleo de nuestra aplicación; la API de OpenAI es un proveedor externo al que se recurre puntualmente. El servidor de aplicación es imprescindible por varios motivos:
+> 1. Es quien atiende la interfaz web y gestiona las peticiones de los usuarios.
+> 2. Es quien accede a la base de conocimiento y recupera el dato exacto; el modelo de lenguaje no dispone de esos datos.
+> 3. Es quien ejecuta los cálculos exactos (conversiones y normalización), de forma determinista.
+> 4. Es quien decide, para cada consulta, si la resuelve directamente o si requiere el servicio de IA. En la mayoría de los casos se resuelve sin recurrir a la IA.
+> 5. Es quien custodia las credenciales de acceso al servicio externo, que nunca se exponen en el navegador."
 
-**Detalle / si preguntan:**
-- El servidor ofrece unas pocas "puertas" (endpoints): servir la web, el chat, la comparación puntual y la matriz comparativa.
-
----
-
-## 6. El cerebro determinista: cómo decide
-
-**Decir:**
-> "Lo primero que hace el servidor con cada pregunta es pasarla por un **filtro** que llamamos el router determinista. 'Determinista' significa que, ante la misma pregunta, siempre da la misma respuesta, calculada por código, sin azar y sin IA."
-
-**Decir (las dos vías):**
-> "El filtro decide entre dos caminos:
-> - Si es una pregunta **de cifras** (un límite, si un valor cumple, comparar dos países, convertir unidades...), la resuelve **el propio código** leyendo la ontología. **Sin tocar la IA. Cero riesgo de inventar.**
-> - Si es una pregunta **de texto abierto** ('¿qué es el índice de Wobbe?'), entonces sí pasa a la IA."
-
-**Detalle / si preguntan — las 7 cosas que resuelve solo, sin IA:**
-1. Cuánto vale un límite. 2. Si un valor medido cumple. 3. De qué norma sale. 4. Si dos gases son intercambiables. 5. Si un país es más o menos estricto que España. 6. Comparar España con otro país. 7. Convertir un valor a las condiciones de España.
+**Detalle técnico:**
+- El proveedor de IA está encapsulado en un módulo independiente; podría sustituirse por otro sin afectar al resto del sistema.
 
 ---
 
-## 7. La normalización (ISO 13443): comparar de forma justa
+## 6. El motor determinista: enrutado de consultas
 
-**Decir:**
-> "Aquí hay un detalle técnico importante que da mucha credibilidad. Cada país expresa sus límites de forma distinta: unos en kilovatios-hora por metro cúbico, otros en megajulios; unos miden a 0 grados, otros a 15, otros a 25. Comparar los números en crudo sería como comparar millas con kilómetros: engañoso."
+**Guion:**
+> "Toda consulta pasa primero por un componente de enrutado que denominamos motor determinista. 'Determinista' significa que, ante la misma consulta, produce siempre la misma respuesta, calculada por código, sin aleatoriedad y sin intervención de la IA."
 
-**Decir:**
-> "Para comparar de forma justa, lo llevamos todo a la **misma base que usa España**, aplicando los **factores oficiales de una norma internacional, la ISO 13443**. Esos factores no los calculamos a ojo: están escritos literalmente en la norma y los tenemos cableados y verificados. Así, cuando comparamos España con Reino Unido, los dos números están en el mismo idioma."
+**Guion:**
+> "El enrutado distingue dos tipos de consulta:
+> - Las **consultas cuantitativas** (un límite, una comprobación de cumplimiento, una comparación entre países, una conversión de unidades) se resuelven íntegramente por código, leyendo la base de conocimiento. Sin intervención de la IA y, por tanto, sin posibilidad de generar un valor incorrecto.
+> - Las **consultas de texto abierto** ('¿en qué consiste el índice de Wobbe?') se derivan al servicio de IA."
 
-**Detalle / si preguntan:**
-- Ejemplo: el gas de Portugal se mide con combustión a 25 grados; España a 0. Para compararlos, el valor portugués se multiplica por un factor fijo de la tabla de la ISO 13443 (1,0026 para el Wobbe).
-- Los valores **derivados** de estas cuentas se muestran con 2 decimales, para no dar una falsa sensación de precisión. Los valores originales de cada norma se muestran tal cual.
+**Detalle técnico — casos resueltos sin IA:**
+1. Valor de un límite. 2. Comprobación de cumplimiento de un valor medido. 3. Norma de la que procede. 4. Intercambiabilidad entre gases. 5. Comparación de restrictividad frente a España. 6. Comparación directa España-país. 7. Conversión a las condiciones de referencia españolas.
 
 ---
 
-## 8. La IA (OpenAI) y sus límites
+## 7. Normalización de condiciones (ISO 13443)
 
-**Decir:**
-> "Cuando una pregunta sí llega a la IA, la IA trabaja **atada en corto**:
-> - Tiene **prohibido inventar cifras**. Si necesita un número, tiene que pedírselo a nuestras herramientas (que leen la ontología).
-> - Tiene que **citar** los documentos oficiales.
-> - Solo habla de calidad del gas; fuera de eso, no responde.
+**Guion:**
+> "Un aspecto técnico relevante para la credibilidad del sistema es la comparabilidad. Cada país expresa sus límites en unidades distintas y con condiciones de referencia distintas: unos en kilovatios-hora por metro cúbico, otros en megajulios; unos referidos a 0 grados, otros a 15 o a 25. Comparar los valores en bruto sería metodológicamente incorrecto."
+
+**Guion:**
+> "Para asegurar una comparación rigurosa, todos los valores se llevan a la base de referencia española aplicando los factores establecidos en la norma internacional ISO 13443. Estos factores no se estiman: se toman literalmente de la norma y están implementados y verificados. De este modo, al comparar dos jurisdicciones, ambas cifras están expresadas en la misma base."
+
+**Detalle técnico:**
+- Ejemplo: el gas portugués se referencia a combustión a 25 grados y el español a 0 grados; para compararlos, el valor portugués se multiplica por el factor de la tabla de la ISO 13443 (1,0026 para el índice de Wobbe).
+- Los valores derivados de estos cálculos se presentan con dos decimales, para no atribuir una precisión superior a la real. Los valores originales de cada norma se muestran con su precisión de origen.
+
+---
+
+## 8. La capa de inteligencia artificial y sus salvaguardas
+
+**Guion:**
+> "Cuando una consulta se deriva al servicio de IA, este opera bajo restricciones estrictas:
+> - Tiene **prohibido generar cifras**; si necesita un dato numérico, debe solicitarlo a las herramientas internas, que lo obtienen de la base de conocimiento.
+> - Debe **citar** los documentos oficiales.
+> - Su ámbito se limita a la calidad del gas natural.
 >
-> Y si OpenAI falla o no hay conexión, el sistema **cae automáticamente** al modo determinista: el chat nunca se queda colgado ni da error."
+> Adicionalmente, si el servicio de IA no está disponible, el sistema conmuta automáticamente al modo determinista, de forma que el servicio nunca queda interrumpido."
 
-**Detalle / si preguntan:**
-- Modelo usado: OpenAI GPT-4o-mini, con "temperatura 0" (que significa que responde de la forma más predecible posible, sin creatividad).
-- El proveedor de IA es intercambiable: está aislado en un módulo, así que se podría cambiar OpenAI por otro sin tocar el resto.
-
----
-
-## 9. El RAG: buscar dentro de los documentos
-
-**Decir:**
-> "RAG son las siglas de 'generación aumentada por recuperación'. En cristiano: es la técnica de **buscar en los documentos** para que la IA responda con fuentes, en vez de inventar."
-
-**Decir (los dos pasos):**
-> "Funciona en dos pasos:
-> 1. **Indexar** (preparar el buscador): al arrancar, el sistema lee todos los PDF, extrae su texto, lo **trocea por página** y lo guarda en una pequeña base de datos (SQLite) que hace de índice, como el índice al final de un libro.
-> 2. **Buscar**: cuando la IA necesita fundamentar una respuesta abierta, busca las palabras clave en ese índice y recupera los fragmentos relevantes, con el documento y la página. Luego redacta citando."
-
-**Detalle / si preguntan — honestidad técnica:**
-- Es una búsqueda **por palabra clave** (léxica), no "semántica" (no usa los llamados 'embeddings' ni un modelo de terceros para entender el significado). Es más simple, es suficiente para este caso y, sobre todo, es **100% reproducible**: no depende de una caja negra externa para encontrar el dato.
-- Optimización: solo se re-lee un PDF si es nuevo o ha cambiado, así que el arranque es casi instantáneo.
+**Detalle técnico:**
+- Modelo empleado: OpenAI GPT-4o-mini, configurado con temperatura 0 (máxima previsibilidad, sin variabilidad creativa).
 
 ---
 
-## 10. Cómo se construyó (la metodología)
+## 9. Recuperación documental (RAG)
 
-**Decir:**
-> "El sistema es tan fiable como riguroso fue el proceso de carga de datos. Para cada país:
-> 1. Se localizó la **norma oficial vigente**.
-> 2. Se **descargó el PDF** y se guardó en local.
-> 3. Se **copió cada cifra tal cual** (verbatim), sin interpretarla.
-> 4. Se **verificó una a una** contra el documento.
-> 5. Lo que la norma **no fija, no se inventa**: se marca como 'no verificable' con su explicación.
-> 6. Se añadió la **normalización** (ISO 13443) para poder comparar de forma justa."
+**Guion:**
+> "El sistema incorpora una técnica de recuperación documental, conocida por sus siglas RAG. Su finalidad es que, para las consultas de texto abierto, la respuesta se fundamente en los documentos oficiales en lugar de en el conocimiento general del modelo."
 
-**Decir:**
-> "Y hay control de calidad automático: unos scripts comprueban que los 210 valores se pueden resolver, que los enlaces funcionan y que no hay incoherencias."
+**Guion:**
+> "Opera en dos fases:
+> 1. **Indexación**: el sistema procesa los documentos, extrae su texto, lo segmenta por página y lo almacena en un índice de búsqueda.
+> 2. **Recuperación**: cuando el servicio de IA necesita fundamentar una respuesta, localiza los fragmentos pertinentes en ese índice, con indicación de documento y página, y redacta citándolos."
 
----
-
-## 11. Por qué es fiable (el resumen que se llevan)
-
-**Decir:**
-> - **Cero cifras inventadas**, por diseño: los números salen de código + datos verificados, nunca de la IA.
-> - **Trazabilidad total**: cada valor cita norma, artículo, página y enlace.
-> - **Honestidad**: lo que no está en la norma se dice; no se rellena.
-> - **Reproducible**: mismo código y mismos datos dan el mismo resultado en cualquier ordenador.
-> - **Auditable**: cualquiera puede abrir la ontología y ver de dónde sale cada número.
+**Detalle técnico:**
+- La búsqueda es de tipo léxico (por coincidencia de términos), no semántica. Es un enfoque más simple, suficiente para este caso de uso y plenamente reproducible, al no depender de servicios externos para localizar la información.
+- La indexación es incremental: solo se reprocesa un documento si es nuevo o ha sido modificado, lo que hace el arranque prácticamente inmediato.
 
 ---
 
-## 12. Preguntas frecuentes (si os preguntan)
+## 10. Metodología de construcción y verificación
 
-**"¿La IA puede equivocarse en un número?"**
-> No, porque la IA **no genera números**. Los números los da el código leyendo la ontología. La IA solo redacta texto.
+**Guion:**
+> "La fiabilidad del sistema es consecuencia del rigor del proceso de carga de datos. Para cada jurisdicción:
+> 1. Se identificó la **normativa oficial vigente**.
+> 2. Se **obtuvo el documento** y se archivó localmente.
+> 3. Se **transcribió cada cifra literalmente**, sin interpretación.
+> 4. Se **verificó individualmente** contra el documento.
+> 5. Lo que la norma **no establece, no se completa**: se marca como 'no verificable', con su justificación.
+> 6. Se incorporó la **normalización** (ISO 13443) para garantizar comparaciones homogéneas."
 
-**"¿Y si OpenAI se cae o cuesta mucho?"**
-> El sistema sigue funcionando en modo determinista (todas las preguntas de cifras). OpenAI solo hace falta para preguntas de texto abierto, que son minoría.
+**Guion:**
+> "El proceso cuenta además con controles de calidad automatizados que comprueban que los 210 valores se resuelven correctamente, que los enlaces a las fuentes están operativos y que no existen incoherencias."
 
-**"¿Por qué no una base de datos grande / en la nube?"**
-> Los datos son pocos y muy cuidados. Un fichero de texto ordenado es más fácil de auditar y versionar. Escalar a una base de datos sería fácil el día que haga falta, pero hoy sería complejidad innecesaria.
+---
+
+## 11. Garantías del sistema
+
+**Guion:**
+> - **Ausencia de cifras inventadas**, por diseño: los valores proceden de código y de datos verificados, no del modelo de lenguaje.
+> - **Trazabilidad completa**: cada valor cita norma, artículo, página y enlace.
+> - **Transparencia**: lo que la norma no fija se declara explícitamente; no se completa.
+> - **Reproducibilidad**: con el mismo código y los mismos datos, el resultado es idéntico en cualquier entorno.
+> - **Auditabilidad**: la base de conocimiento es consultable y permite verificar el origen de cada valor.
+
+---
+
+## 12. Preguntas frecuentes
+
+**"¿Puede el modelo de IA equivocarse en un valor numérico?"**
+> No, porque el modelo no genera valores numéricos. Las cifras las proporciona el código a partir de la base de conocimiento; el modelo únicamente redacta texto.
+
+**"¿Qué ocurre si el servicio de OpenAI no está disponible?"**
+> El sistema continúa operativo en modo determinista, que cubre todas las consultas cuantitativas. El servicio de IA solo es necesario para consultas de texto abierto, que son minoritarias.
+
+**"¿Por qué no se emplea una base de datos relacional o en la nube?"**
+> El volumen de datos es reducido y requiere un tratamiento muy cuidado. Un fichero estructurado resulta más auditable y trazable. Escalar a una base de datos sería inmediato en caso necesario, pero hoy supondría complejidad sin beneficio.
 
 **"¿Está actualizado?"**
-> Cada fuente indica su versión y fecha. Se revisa la vigencia de las normas; cuando una cambia, se actualiza el valor y su cita.
+> Cada fuente indica su versión y fecha. Se revisa periódicamente la vigencia de las normas; cuando una se modifica, se actualiza el valor y su cita.
 
-**"¿Se puede añadir más países o parámetros?"**
-> Sí. La estructura está pensada para eso: se añade el bloque del país nuevo con el mismo formato y su fuente.
+**"¿Es ampliable a más jurisdicciones o parámetros?"**
+> Sí. La estructura está diseñada para ello: se incorpora el bloque de la nueva jurisdicción con el mismo formato y su fuente.
 
-**"¿Se guarda la conversación / el historial?"**
-> Sí. Cada pregunta y respuesta se guarda en el navegador y se **restaura al recargar la página o tras reiniciar el servidor**: el usuario no pierde sus consultas. El botón «Nueva consulta» empieza una conversación limpia. Además, el asistente recuerda el contexto de la conversación para las preguntas de seguimiento.
+**"¿Se conserva la conversación?"**
+> Sí. Cada consulta y su respuesta se almacenan en el navegador y se restauran al recargar la página o tras reiniciar el servidor, de modo que el usuario no pierde su historial. La opción «Nueva consulta» inicia una sesión limpia. El asistente conserva además el contexto de la conversación para las preguntas de seguimiento.
 
 ---
 
-## Glosario (una línea por término)
+## Glosario
 
-- **Backend / servidor:** el programa que está por detrás de la web y hace el trabajo.
-- **FastAPI:** la herramienta con la que construimos nuestro servidor. Es nuestra.
-- **API de OpenAI:** el servicio externo de IA que llamamos por texto. No es nuestro.
-- **Ontología:** el fichero ordenado donde viven las 210 cifras con su contexto y su fuente.
-- **YAML:** el formato de texto (legible por personas) en el que está escrita la ontología.
-- **Determinista:** que ante la misma entrada da siempre la misma salida, sin azar ni IA.
-- **Router:** el filtro que decide si una pregunta la resuelve el código o la IA.
-- **Normalización / ISO 13443:** llevar todos los valores a la misma base para compararlos de forma justa.
-- **RAG:** técnica de buscar en los documentos para responder con fuentes, sin inventar.
-- **Indexar:** preparar el buscador leyendo los PDF y guardando su texto troceado.
-- **SQLite:** una base de datos pequeña y sencilla; aquí solo se usa como índice del buscador.
-- **VERIFICADO / NO VERIFICABLE:** cifra contrastada con la norma / parámetro que la norma no fija.
+- **Backend / servidor de aplicación:** el programa que da soporte a la web y ejecuta la lógica del sistema.
+- **FastAPI:** framework con el que se ha desarrollado el servidor de aplicación. Es infraestructura propia.
+- **API de OpenAI:** servicio externo de inteligencia artificial que se consume para tareas de texto. Es de terceros.
+- **Ontología:** repositorio estructurado donde residen las 210 cifras con su contexto y su fuente.
+- **YAML:** formato de fichero de texto, legible por personas, en el que está escrita la ontología.
+- **Determinista:** que ante la misma entrada produce siempre la misma salida, sin aleatoriedad ni IA.
+- **Enrutado / motor determinista:** el componente que decide si una consulta la resuelve el código o la IA.
+- **Normalización (ISO 13443):** llevar todos los valores a una base común para compararlos de forma homogénea.
+- **RAG:** técnica de recuperación documental que fundamenta las respuestas en las fuentes, sin invención.
+- **Indexación:** preparación del buscador procesando los documentos y almacenando su texto segmentado.
+- **SQLite:** base de datos ligera; aquí se emplea únicamente como índice del buscador documental.
+- **Verificado / No verificable:** valor contrastado con la norma / parámetro que la norma no establece.
 
 *Fin del guion.*
