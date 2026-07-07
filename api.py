@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from llm_interface import get_provider
 
@@ -55,18 +55,69 @@ provider = get_provider()
 
 
 class PeticionChat(BaseModel):
-    session_id: str
-    mensaje: str
+    """Cuerpo de la petición para `POST /api/chat`."""
+
+    session_id: str = Field(
+        ...,
+        description=(
+            "Identificador de la sesión de conversación. Agrupa los turnos de un mismo "
+            "usuario para conservar el historial (memoria de la conversación) y aplicar el "
+            "filtro de coherencia entre mensajes. El frontend lo genera una vez y lo reutiliza."
+        ),
+        examples=["sesion-a1b2c3d4"],
+    )
+    mensaje: str = Field(
+        ...,
+        description="Texto de la pregunta del usuario, en lenguaje natural.",
+        examples=["¿Cuál es el límite de PCS en Francia?"],
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "session_id": "sesion-a1b2c3d4",
+                    "mensaje": "¿Cuál es el límite de PCS en Francia?",
+                }
+            ]
+        }
+    }
 
 
 class RespuestaChat(BaseModel):
-    respuesta: str
-    modo: str = "ia"
+    """Respuesta de `POST /api/chat`."""
+
+    respuesta: str = Field(
+        ...,
+        description="Texto de la respuesta ya redactado, listo para mostrar al usuario.",
+        examples=[
+            "En Francia el PCS admisible está entre 10,7 y 12,8 kWh/m³ (fuente: GRTgaz)…"
+        ],
+    )
+    modo: str = Field(
+        "ia",
+        description=(
+            "Origen de la respuesta. `ia`: la redactó el modelo de lenguaje. "
+            "`determinista`: la resolvió directamente el motor (cifra de la ontología, "
+            "fallback sin LLM, o filtro de coherencia entre mensajes)."
+        ),
+        examples=["ia"],
+    )
 
 
 class StatusResponse(BaseModel):
-    modo: str
-    detalle: str
+    """Respuesta de `GET /api/status`: estado operativo del backend."""
+
+    modo: str = Field(
+        ...,
+        description="`ia` si hay un proveedor LLM operativo; `determinista` si no lo hay.",
+        examples=["ia"],
+    )
+    detalle: str = Field(
+        ...,
+        description="Descripción legible del estado (proveedor activo o motivo del fallback).",
+        examples=["Agente LLM operativo — OpenAI GPT-4o-mini"],
+    )
 
 
 def medir_tiempo(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -300,7 +351,52 @@ backend_detail = (
     else "Sin LLM disponible: usando fallback determinista"
 )
 
-app = FastAPI()
+API_VERSION = "0.1.0"
+
+API_DESCRIPTION = """
+API del **Comparador de Calidad de Gas Natural en Europa**.
+
+Compara los límites regulatorios de calidad del gas natural entre **España** (base de
+referencia) y 20 países/regiones europeas, sobre **10 parámetros**: índice de Wobbe, PCS,
+densidad relativa, azufre total, H₂S+COS, mercaptanos (RSH), O₂, CO₂ y puntos de rocío de
+agua e hidrocarburos.
+
+### Principio de diseño: cero cifras inventadas
+* **Motor determinista** (código + ontología validada a partir de PDFs oficiales): única
+  fuente autorizada de cifras, límites, conversiones de unidad y normalización de
+  condiciones (ISO 13443). Nunca improvisa un número.
+* **Capa conversacional** (LLM): interpreta la pregunta y **redacta** la respuesta, pero
+  tiene prohibido generar cifras — las obtiene llamando a las herramientas deterministas.
+
+### Modos de respuesta
+El backend opera con LLM (`modo: "ia"`) o, si no hay proveedor disponible o el LLM falla,
+cae automáticamente al motor determinista (`modo: "determinista"`) sin romper el chat.
+
+### Recorrido de una consulta
+`index.html` → `POST /api/chat` → router determinista → (ontología · RAG · LLM) → respuesta citada.
+"""
+
+TAGS_METADATA = [
+    {"name": "Interfaz", "description": "Sirve la interfaz web del chatbot (HTML/JS)."},
+    {"name": "Estado", "description": "Salud y modo operativo del backend (con o sin LLM)."},
+    {"name": "Chat", "description": "Conversación en lenguaje natural con el asistente experto."},
+    {
+        "name": "Comparativa",
+        "description": (
+            "Datos estructurados para la comparación regulatoria: catálogo de parámetros y "
+            "países, comparación puntual y matriz comparativa (heatmap)."
+        ),
+    },
+]
+
+app = FastAPI(
+    title="Comparador de Calidad de Gas Natural — API",
+    summary="Comparativa regulatoria de calidad del gas natural en Europa (España base · 20 países · 10 parámetros).",
+    description=API_DESCRIPTION,
+    version=API_VERSION,
+    contact={"name": "Equipo ENAG-S_G1 (Enagás)", "email": "ciclabenagas@gmail.com"},
+    openapi_tags=TAGS_METADATA,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -312,12 +408,19 @@ app.add_middleware(
 _INDEX_HTML = os.path.join(os.path.dirname(__file__), "index.html")
 
 
-@app.get("/")
+@app.get(
+    "/",
+    tags=["Interfaz"],
+    summary="Interfaz web del chatbot",
+    response_class=FileResponse,
+    response_description="Documento HTML de la interfaz (`index.html`).",
+    responses={200: {"content": {"text/html": {}}, "description": "Página del chatbot."}},
+)
 async def servir_chat() -> FileResponse:
-    """Sirve la interfaz web del chatbot en la raíz (http://localhost:8000/).
+    """Sirve la interfaz web del chatbot en la raíz (`http://localhost:8000/`).
 
-    Sin caché: así los compañeros ven SIEMPRE la última versión tras un `git pull`,
-    sin tener que forzar recarga (Ctrl+F5) en el navegador.
+    Devuelve `index.html` con cabeceras **sin caché**: así los compañeros ven SIEMPRE la
+    última versión tras un `git pull`, sin tener que forzar recarga (Ctrl+F5) en el navegador.
     """
     return FileResponse(
         _INDEX_HTML,
@@ -2011,16 +2114,48 @@ def _fallback_deterministic_response(mensaje: str, session_id: str = "default") 
     return _parametro_no_reconocido_message()
 
 
-@app.get("/api/status", response_model=StatusResponse)
+@app.get(
+    "/api/status",
+    response_model=StatusResponse,
+    tags=["Estado"],
+    summary="Estado y modo operativo del backend",
+    response_description="Modo actual (`ia`/`determinista`) y detalle legible.",
+)
 @gestionar_errores
 async def status_endpoint() -> StatusResponse:
+    """Indica si el backend tiene un LLM operativo (`modo: "ia"`) o funciona solo con el
+    motor determinista (`modo: "determinista"`).
+
+    El frontend lo usa al cargar para mostrar el indicador de estado. Se calcula una vez al
+    arrancar el servidor, según la disponibilidad del proveedor LLM configurado.
+    """
     return StatusResponse(modo=backend_mode, detalle=backend_detail)
 
 
-@app.post("/api/chat", response_model=RespuestaChat)
+@app.post(
+    "/api/chat",
+    response_model=RespuestaChat,
+    tags=["Chat"],
+    summary="Enviar un mensaje al asistente",
+    response_description="Respuesta redactada y el modo con que se resolvió.",
+)
 @gestionar_errores
 @medir_tiempo
 async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
+    """Procesa un mensaje de chat y devuelve la respuesta del asistente experto.
+
+    **Flujo (a prueba de fallos):**
+
+    1. **Filtro de coherencia** (`_validate_measurement_gate`): valida el mensaje frente al
+       historial de la sesión; si detecta una incoherencia, responde en `modo: "determinista"`.
+    2. **Sin LLM disponible** → responde con el motor determinista (`modo: "determinista"`).
+    3. **Con LLM** → el modelo redacta la respuesta llamando a herramientas deterministas
+       para las cifras (`modo: "ia"`). Si el LLM falla (clave inválida, red, límite de uso…),
+       **no** se devuelve un error 500: se cae automáticamente al motor determinista.
+
+    Cada turno se registra en el historial de la sesión (`session_id`) para conservar memoria
+    entre mensajes.
+    """
     validation_response = _validate_measurement_gate(request.session_id, request.mensaje)
     if validation_response is not None:
         _registrar_turno(request.session_id, request.mensaje, validation_response)
@@ -2045,27 +2180,155 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
 
 # --- Sección de COMPARATIVA (desplegables) ---------------------------------
 class PeticionComparar(BaseModel):
-    parametro: str
-    paises: List[str] = []
-    unidad: Optional[str] = None
+    """Cuerpo de la petición para `POST /api/comparar`."""
+
+    parametro: str = Field(
+        ...,
+        description=(
+            "Parámetro de calidad a comparar. Admite el `slug` técnico (p. ej. `wobbe`, "
+            "`pcs`, `s total`, `h2o(rocío)`) o su etiqueta; se normaliza internamente. "
+            "Consulta la lista en `GET /api/parametros`."
+        ),
+        examples=["pcs"],
+    )
+    paises: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Países a comparar frente a España, que es SIEMPRE la base de referencia y se "
+            "añade automáticamente. Lista vacía = solo España. Ver `GET /api/parametros`."
+        ),
+        examples=[["Francia", "Alemania"]],
+    )
+    unidad: Optional[str] = Field(
+        default=None,
+        description=(
+            "Unidad de destino a la que convertir los límites (p. ej. `kWh/m³`, `MJ/m³`, "
+            "`mg/Nm³`, `ppm`). Si se omite, cada país se muestra en la unidad nativa de su norma."
+        ),
+        examples=["kWh/m³"],
+    )
 
 
-@app.get("/api/parametros")
+_EJEMPLO_PARAMETROS = {
+    "parametros": [
+        {"slug": "wobbe", "label": "Índice de Wobbe", "unidades": ["kWh/m³", "MJ/m³"]},
+        {"slug": "pcs", "label": "PCS (Poder Calorífico Superior)", "unidades": ["kWh/m³", "MJ/m³"]},
+    ],
+    "paises": ["Portugal", "Francia", "Italia", "Alemania", "…"],
+    "base": "España",
+}
+
+_EJEMPLO_COMPARAR = {
+    "parametro": "PCS (Poder Calorífico Superior)",
+    "unidad": "kWh/m³",
+    "es_combustion": True,
+    "filas": [
+        {
+            "pais": "España", "parametro": "PCS", "limite": "10,26 / 13,26",
+            "unidad": "kWh/m³", "condiciones": "comb. 25 °C · med. 0 °C", "es_base": True,
+            "limite_espana": None, "factor_iso": None,
+            "fuente": "BOE-A-2018-…", "organismo": "MITECO", "fecha": "2018",
+            "articulo": "Anexo …", "url": "https://…", "estado": "ok",
+            "discrepancia": "", "nota": "",
+        },
+        {
+            "pais": "Francia", "parametro": "PCS", "limite": "10,70 / 12,80",
+            "unidad": "kWh/m³", "condiciones": "comb. 0 °C · med. 0 °C", "es_base": False,
+            "limite_espana": "10,70 / 12,80", "factor_iso": 1.0,
+            "fuente": "GRTgaz …", "organismo": "GRTgaz", "fecha": "2023",
+            "articulo": "…", "url": "https://…", "estado": "ok",
+            "discrepancia": "", "nota": "",
+        },
+    ],
+    "notas_iso": [],
+}
+
+_EJEMPLO_MATRIZ = {
+    "paises": ["España", "Portugal", "Francia", "…"],
+    "parametros": [{"slug": "wobbe", "label": "Índice de Wobbe", "unidad": "kWh/m³"}],
+    "filas": [
+        {
+            "pais": "España",
+            "celdas": {"wobbe": {"valor": "13,40 / 16,06", "nivel": "base", "flag": False, "flag_desc": ""}},
+        },
+        {
+            "pais": "Francia",
+            "celdas": {"wobbe": {"valor": "13,64 / 15,70", "nivel": "restrictivo", "flag": True,
+                                  "flag_desc": "condiciones (0/0) → convertido a condiciones de España"}},
+        },
+    ],
+    "unidad_nota": "Valores normalizados a unidad y condiciones de España (ISO 13443 para PCS/Wobbe).",
+}
+
+
+@app.get(
+    "/api/parametros",
+    tags=["Comparativa"],
+    summary="Catálogo de parámetros y países",
+    response_description="Parámetros (con unidades disponibles), países comparables y país base.",
+    responses={200: {"content": {"application/json": {"example": _EJEMPLO_PARAMETROS}}}},
+)
 @gestionar_errores
 async def parametros_endpoint() -> Dict[str, Any]:
-    """Lista de parámetros y unidades para poblar los desplegables del frontend."""
+    """Devuelve el catálogo para poblar los desplegables del frontend.
+
+    - **`parametros`**: lista de objetos `{slug, label, unidades[]}` — los 10 parámetros de
+      calidad y las unidades a las que se puede convertir cada uno.
+    - **`paises`**: países/regiones comparables (España se excluye porque es la base).
+    - **`base`**: país de referencia (`"España"`), frente al que se normaliza todo.
+    """
     return {"parametros": PARAMETROS_UI, "paises": PAISES_UI, "base": PAIS_BASE}
 
 
-@app.post("/api/comparar")
+@app.post(
+    "/api/comparar",
+    tags=["Comparativa"],
+    summary="Comparación puntual de un parámetro entre países",
+    response_description="Filas comparativas (una por país/norma) y notas de normalización ISO.",
+    responses={200: {"content": {"application/json": {"example": _EJEMPLO_COMPARAR}}}},
+)
 @gestionar_errores
 async def comparar_endpoint(req: PeticionComparar) -> Dict[str, Any]:
+    """Compara un parámetro de calidad entre España (base) y los países indicados.
+
+    Cada elemento de **`filas`** describe el límite de un país en su norma:
+
+    - **`limite`** / **`unidad`** / **`condiciones`**: rango `inferior / superior` en la unidad
+      pedida (o la nativa) y las condiciones de referencia (temperaturas de combustión y medida).
+    - **`limite_espana`**: el mismo rango **normalizado a las condiciones de España**
+      (ISO 13443, Tabla A.1, para PCS/Wobbe; corrección de volumen para concentraciones másicas).
+      Es `null` para el país base.
+    - **`factor_iso`**: factor de conversión aplicado al normalizar (solo PCS/Wobbe, si ≠ 1).
+    - **Trazabilidad**: `fuente`, `organismo`, `fecha`, `articulo`, `url`, `estado`, `nota`,
+      `discrepancia` — de dónde procede el dato.
+
+    **`notas_iso`** recoge las conversiones realizadas (mensajes legibles).
+    """
     slug = _normalize_parameter((req.parametro or "").lower()) or (req.parametro or "").lower()
     return comparar_estructurado(slug, req.paises, req.unidad or "")
 
 
-@app.get("/api/matriz")
+@app.get(
+    "/api/matriz",
+    tags=["Comparativa"],
+    summary="Matriz comparativa (heatmap) de todos los países × parámetros",
+    response_description="Rejilla países × parámetros con nivel (color) y flag metodológico por celda.",
+    responses={200: {"content": {"application/json": {"example": _EJEMPLO_MATRIZ}}}},
+)
 @gestionar_errores
 async def matriz_endpoint() -> Dict[str, Any]:
-    """Matriz comparativa (heatmap): países × parámetros, normalizado a condiciones de España."""
+    """Matriz comparativa completa (heatmap): filas = países, columnas = los 10 parámetros,
+    todo normalizado a la unidad y condiciones de España.
+
+    - **`parametros`**: cabeceras `{slug, label, unidad}` (la unidad es la de España).
+    - **`filas`**: una por país, con `celdas[slug]` = `{valor, nivel, flag, flag_desc}`:
+        - **`valor`**: rango normalizado `inferior / superior` (o `—`, `Sin límite`, `≠ unidades`).
+        - **`nivel`**: posición frente a España, para el color — `base`, `restrictivo`, `amplio`,
+          `igual`, `sin_ref`, `sin_dato`, `sin_limite`, `incomparable`.
+        - **`flag`** / **`flag_desc`**: `true` si hubo diferencia metodológica (unidad o condiciones
+          distintas) que obligó a convertir; el texto explica qué se convirtió.
+    - **`unidad_nota`**: aclaración sobre la normalización aplicada.
+
+    No recibe parámetros: recalcula la matriz completa a partir de la ontología.
+    """
     return matriz_comparativa()
