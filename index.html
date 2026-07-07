@@ -215,6 +215,41 @@
   .cmp-empty{color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:24px;text-align:center;margin-top:18px}
   @media(max-width:720px){.cmp-form{grid-template-columns:1fr}}
 
+  /* --- Analizar un gas --- */
+  .gas-head,.gas-row{display:grid;grid-template-columns:1.7fr 1fr 1fr 34px;gap:10px;align-items:center}
+  .gas-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);margin:2px 2px 8px}
+  .gas-rows{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+  .gas-row select,.gas-row input{padding:9px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+  .gas-row select:focus,.gas-row input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,153,214,.15)}
+  .gas-del{width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:6px;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+  .gas-del:hover{border-color:var(--red);color:var(--red)}
+  .gas-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:4px}
+  .gas-add{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px dashed var(--accent);color:var(--accent-d);border-radius:6px;padding:9px 13px;font:inherit;font-size:13px;cursor:pointer}
+  .gas-add:hover{background:rgba(0,153,214,.06)}
+  .gas-base{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .gas-base select{padding:7px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:12.5px;background:#fff}
+  .gas-sum{font-size:14px;color:var(--ink);margin:2px 0 16px;line-height:1.55}
+  .gas-pais{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+  .gas-pais-h{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;background:var(--panel-2)}
+  .gas-pais-h:hover{background:#eef3f7}
+  .gas-pais-n{font-weight:700;color:var(--navy)}
+  .badge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .badge.cumple{background:var(--green-bg);color:var(--green)}
+  .badge.alerta{background:var(--amber-bg);color:var(--amber)}
+  .badge.no_cumple{background:var(--red-bg);color:var(--red)}
+  .badge.sin_datos{background:#eef1f4;color:var(--muted)}
+  .gas-motivo{font-size:12.5px;color:var(--muted);margin-left:auto;text-align:right}
+  .gas-det{padding:2px 14px 14px}
+  .gas-ptable{border-collapse:collapse;width:100%;font-size:12.5px}
+  .gas-ptable th,.gas-ptable td{border-bottom:1px solid var(--line-2);padding:7px 8px;text-align:left;vertical-align:top}
+  .gas-ptable th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  .gas-st{font-weight:700;white-space:nowrap}
+  .gas-st.cumple{color:var(--green)} .gas-st.alerta{color:var(--amber)} .gas-st.no_cumple{color:var(--red)}
+  .gas-st.sin_limite,.gas-st.no_evaluable,.gas-st.sin_datos{color:var(--muted-2)}
+  .gas-cite{color:var(--muted-2);font-size:11.5px}
+  .gas-info-box{background:var(--panel-2);border:1px dashed var(--line);border-radius:6px;padding:11px 13px;margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  @media(max-width:720px){.gas-head,.gas-row{grid-template-columns:1.4fr 1fr 1fr 34px}}
+
   @media(max-width:860px){.sidebar{display:none}}
 </style>
 </head>
@@ -235,6 +270,10 @@
       <button class="nav-item" data-view="compare">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
         Comparativa
+      </button>
+      <button class="nav-item" data-view="gas">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3s6 5.5 6 10a6 6 0 0 1-12 0c0-1.6.7-3.2 1.6-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Analizar gas
       </button>
     </nav>
 
@@ -342,6 +381,44 @@
         </div>
       </div>
     </div>
+
+    <!-- VIEW: Analizar gas -->
+    <div id="viewGas" class="view">
+      <div class="cmp-wrap">
+        <div class="cmp-hero">
+          <div class="cmp-bc">Inicio <span>›</span> <b>Analizar un gas</b></div>
+          <h1>Analizar un gas concreto</h1>
+          <p class="cmp-hero-sub">Introduce la composición o las medidas del gas y comprueba, jurisdicción a jurisdicción, si cumple la normativa.</p>
+        </div>
+        <div class="cmp-inner">
+          <div class="cmp-card-main">
+            <h2 class="cmp-card-h2">Composición del gas</h2>
+            <div class="gas-head"><span>Parámetro</span><span>Valor</span><span>Unidad</span><span></span></div>
+            <div class="gas-rows" id="gasFilas"></div>
+            <div class="gas-actions">
+              <button class="gas-add" id="gasAddBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Añadir componente
+              </button>
+              <span class="gas-base">Base del PCS/Wobbe:
+                <select id="gasBase">
+                  <option value="España">España (comb. 0 °C)</option>
+                  <option value="UE">ISO/UE (15/15)</option>
+                  <option value="Italia">Italia (15/15)</option>
+                  <option value="Alemania">Alemania (25/0)</option>
+                  <option value="Portugal">Portugal (25/0)</option>
+                </select>
+              </span>
+              <button class="cmp-btn" id="gasBtn" style="grid-column:auto">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Analizar
+              </button>
+            </div>
+          </div>
+          <div class="cmp-result" id="gasResult"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -394,15 +471,18 @@
   /* ===== View switching ===== */
   const TITLES = {
     chat: 'Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span>',
-    compare: 'Comparativa'
+    compare: 'Comparativa',
+    gas: 'Analizar un gas <span class="sub">· validación de calidad por jurisdicción</span>'
   };
   function setView(view){
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view===view));
     $("viewChat").classList.toggle("active", view==="chat");
     $("viewCompare").classList.toggle("active", view==="compare");
+    $("viewGas").classList.toggle("active", view==="gas");
     $("chatSide").style.display = view==="chat" ? "" : "none";
     $("topTitle").innerHTML = TITLES[view];
     if(view==="compare" && !cmpReady) initCompare();
+    if(view==="gas" && !gasReady) initGas();
     if(view==="chat") $("input").focus();
   }
   document.querySelectorAll(".nav-item").forEach(b => b.onclick = () => setView(b.dataset.view));
@@ -655,6 +735,141 @@
     return html;
   }
   $("cmpBtn").onclick = comparar;
+
+  /* ===== Analizar un gas concreto ===== */
+  // Componentes de composición (informativos): no tienen límite normativo directo, no se validan.
+  const GAS_INFO = [
+    {slug:"ch4", label:"CH₄ (metano) — informativo", unidades:["% molar","ppm"]},
+    {slug:"n2",  label:"N₂ (nitrógeno) — informativo", unidades:["% molar","ppm"]},
+    {slug:"c2h6",label:"C₂H₆ (etano) — informativo", unidades:["% molar","ppm"]},
+  ];
+  const GAS_ALL = PARAMS.concat(GAS_INFO);
+  let gasReady = false;
+  function gasParamOptions(){
+    return '<optgroup label="Parámetros normativos">'+
+      PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
+      '</optgroup><optgroup label="Composición (informativo)">'+
+      GAS_INFO.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
+      '</optgroup>';
+  }
+  function fillUnidadesGas(sel){
+    const row = sel.closest(".gas-row");
+    const p = GAS_ALL.find(x => x.slug === sel.value);
+    const u = (p && p.unidades) || ["—"];
+    row.querySelector(".gas-unidad").innerHTML = u.map(x => '<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+  }
+  function addFilaGas(slug, valor, unidad){
+    const cont = $("gasFilas");
+    const row = document.createElement("div");
+    row.className = "gas-row";
+    row.innerHTML =
+      '<select class="gas-param">'+gasParamOptions()+'</select>'+
+      '<input type="number" step="any" class="gas-valor" placeholder="valor" />'+
+      '<select class="gas-unidad"></select>'+
+      '<button class="gas-del" title="Quitar componente">×</button>';
+    cont.appendChild(row);
+    const selP = row.querySelector(".gas-param");
+    if(slug) selP.value = slug;
+    selP.onchange = () => fillUnidadesGas(selP);
+    fillUnidadesGas(selP);
+    if(unidad) row.querySelector(".gas-unidad").value = unidad;
+    if(valor!=null) row.querySelector(".gas-valor").value = valor;
+    row.querySelector(".gas-del").onclick = () => { row.remove(); if(!cont.children.length) addFilaGas(); };
+  }
+  function initGas(){
+    $("gasFilas").innerHTML = "";
+    // Precarga un ejemplo (biometano) para que se entienda de un vistazo.
+    addFilaGas("co2", 2, "% molar");
+    addFilaGas("o2", 50, "ppm");
+    addFilaGas("h2s+cos", 3, "ppm");
+    addFilaGas("pcs", 11.5, "kWh/m³");
+    gasReady = true;
+  }
+  const VEREDICTO_TXT = {cumple:"Cumple", alerta:"Zona de alerta", no_cumple:"No cumple", sin_datos:"Sin datos"};
+  const ESTADO_TXT = {cumple:"Cumple", alerta:"Alerta", no_cumple:"No cumple", sin_limite:"Sin límite", no_evaluable:"No evaluable", sin_datos:"Sin dato"};
+  async function analizarGas(){
+    const componentes = [];
+    document.querySelectorAll("#gasFilas .gas-row").forEach(row => {
+      const parametro = row.querySelector(".gas-param").value;
+      const vraw = row.querySelector(".gas-valor").value;
+      const unidad = row.querySelector(".gas-unidad").value;
+      if(vraw === "" || isNaN(parseFloat(vraw))) return;
+      componentes.push({ parametro, valor: parseFloat(vraw), unidad });
+    });
+    const res = $("gasResult");
+    if(!componentes.length){
+      res.innerHTML = '<div class="cmp-empty">Introduce al menos un componente con su valor.</div>';
+      return;
+    }
+    res.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Analizando el gas…</div></div>';
+    try{
+      const r = await fetch(api("/api/analizar-gas"),{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ componentes, base_pcs: $("gasBase").value })
+      });
+      if(r.status===404){
+        res.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar el análisis de gas.<br>'+
+          'Cierra la ventana del servidor y vuelve a ejecutar <code>iniciar_chatbot.bat</code> '+
+          '(haz antes <code>git pull</code> si todavía no lo has hecho).</div>';
+        return;
+      }
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      res.innerHTML = renderAnalisis(await r.json());
+    }catch(e){
+      res.innerHTML = '<div class="cmp-empty">No se pudo analizar el gas.<br>Detalle: '+esc(e.message)+'</div>';
+    }
+  }
+  function renderAnalisis(d){
+    const paises = d.paises || [];
+    if(!paises.length) return '<div class="cmp-empty">No hay resultados.</div>';
+    const ord = {no_cumple:0, alerta:1, cumple:2, sin_datos:3};
+    const paisesOrd = paises.slice().sort((a,b) =>
+      (ord[a.veredicto]-ord[b.veredicto]) || (a.pais==="España"?-1:b.pais==="España"?1:a.pais.localeCompare(b.pais,'es')));
+    let html = '<div class="cmp-card"><h2>Resultado del análisis</h2>';
+    html += '<p class="gas-sum">'+esc(d.resumen||"")+'</p>';
+    paisesOrd.forEach(r => {
+      const motivos = Array.from(new Set(
+        r.parametros.filter(p => p.estado===r.veredicto && r.veredicto!=="cumple" && r.veredicto!=="sin_datos").map(p => p.label)));
+      const motTxt = motivos.length ? "por "+esc(motivos.join(", ")) : "";
+      const abierto = (r.veredicto==="cumple"||r.veredicto==="sin_datos") ? "none" : "";
+      const rows = r.parametros.map(p => {
+        let cita = esc(p.fuente||"");
+        if(p.articulo) cita += ' · '+esc(p.articulo);
+        if(p.url && /^https?:/i.test(p.url)) cita = '<a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+cita+'</a>';
+        return '<tr>'+
+          '<td><b>'+esc(p.label)+'</b></td>'+
+          '<td>'+esc(p.valor_usuario)+' '+esc(p.unidad_usuario||"")+'</td>'+
+          '<td>'+esc(p.limite)+' '+esc(p.unidad_limite||"")+'</td>'+
+          '<td class="gas-st '+esc(p.estado)+'">'+esc(ESTADO_TXT[p.estado]||p.estado)+'</td>'+
+          '<td>'+esc(p.detalle||"")+(cita?'<br><span class="gas-cite">'+cita+'</span>':'')+'</td>'+
+        '</tr>';
+      }).join("");
+      html += '<div class="gas-pais">'+
+        '<div class="gas-pais-h" onclick="var n=this.nextElementSibling;n.style.display=(n.style.display===\'none\'?\'\':\'none\')">'+
+          '<span class="gas-pais-n">'+esc(r.pais)+'</span>'+
+          '<span class="badge '+esc(r.veredicto)+'">'+esc(VEREDICTO_TXT[r.veredicto]||r.veredicto)+'</span>'+
+          '<span class="gas-motivo">'+motTxt+'</span>'+
+        '</div>'+
+        '<div class="gas-det" style="display:'+abierto+'">'+
+          '<table class="gas-ptable"><thead><tr><th>Parámetro</th><th>Tu gas</th><th>Límite del país</th><th>Estado</th><th>Detalle · fuente</th></tr></thead>'+
+          '<tbody>'+rows+'</tbody></table>'+
+        '</div></div>';
+    });
+    const info = (d.componentes||[]).filter(c => c.informativo);
+    if(info.length){
+      html += '<div class="gas-info-box"><b>No evaluados</b> (composición sin límite normativo directo): '+
+        info.map(c => esc(c.label)+' '+esc(c.valor)+' '+esc(c.unidad||"")).join(" · ")+
+        '. El sistema no calcula el PCS/Wobbe a partir de la composición; introdúcelos directamente si quieres validarlos.</div>';
+    }
+    if(d.margen_alerta!=null){
+      html += '<p class="csub" style="margin-top:12px">Zona de alerta = cumple pero dentro del '+
+        esc(Math.round(d.margen_alerta*100))+' % del límite. Valores normalizados a unidad y condiciones de España (ISO 13443 para PCS/Wobbe).</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+  $("gasAddBtn").onclick = () => addFilaGas();
+  $("gasBtn").onclick = analizarGas;
 
   /* ===== Sub-tabs Comparativa: puntual / matriz ===== */
   let matrizCargada = false;

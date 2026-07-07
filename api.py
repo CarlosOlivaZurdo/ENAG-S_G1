@@ -2332,3 +2332,300 @@ async def matriz_endpoint() -> Dict[str, Any]:
     No recibe parámetros: recalcula la matriz completa a partir de la ontología.
     """
     return matriz_comparativa()
+
+
+# ============================================================================
+# ANÁLISIS DE UN GAS CONCRETO (validación de calidad país a país)
+# ---------------------------------------------------------------------------
+# El usuario introduce la composición/medidas de un gas y el sistema responde,
+# para cada jurisdicción, si CUMPLE / está en ZONA DE ALERTA / NO CUMPLE / no
+# tiene límite. Reutiliza el mismo motor que la comparativa/heatmap: se lleva
+# tanto el límite de cada país como el valor del usuario a la UNIDAD y
+# CONDICIONES de España (ISO 13443) y se comparan de forma determinista.
+# ============================================================================
+
+MARGEN_ALERTA = 0.10        # 10 % de la banda/límite → "zona de alerta" (proximidad)
+MARGEN_ALERTA_TEMP = 2.0    # margen absoluto para rocíos (°C/K/°F): el % no aplica a temperaturas
+_LABEL_PARAM = {p["slug"]: p["label"] for p in PARAMETROS_UI}
+_ROCIO_SLUGS = {"h2o(rocío)", "hc(rocío)"}
+_SEVERIDAD = {"cumple": 1, "alerta": 2, "no_cumple": 3}
+
+
+class ComponenteGas(BaseModel):
+    """Un componente o medida del gas a validar."""
+
+    parametro: str = Field(
+        ...,
+        description=(
+            "Parámetro (slug o etiqueta): `co2`, `o2`, `h2s+cos`, `s total`, `rsh`, `pcs`, "
+            "`wobbe`, `densidad relativa`, `h2o(rocío)`, `hc(rocío)`. Los componentes NO "
+            "normativos (`ch4`, `n2`…) se aceptan pero se marcan como informativos y no se validan."
+        ),
+        examples=["co2"],
+    )
+    valor: float = Field(..., description="Valor medido del componente.", examples=[2.6])
+    unidad: Optional[str] = Field(
+        None,
+        description=(
+            "Unidad del valor (`% molar`, `ppm`, `mg/Nm³`, `kWh/m³`, `°C`…). Si se omite, se "
+            "asume la unidad de referencia de España para ese parámetro."
+        ),
+        examples=["% molar"],
+    )
+
+
+class PeticionAnalisisGas(BaseModel):
+    """Cuerpo de la petición para `POST /api/analizar-gas`."""
+
+    componentes: List[ComponenteGas] = Field(
+        ..., description="Componentes/medidas del gas a validar."
+    )
+    paises: Optional[List[str]] = Field(
+        None,
+        description="Países a evaluar. Si se omite, se evalúan las 21 jurisdicciones (España incluida).",
+        examples=[["España", "Francia", "Alemania"]],
+    )
+    base_pcs: Optional[str] = Field(
+        "España",
+        description=(
+            "Condiciones de referencia asumidas para el PCS/Wobbe introducidos por el usuario. "
+            "Por defecto España (combustión 0 °C). Solo afecta a PCS/Wobbe."
+        ),
+        examples=["España"],
+    )
+    margen_alerta: Optional[float] = Field(
+        None,
+        description="Fracción (0–1) para la zona de alerta por proximidad al límite. Por defecto 0.10 (10 %).",
+        examples=[0.10],
+    )
+
+
+def _valor_a_condiciones_es(
+    valor: Any, unidad_user: str, unidad_es: str, slug: str, base_pcs: str
+) -> Optional[float]:
+    """Lleva el valor del usuario a la UNIDAD y CONDICIONES de España, para poder compararlo
+    con el límite de cada país (que también se normaliza a España). Devuelve None si las
+    unidades no son convertibles de forma determinista (→ no evaluable)."""
+    if valor is None:
+        return None
+    try:
+        v = float(valor)
+    except (TypeError, ValueError):
+        return None
+    u_src = (unidad_user or unidad_es or "").strip()
+    if u_src and unidad_es and _normalize_unit(u_src) != _normalize_unit(unidad_es):
+        conv = convertir_unidades(v, u_src, unidad_es, slug)
+        if "valor_convertido" not in conv:
+            return None  # unidades incompatibles
+        v = conv["valor_convertido"]
+    # Condiciones de referencia (ISO 13443): solo PCS/Wobbe dependen de la combustión.
+    if _slug_param_comb(slug) in {"pcs", "wobbe"} and base_pcs and _norm_pais(base_pcs) != _norm_pais(PAIS_BASE):
+        cr = convertir_a_condiciones_espana(v, slug, base_pcs)
+        v = cr.get("valor_convertido", v)
+    return v
+
+
+def _estado_desde_rango(v: Optional[float], rango: Dict[str, Any], slug: str, margen: float = MARGEN_ALERTA) -> str:
+    """Decide el estado de un parámetro comparando el valor del usuario `v` con el rango
+    normalizado a España `{estado, lo, hi}`. Estados: cumple · alerta · no_cumple ·
+    sin_limite · no_evaluable · sin_datos."""
+    est = rango.get("estado")
+    if est in ("sin_datos", "sin_dato"):
+        return "sin_datos"
+    if est == "incomparable":
+        return "no_evaluable"
+    if est == "sin_limite":
+        return "sin_limite"
+    # est == "ok"
+    if v is None:
+        return "no_evaluable"
+    lo, hi = rango.get("lo"), rango.get("hi")
+    if lo is None and hi is None:
+        return "sin_limite"
+    if hi is not None and v > hi:
+        return "no_cumple"
+    if lo is not None and v < lo:
+        return "no_cumple"
+    # Dentro de los límites → ¿zona de alerta por proximidad?
+    if slug in _ROCIO_SLUGS:  # escala de temperatura: margen absoluto, no porcentual
+        m = MARGEN_ALERTA_TEMP
+        if (hi is not None and abs(hi - v) < m) or (lo is not None and abs(v - lo) < m):
+            return "alerta"
+        return "cumple"
+    if lo is not None and hi is not None:
+        banda = hi - lo
+        if banda > 0 and ((hi - v) < margen * banda or (v - lo) < margen * banda):
+            return "alerta"
+        return "cumple"
+    if hi is not None:  # solo máximo
+        return "alerta" if (hi > 0 and v >= hi * (1 - margen)) else "cumple"
+    # solo mínimo
+    return "alerta" if (lo > 0 and v <= lo * (1 + margen)) else "cumple"
+
+
+def _detalle_estado(estado: str, v: Optional[float], rango: Dict[str, Any], unidad: str) -> str:
+    """Explicación legible del estado de un parámetro."""
+    lo, hi = rango.get("lo"), rango.get("hi")
+    u = f" {unidad}" if unidad else ""
+    if estado == "no_cumple":
+        if hi is not None and v is not None and v > hi:
+            return f"supera el máximo ({_coma(hi)}{u})"
+        if lo is not None and v is not None and v < lo:
+            return f"no alcanza el mínimo ({_coma(lo)}{u})"
+        return "fuera de los límites"
+    return {
+        "alerta": "cumple, pero cerca del límite",
+        "cumple": "dentro de los límites",
+        "sin_limite": "este país no fija un límite numérico para este parámetro",
+        "no_evaluable": "no comparable de forma determinista (unidades/condiciones)",
+        "sin_datos": "sin dato en la fuente para este país",
+    }.get(estado, "")
+
+
+def _fmt_limite_pais(m: Optional[Dict[str, Any]]) -> str:
+    """Límite nativo de un país para mostrarlo (rango, ≤ máx, ≥ mín o 'sin límite')."""
+    if not m:
+        return "sin dato"
+    ni = _num_limite(_txt(m.get("limite_inferior")))
+    ns = _num_limite(_txt(m.get("limite_superior")))
+    if ni is None and ns is None:
+        return "sin límite"
+    if ni is not None and ns is not None:
+        return f"{_coma(ni)} / {_coma(ns)}"
+    if ns is not None:
+        return f"≤ {_coma(ns)}"
+    return f"≥ {_coma(ni)}"
+
+
+def _veredicto_pais(parametros: List[Dict[str, Any]]) -> str:
+    """Veredicto del país = peor severidad entre sus parámetros evaluables."""
+    peor = max((_SEVERIDAD.get(p["estado"], 0) for p in parametros), default=0)
+    if peor == 0:
+        return "sin_datos"
+    return {1: "cumple", 2: "alerta", 3: "no_cumple"}[peor]
+
+
+def _resumen_analisis(resultados: List[Dict[str, Any]]) -> str:
+    """Frase-resumen: agrupa países por veredicto, con el parámetro que lo motiva."""
+    grupos: Dict[str, List[str]] = {"no_cumple": [], "alerta": [], "cumple": []}
+    for r in resultados:
+        v = r["veredicto"]
+        if v not in grupos:
+            continue
+        motivos = [p["label"] for p in r["parametros"] if p["estado"] == v] if v != "cumple" else []
+        grupos[v].append(r["pais"] + (f" ({', '.join(dict.fromkeys(motivos))})" if motivos else ""))
+    partes = []
+    if grupos["cumple"]:
+        partes.append("Cumple: " + ", ".join(grupos["cumple"]))
+    if grupos["alerta"]:
+        partes.append("Alerta: " + ", ".join(grupos["alerta"]))
+    if grupos["no_cumple"]:
+        partes.append("No cumple: " + ", ".join(grupos["no_cumple"]))
+    return " · ".join(partes) if partes else "Sin datos evaluables."
+
+
+def analizar_gas(
+    componentes: List[Any], paises: Optional[List[str]] = None,
+    base_pcs: str = "España", margen: float = MARGEN_ALERTA,
+) -> Dict[str, Any]:
+    """Valida un gas concreto contra la normativa de cada país. Devuelve, por país, un
+    veredicto (cumple/alerta/no_cumple/sin_datos) y el detalle por parámetro con su cita."""
+    orden_paises = paises or list(PAISES_MATRIZ)
+    comp_out: List[Dict[str, Any]] = []
+    evaluables: List[Dict[str, Any]] = []
+    for c in componentes:
+        parametro_in = str(getattr(c, "parametro", "") or "").strip()
+        valor = getattr(c, "valor", None)
+        unidad_user = str(getattr(c, "unidad", "") or "").strip()
+        slug = _normalize_parameter(parametro_in.lower())
+        if not slug:  # componente no normativo (CH₄, N₂…): informativo, no se valida
+            comp_out.append({"parametro": parametro_in, "label": parametro_in, "valor": valor,
+                             "unidad": unidad_user, "informativo": True})
+            continue
+        label = _LABEL_PARAM.get(slug, DISPLAY_MAP.get(slug, slug))
+        es = fuente_oficial.consultar(slug, PAIS_BASE)
+        unidad_es = ((es["matches"][0].get("unidad") if es.get("matches") else "") or unidad_user or "")
+        v_norm = _valor_a_condiciones_es(valor, unidad_user, unidad_es, slug, base_pcs)
+        comp_out.append({"parametro": slug, "label": label, "valor": valor,
+                         "unidad": unidad_user or unidad_es, "informativo": False})
+        evaluables.append({"slug": slug, "label": label, "valor": valor,
+                           "unidad_user": unidad_user or unidad_es, "unidad_es": unidad_es, "v_norm": v_norm})
+
+    resultados: List[Dict[str, Any]] = []
+    for pais in orden_paises:
+        params_res: List[Dict[str, Any]] = []
+        for e in evaluables:
+            resp = _consultar_norma(e["slug"], pais)
+            m = resp["matches"][0] if resp.get("matches") else None
+            rango = _rango_de_match(m, e["slug"], pais, e["unidad_es"]) if m else {"estado": "sin_datos"}
+            estado = _estado_desde_rango(e["v_norm"], rango, e["slug"], margen)
+            params_res.append({
+                "parametro": e["slug"], "label": e["label"],
+                "valor_usuario": e["valor"], "unidad_usuario": e["unidad_user"],
+                "valor_evaluado": (round(e["v_norm"], 4) if isinstance(e["v_norm"], float) else e["v_norm"]),
+                "unidad_evaluada": e["unidad_es"],
+                "limite": _fmt_limite_pais(m), "unidad_limite": (_txt(m.get("unidad")) if m else ""),
+                "condiciones": ((_txt(m.get("condiciones")) or _txt(m.get("notacion"))) if m else ""),
+                "estado": estado, "detalle": _detalle_estado(estado, e["v_norm"], rango, e["unidad_es"]),
+                "fuente": (m.get("documento") if m else "") or "",
+                "organismo": (m.get("organismo") if m else "") or "",
+                "articulo": (m.get("articulo") if m else "") or "",
+                "url": ((m.get("url") or m.get("pdf")) if m else "") or "",
+                "estado_fuente": (m.get("estado") if m else "") or "",
+                "nota": (m.get("nota") if m else "") or "",
+            })
+        resultados.append({"pais": pais, "veredicto": _veredicto_pais(params_res), "parametros": params_res})
+
+    return {
+        "componentes": comp_out, "paises": resultados,
+        "resumen": _resumen_analisis(resultados),
+        "margen_alerta": margen, "base_pcs": base_pcs,
+    }
+
+
+_EJEMPLO_ANALISIS = {
+    "componentes": [
+        {"parametro": "co2", "label": "CO₂", "valor": 2.6, "unidad": "% molar", "informativo": False},
+        {"parametro": "ch4", "label": "ch4", "valor": 97, "unidad": "% molar", "informativo": True},
+    ],
+    "paises": [
+        {"pais": "España", "veredicto": "no_cumple", "parametros": [
+            {"parametro": "co2", "label": "CO₂", "valor_usuario": 2.6, "unidad_usuario": "% molar",
+             "valor_evaluado": 2.6, "unidad_evaluada": "% mol", "limite": "≤ 2,5", "unidad_limite": "% mol",
+             "condiciones": "(0/0)", "estado": "no_cumple", "detalle": "supera el máximo (2,5 % mol)",
+             "fuente": "ORDEN_TED_181_2025", "organismo": "MITECO", "articulo": "Anexo…", "url": "https://…",
+             "estado_fuente": "VERIFICADO", "nota": ""}]},
+    ],
+    "resumen": "No cumple: España (CO₂), Alemania (CO₂)…",
+    "margen_alerta": 0.1, "base_pcs": "España",
+}
+
+
+@app.post(
+    "/api/analizar-gas",
+    tags=["Comparativa"],
+    summary="Validar un gas concreto contra la normativa de cada país",
+    response_description="Veredicto por país (cumple/alerta/no cumple) con el detalle por parámetro y su cita.",
+    responses={200: {"content": {"application/json": {"example": _EJEMPLO_ANALISIS}}}},
+)
+@gestionar_errores
+@medir_tiempo
+async def analizar_gas_endpoint(req: PeticionAnalisisGas) -> Dict[str, Any]:
+    """Valida la composición/medidas de un gas concreto contra los límites regulatorios de
+    cada jurisdicción.
+
+    - **`componentes`**: cada `{parametro, valor, unidad}` se evalúa contra el límite de cada
+      país. Los componentes no normativos (CH₄, N₂…) se devuelven como `informativo: true` y
+      **no** se validan (el sistema no inventa PCS/Wobbe a partir de la composición).
+    - **Veredicto por país** (`cumple` · `alerta` · `no_cumple` · `sin_datos`): la peor
+      severidad entre sus parámetros. `alerta` = cumple pero dentro del margen de proximidad
+      al límite (por defecto 10 %; configurable con `margen_alerta`).
+    - Todo se normaliza a la unidad y condiciones de España (ISO 13443 para PCS/Wobbe) antes
+      de comparar, igual que la comparativa y el heatmap. Cada parámetro incluye su cita oficial.
+    """
+    return analizar_gas(
+        req.componentes,
+        req.paises,
+        req.base_pcs or "España",
+        req.margen_alerta if req.margen_alerta is not None else MARGEN_ALERTA,
+    )
