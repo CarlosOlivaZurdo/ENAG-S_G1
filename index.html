@@ -215,6 +215,16 @@
   .cmp-empty{color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:24px;text-align:center;margin-top:18px}
   @media(max-width:720px){.cmp-form{grid-template-columns:1fr}}
 
+  /* --- Exportación de la matriz --- */
+  .mtz-bar{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+  .mtz-bar-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);margin:0}
+  .mtz-exp-group{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .mtz-exp-lbl{font-size:12.5px;color:var(--muted);margin-right:2px}
+  .mtz-exp{display:inline-flex;align-items:center;gap:8px;background:var(--brand-green-d);color:#fff;border:0;border-radius:6px;padding:9px 15px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .mtz-exp:hover{background:var(--brand-green)}
+  .mtz-exp.pdf{background:var(--accent-d)} .mtz-exp.pdf:hover{background:var(--accent)}
+  .mtz-exp:disabled{opacity:.6;cursor:default}
+
   @media(max-width:860px){.sidebar{display:none}}
 </style>
 </head>
@@ -336,6 +346,21 @@
             <div class="cmp-card-main">
               <h2 class="cmp-card-h2">Matriz general</h2>
               <p class="cmp-intro"><b>Países × parámetros</b>, normalizado a España. Color = más restrictivo / más amplio que España; ⚠ = unidad o condiciones distintas.</p>
+              <div class="mtz-bar">
+                <p class="mtz-bar-h">Jurisdicciones del informe</p>
+                <div class="cmp-paises" id="mtzPaises"></div>
+                <div class="mtz-exp-group">
+                  <span class="mtz-exp-lbl">Exportar informe:</span>
+                  <button class="mtz-exp" id="mtzExpXlsx">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l3 4m0-4l-3 4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    Excel
+                  </button>
+                  <button class="mtz-exp pdf" id="mtzExpPdf">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 13h5M9.5 16h5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    PDF
+                  </button>
+                </div>
+              </div>
             </div>
             <div id="matrizResult"></div>
           </div>
@@ -669,6 +694,7 @@
   const NIVEL_LABEL = {base:"España (base)", igual:"Igual de exigente", restrictivo:"Más restrictivo",
     amplio:"Más amplio", sin_limite:"Sin límite", sin_dato:"Sin dato", incomparable:"No comparable", sin_ref:"Sin referencia"};
 
+  let matrizData = null;
   async function cargarMatriz(){
     const cont = $("matrizResult");
     cont.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Cargando matriz…</div></div>';
@@ -680,15 +706,32 @@
       }
       if(!r.ok) throw new Error("HTTP "+r.status);
       matrizCargada = true;
-      cont.innerHTML = renderMatriz(await r.json());
+      matrizData = await r.json();
+      if(!$("mtzPaises").children.length) initMatrizPaises();
+      cont.innerHTML = renderMatriz(matrizData);
     }catch(e){
       cont.innerHTML = '<div class="cmp-empty">No se pudo cargar la matriz.<br>Detalle: '+esc(e.message)+'</div>';
     }
   }
+  function initMatrizPaises(){
+    $("mtzPaises").innerHTML =
+      '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
+      PAISES_OPC.slice().sort((a,b)=>a.localeCompare(b,'es')).map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'" checked> '+esc(p)+'</label>').join("");
+    $("mtzPaises").querySelectorAll('input:not([disabled])').forEach(c => c.onchange = () => {
+      if(matrizData) $("matrizResult").innerHTML = renderMatriz(matrizData);
+    });
+  }
+  function paisesMatrizSel(){
+    const box = $("mtzPaises");
+    if(!box || !box.querySelectorAll('input:not([disabled])').length) return ["España"].concat(PAISES_OPC);
+    return ["España"].concat(Array.from(box.querySelectorAll('input:not([disabled]):checked')).map(c => c.value));
+  }
 
   function renderMatriz(d){
-    const params = d.parametros||[], filas = d.filas||[];
-    if(!params.length || !filas.length) return '<div class="cmp-empty">Sin datos para la matriz.</div>';
+    const params = d.parametros||[];
+    const sel = new Set(paisesMatrizSel());
+    const filas = (d.filas||[]).filter(f => sel.has(f.pais));
+    if(!params.length || !filas.length) return '<div class="cmp-empty">Selecciona al menos una jurisdicción para ver la matriz.</div>';
     let head = '<tr><th class="hm-corner">País \\ Parámetro</th>';
     params.forEach(p => head += '<th>'+esc(p.label)+(p.unidad?'<span class="hm-unit">'+esc(p.unidad)+'</span>':'')+'</th>');
     head += '</tr>';
@@ -717,6 +760,32 @@
       '<div class="hm-wrap"><table class="hm"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
       leg+'</div>';
   }
+
+  async function exportarMatriz(formato){
+    const btn = formato==="pdf" ? $("mtzExpPdf") : $("mtzExpXlsx");
+    const prev = btn.innerHTML;
+    btn.disabled = true; btn.textContent = "Generando…";
+    try{
+      const r = await fetch(api("/api/exportar-matriz"),{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ paises: paisesMatrizSel(), formato })
+      });
+      if(r.status===404) throw new Error("El servidor necesita reiniciarse para activar la exportación.");
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = formato==="pdf" ? "comparativa_gas.pdf" : "comparativa_gas.xlsx";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }catch(e){
+      alert("No se pudo exportar el informe.\n"+e.message);
+    }finally{
+      btn.disabled = false; btn.innerHTML = prev;
+    }
+  }
+  $("mtzExpXlsx").onclick = () => exportarMatriz("xlsx");
+  $("mtzExpPdf").onclick = () => exportarMatriz("pdf");
 
   restoreConversation(); checkStatus(); setInterval(checkStatus, 15000);
 </script>

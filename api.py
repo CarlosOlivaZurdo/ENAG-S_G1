@@ -7,7 +7,7 @@ from functools import wraps
 from typing import Callable, Any, Dict, List, Optional, TypedDict
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -1174,11 +1174,9 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
             if not es_base and not sin_lim:
                 if es_combustion:
                     if vi is not None:
-                        cr = convertir_a_condiciones_espana(vi, parametro_slug, pais)
-                        vi_es, factor = cr["valor_convertido"], cr["factor"]
+                        vi_es, factor = _a_espana_por_registro(vi, parametro_slug, pais, m)
                     if vs is not None:
-                        cr = convertir_a_condiciones_espana(vs, parametro_slug, pais)
-                        vs_es, factor = cr["valor_convertido"], cr["factor"]
+                        vs_es, factor = _a_espana_por_registro(vs, parametro_slug, pais, m)
                     if factor and factor != 1.0:
                         notas.append(f"{pais}: combustión {_coma(ccomb)} °C → 0 °C (× {factor:g}, ISO 13443 Tabla A.1)")
                 elif cmed and cmed != 0 and _es_mg_por_volumen(unidad_out):
@@ -1512,6 +1510,20 @@ def _normativa_de_pais(paises: list) -> str:
     return "\n\n".join(bloques) if bloques else "No encontré normativa para el país indicado."
 
 
+def _a_espana_por_registro(v: float, parametro: str, pais: str, m: Optional[Dict[str, Any]]) -> tuple:
+    """Convierte `v` (PCS/Wobbe) a las condiciones de España (0/0) usando las condiciones
+    del REGISTRO (su `notacion`) si las tiene; si no, las del país. Necesario cuando un país
+    tiene parámetros en condiciones distintas (p. ej. Alemania: Wobbe/CO₂ @25/0 pero PCS
+    @15/15, de la lista UE 2021/C 78/05). Devuelve (valor_convertido, factor)."""
+    notac = (m or {}).get("notacion")
+    if notac:
+        ncomb, nmed = _parse_notac(notac)
+        cr = convertir_condiciones_referencia(v, parametro, ncomb, nmed, 0.0, 0.0)
+    else:
+        cr = convertir_a_condiciones_espana(v, parametro, pais)
+    return cr.get("valor_convertido", v), cr.get("factor", 1.0)
+
+
 def _rango_de_match(m: Dict[str, Any], parametro: str, pais: str, unidad_es: Optional[str]) -> Dict[str, Any]:
     """Lleva el rango de un registro `m` a la UNIDAD y CONDICIONES de España (ISO 13443)."""
     inf = _num_limite(_txt(m.get("limite_inferior")))
@@ -1531,7 +1543,7 @@ def _rango_de_match(m: Dict[str, Any], parametro: str, pais: str, unidad_es: Opt
                 return "incomparable"
             v = c["valor_convertido"]
         if es_combustion and not base_es:
-            v = convertir_a_condiciones_espana(v, parametro, pais)["valor_convertido"]
+            v, _ = _a_espana_por_registro(v, parametro, pais, m)
         elif not base_es:
             # Concentración másica (mg/m³) a volumen ≠ 0 °C (p. ej. Italia, Sm³ a 15 °C):
             # normaliza el volumen a 0 °C (gas ideal). El % mol/ppm/adimensional no cambia.
@@ -2332,3 +2344,203 @@ async def matriz_endpoint() -> Dict[str, Any]:
     No recibe parámetros: recalcula la matriz completa a partir de la ontología.
     """
     return matriz_comparativa()
+
+
+# ============================================================================
+# EXPORTACIÓN DE INFORMES COMPARATIVOS (Excel / PDF)
+# ---------------------------------------------------------------------------
+# Genera un informe con la matriz comparativa (países × parámetros) de las
+# jurisdicciones seleccionadas, en Excel (.xlsx, openpyxl) o PDF (xhtml2pdf).
+# Serializa los MISMOS datos que la matriz de la web (cero cifras nuevas).
+# ============================================================================
+
+# Colores de nivel del heatmap (mismos que index.html), sin '#', para openpyxl/PDF.
+_NIVEL_FILL = {
+    "base": "FFFFFF", "igual": "E7F4EC", "restrictivo": "E2EDFB", "amplio": "FBEEDD",
+    "sin_limite": "F1F3F5", "sin_dato": "F8F9FA", "incomparable": "FBE7E6", "sin_ref": "F8F9FA",
+}
+_NIVEL_ETIQUETA = {
+    "base": "España (base)", "igual": "Igual de exigente", "restrictivo": "Más restrictivo",
+    "amplio": "Más amplio", "sin_limite": "Sin límite", "sin_dato": "Sin dato",
+    "incomparable": "No comparable", "sin_ref": "Sin referencia",
+}
+
+
+class PeticionExportar(BaseModel):
+    """Cuerpo de la petición para `POST /api/exportar-matriz`."""
+
+    paises: Optional[List[str]] = Field(
+        None,
+        description="Jurisdicciones a incluir en el informe. España se incluye siempre (base). "
+                    "Si se omite, se exportan las 21.",
+        examples=[["Francia", "Alemania", "Italia"]],
+    )
+    formato: str = Field(
+        "xlsx", description="Formato del informe: `xlsx` (Excel) o `pdf`.", examples=["xlsx"]
+    )
+
+
+def _esc_html(v: Any) -> str:
+    """Escape mínimo para insertar texto en el HTML del PDF."""
+    return (_txt(v).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
+def _matriz_para_exportar(paises: Optional[List[str]] = None) -> Dict[str, Any]:
+    """Matriz comparativa filtrada a las jurisdicciones pedidas (España siempre incluida)."""
+    data = matriz_comparativa()
+    if paises:
+        seleccion = {_norm_pais(p) for p in paises}
+        seleccion.add(_norm_pais(PAIS_BASE))  # España es la base: siempre presente
+        data = dict(data)
+        data["filas"] = [f for f in data["filas"] if _norm_pais(f["pais"]) in seleccion]
+        data["paises"] = [p for p in data["paises"] if _norm_pais(p) in seleccion]
+    return data
+
+
+def _filas_ordenadas_export(filas: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """España primero (base); el resto, alfabético."""
+    return sorted(
+        filas,
+        key=lambda f: (0 if _norm_pais(f["pais"]) == _norm_pais(PAIS_BASE) else 1, f["pais"]),
+    )
+
+
+def _matriz_a_xlsx(data: Dict[str, Any]) -> bytes:
+    """Serializa la matriz a un Excel (.xlsx) con celdas coloreadas por nivel."""
+    from io import BytesIO
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+
+    cols = data.get("parametros", [])
+    filas = _filas_ordenadas_export(data.get("filas", []))
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Comparativa"
+
+    ws["A1"] = "Comparativa de calidad de gas natural"
+    ws["A1"].font = Font(bold=True, size=14, color="013A57")
+    ws["A2"] = data.get("unidad_nota", "")
+    ws["A2"].font = Font(italic=True, size=9, color="5D7082")
+
+    hdr = 4
+    navy = PatternFill("solid", fgColor="013A57")
+    blanco = Font(bold=True, color="FFFFFF")
+    centro = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    ws.cell(hdr, 1, "País \\ Parámetro")
+    for j, c in enumerate(cols, start=2):
+        etq = c.get("label", "") + (f" ({c['unidad']})" if c.get("unidad") else "")
+        ws.cell(hdr, j, etq)
+    for j in range(1, len(cols) + 2):
+        cel = ws.cell(hdr, j)
+        cel.fill = navy
+        cel.font = blanco
+        cel.alignment = centro
+
+    fila = hdr + 1
+    for f in filas:
+        ws.cell(fila, 1, f["pais"]).font = Font(bold=True)
+        for j, c in enumerate(cols, start=2):
+            celda = f.get("celdas", {}).get(c["slug"], {})
+            valor = celda.get("valor", "—")
+            if celda.get("flag"):
+                valor = "⚠ " + valor
+            out = ws.cell(fila, j, valor)
+            out.fill = PatternFill("solid", fgColor=_NIVEL_FILL.get(celda.get("nivel"), "FFFFFF"))
+            out.alignment = centro
+        fila += 1
+
+    ws.cell(fila + 1, 1, "Nota: ⚠ = unidad o condiciones distintas a España (convertido). "
+                        "Valores normalizados a la unidad y condiciones de España (ISO 13443 para PCS/Wobbe).")
+    ws.cell(fila + 1, 1).font = Font(italic=True, size=8, color="5D7082")
+
+    ws.column_dimensions["A"].width = 22
+    for j in range(2, len(cols) + 2):
+        ws.column_dimensions[get_column_letter(j)].width = 17
+    ws.freeze_panes = "B5"
+
+    buf = BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def _matriz_a_pdf(data: Dict[str, Any]) -> bytes:
+    """Serializa la matriz a un PDF (A4 apaisado) con celdas coloreadas por nivel."""
+    from io import BytesIO
+    from xhtml2pdf import pisa
+
+    cols = data.get("parametros", [])
+    filas = _filas_ordenadas_export(data.get("filas", []))
+    th = "".join(
+        f"<th>{_esc_html(c.get('label',''))}"
+        f"{('<br/>' + _esc_html(c['unidad'])) if c.get('unidad') else ''}</th>"
+        for c in cols
+    )
+    cuerpo = ""
+    for f in filas:
+        celdas = ""
+        for c in cols:
+            celda = f.get("celdas", {}).get(c["slug"], {})
+            valor = celda.get("valor", "—")
+            if celda.get("flag"):
+                valor = "&#9888; " + valor
+            bg = _NIVEL_FILL.get(celda.get("nivel"), "FFFFFF")
+            celdas += f'<td bgcolor="#{bg}">{_esc_html(valor)}</td>'
+        cuerpo += f'<tr><td class="pais">{_esc_html(f["pais"])}</td>{celdas}</tr>'
+
+    leyenda = " · ".join(
+        f'<font bgcolor="#{_NIVEL_FILL[k]}">&nbsp;{_esc_html(v)}&nbsp;</font>'
+        for k, v in [("base", "España (base)"), ("igual", "Igual"), ("restrictivo", "Más restrictivo"),
+                     ("amplio", "Más amplio"), ("sin_limite", "Sin límite"), ("incomparable", "No comparable"),
+                     ("sin_dato", "Sin dato")]
+    )
+    html = f"""<html><head><meta charset="utf-8"/><style>
+      @page {{ size: A4 landscape; margin: 1.2cm; }}
+      body {{ font-family: Helvetica; font-size: 8pt; color:#1b2a38; }}
+      h1 {{ color:#013a57; font-size:14pt; margin:0 0 3px; }}
+      p.sub {{ color:#5d7082; font-size:8pt; margin:0 0 10px; }}
+      table {{ border-collapse: collapse; width:100%; }}
+      th {{ background:#013a57; color:#ffffff; font-size:7pt; padding:4px; border:1px solid #dde4ea; }}
+      td {{ font-size:7pt; padding:4px; border:1px solid #dde4ea; text-align:center; }}
+      td.pais {{ text-align:left; font-weight:bold; background:#f5f8fa; }}
+      p.leg {{ font-size:7pt; color:#5d7082; margin-top:10px; }}
+    </style></head><body>
+      <h1>Comparativa de calidad de gas natural</h1>
+      <p class="sub">{_esc_html(data.get('unidad_nota',''))}</p>
+      <table><thead><tr><th>País \\ Parámetro</th>{th}</tr></thead><tbody>{cuerpo}</tbody></table>
+      <p class="leg">{leyenda} · &#9888; unidad/condiciones distintas (convertido a España).</p>
+    </body></html>"""
+
+    buf = BytesIO()
+    pisa.CreatePDF(src=html, dest=buf, encoding="utf-8")
+    return buf.getvalue()
+
+
+@app.post(
+    "/api/exportar-matriz",
+    tags=["Comparativa"],
+    summary="Exportar la matriz comparativa a Excel o PDF",
+    response_description="Fichero binario (`.xlsx` o `.pdf`) con la comparativa de las jurisdicciones seleccionadas.",
+    responses={200: {"content": {
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {},
+        "application/pdf": {},
+    }}},
+)
+@gestionar_errores
+@medir_tiempo
+async def exportar_matriz_endpoint(req: PeticionExportar) -> Response:
+    """Genera un informe descargable con la matriz comparativa (países × parámetros) de las
+    jurisdicciones seleccionadas. `formato`: `xlsx` (Excel) o `pdf`. España se incluye siempre
+    como base. No genera cifras nuevas: serializa los mismos datos que la matriz de la web."""
+    data = _matriz_para_exportar(req.paises)
+    if (req.formato or "").lower() == "pdf":
+        contenido = _matriz_a_pdf(data)
+        media, nombre = "application/pdf", "comparativa_gas.pdf"
+    else:
+        contenido = _matriz_a_xlsx(data)
+        media = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        nombre = "comparativa_gas.xlsx"
+    return Response(
+        content=contenido, media_type=media,
+        headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
+    )

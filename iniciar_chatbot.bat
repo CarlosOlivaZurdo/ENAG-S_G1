@@ -61,7 +61,7 @@ REM --- 2) Instalar dependencias (solo la PRIMERA vez tarda; luego es instantane
 echo Preparando el entorno...
 echo  (La PRIMERA vez instala las librerias y puede tardar 1-2 minutos. Espera, por favor.)
 echo.
-python -m pip install --quiet --disable-pip-version-check fastapi uvicorn pydantic python-dotenv pandas openpyxl pdfplumber openai pyyaml
+python -m pip install --quiet --disable-pip-version-check fastapi uvicorn pydantic python-dotenv pandas openpyxl xhtml2pdf pdfplumber openai pyyaml
 if errorlevel 1 (
     echo.
     echo [ERROR] No se pudieron instalar las dependencias.

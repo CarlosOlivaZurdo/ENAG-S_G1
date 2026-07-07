@@ -4,6 +4,7 @@ pyyaml
 python-dotenv
 pandas
 openpyxl
+xhtml2pdf
 fastapi
 uvicorn
 pydantic
