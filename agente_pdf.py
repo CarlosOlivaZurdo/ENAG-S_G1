@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, List
 
 import pdfplumber
 
@@ -16,6 +16,7 @@ RAW_PDF_GLOBS = ["data/raw/*.pdf", "data/**/*.pdf"]
 PDF_DB_PATH = PROJECT_ROOT / "data" / "pdf_database.sqlite3"
 CHUNK_SIZE = 1800
 CHUNK_OVERLAP = 220
+PAGE_SEPARATOR = "\n\n"  # marca entre páginas al concatenar el documento en texto continuo
 
 
 @dataclass(frozen=True)
@@ -120,19 +121,57 @@ def _extract_pdf_pages(pdf_path: Path) -> tuple[List[str], Dict[str, Any]]:
     return pages, metadata
 
 
-def _chunk_text(text: str) -> Iterable[str]:
-    cleaned = text.strip()
-    if not cleaned:
-        return []
-    if len(cleaned) <= CHUNK_SIZE:
-        return [cleaned]
+def _chunk_pages(pages: List[str]) -> List[tuple[str, int]]:
+    """Trocea el documento COMPLETO (todas las páginas concatenadas) con una ventana
+    deslizante y solape, de modo que un chunk puede abarcar el final de una página y el
+    principio de la siguiente. Devuelve una lista de ``(texto_chunk, pagina_inicio)``.
 
-    chunks: List[str] = []
+    Garantía de cobertura: cualquier fragmento de texto de hasta ``CHUNK_SIZE`` caracteres
+    —incluido el que cruza un salto de página— queda contenido ENTERO dentro de algún chunk.
+    Así, una respuesta partida entre dos páginas se recupera como un único fragmento y, al
+    contenerlo entero, supera el filtro AND de la búsqueda. La página que se asocia al chunk
+    es la del inicio del fragmento (para la cita en el frontend).
+    """
+    # 1) Texto continuo del documento + mapa (inicio, fin, nº de página) de cada página.
+    segments: List[str] = []
+    bounds: List[tuple[int, int, int]] = []
+    cursor = 0
+    total_pages = len(pages)
+    for page_index, page_text in enumerate(pages, start=1):
+        text = page_text or ""
+        bounds.append((cursor, cursor + len(text), page_index))
+        segments.append(text)
+        cursor += len(text)
+        if page_index < total_pages:
+            segments.append(PAGE_SEPARATOR)
+            cursor += len(PAGE_SEPARATOR)
+    full_text = "".join(segments)
+
+    if not full_text.strip():
+        return []
+
+    def _page_at(offset: int) -> int:
+        """Página (1-based) del carácter en ``offset`` del texto continuo. Si cae en el
+        separador entre dos páginas, se atribuye a la página anterior."""
+        page = bounds[0][2]
+        for start, end, num in bounds:
+            if start <= offset < end:
+                return num
+            if start <= offset:
+                page = num
+        return page
+
+    # 2) Ventana deslizante sobre el texto continuo (mismo CHUNK_SIZE/OVERLAP de siempre).
+    chunks: List[tuple[str, int]] = []
+    total = len(full_text)
     start = 0
-    total = len(cleaned)
     while start < total:
         end = min(total, start + CHUNK_SIZE)
-        chunks.append(cleaned[start:end].strip())
+        piece = full_text[start:end]
+        stripped = piece.strip()
+        if stripped:
+            lead = len(piece) - len(piece.lstrip())  # 1er carácter real → su página
+            chunks.append((stripped, _page_at(start + lead)))
         if end >= total:
             break
         start = max(0, end - CHUNK_OVERLAP)
@@ -177,24 +216,23 @@ def _store_document(conn: sqlite3.Connection, pdf_path: Path, pages: List[str], 
     document_id = doc_cursor.lastrowid
 
     stored_chunks = 0
-    for page_index, page_text in enumerate(pages, start=1):
-        for chunk_index, chunk_text in enumerate(_chunk_text(page_text), start=1):
-            conn.execute(
-                """
-                INSERT INTO pdf_chunks (
-                    document_id, page_number, chunk_index, text, normalized_text, indexed_at
-                ) VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    document_id,
-                    page_index,
-                    chunk_index,
-                    chunk_text,
-                    _normalize_text(chunk_text),
-                    indexed_at,
-                ),
-            )
-            stored_chunks += 1
+    for chunk_index, (chunk_text, page_number) in enumerate(_chunk_pages(pages), start=1):
+        conn.execute(
+            """
+            INSERT INTO pdf_chunks (
+                document_id, page_number, chunk_index, text, normalized_text, indexed_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                document_id,
+                page_number,
+                chunk_index,
+                chunk_text,
+                _normalize_text(chunk_text),
+                indexed_at,
+            ),
+        )
+        stored_chunks += 1
 
     return {
         "status": "indexed",

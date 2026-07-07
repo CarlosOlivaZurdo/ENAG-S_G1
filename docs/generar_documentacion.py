@@ -215,7 +215,7 @@ organiza en **tres capas** con funciones distintas.
 |---|---|---|
 | **1. Documentos oficiales** | Los PDF de las normas (BOE, ERSE, DVGW, Fluxys, National Grid…) | Fuente primaria y última de verdad. |
 | **2. Ontología** | Fichero estructurado con las **{len(PARAMS)*len(CODES)} cifras** extraídas de esos PDF | Repositorio del que salen las respuestas. |
-| **3. Índice documental (RAG)** | Índice del **texto** de los PDF, segmentado por página | Buscador interno, para consultas abiertas. |
+| **3. Índice documental (RAG)** | Índice del **texto** de los PDF, segmentado en fragmentos con solape (continuos, cruzan el salto de página) | Buscador interno, para consultas abiertas. |
 
 Las **cifras** residen en la capa 2 (la ontología), y cada una referencia su documento
 oficial de la capa 1. La capa 3 **no almacena ninguna cifra**: es un índice de búsqueda sobre
@@ -409,9 +409,12 @@ el LLM **redacta** la explicación con esos valores, sin inventar nada.
 abierto, la respuesta se fundamente en los documentos oficiales.
 
 1. **Indexación:** al arrancar, el sistema lee los PDF de `data/raw/`, extrae el texto con
-   `pdfplumber`, lo **trocea por página** y lo guarda en una base **SQLite** que actúa de índice.
-   La indexación es **incremental**: solo se reprocesa un documento nuevo o modificado, por lo
-   que el arranque es casi inmediato.
+   `pdfplumber`, lo **trocea en fragmentos con solape mediante una ventana deslizante sobre el
+   documento completo** (no por página) y lo guarda en una base **SQLite** que actúa de índice.
+   Que la ventana sea continua garantiza que **una respuesta partida entre dos páginas quede
+   entera dentro de un mismo fragmento** y, por tanto, sea recuperable. La indexación es
+   **incremental**: solo se reprocesa un documento nuevo o modificado, por lo que el arranque
+   es casi inmediato.
 2. **Recuperación:** `buscar_pdfs(query)` realiza una **búsqueda léxica** (SQLite `LIKE` sobre el
    texto normalizado) y devuelve los fragmentos más relevantes con archivo, página y snippet.
 
