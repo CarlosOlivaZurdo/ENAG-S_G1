@@ -859,7 +859,15 @@
     const paisesOrd = paises.slice().sort((a,b) =>
       (ord[a.veredicto]-ord[b.veredicto]) || (a.pais==="España"?-1:b.pais==="España"?1:a.pais.localeCompare(b.pais,'es')));
     let html = '<div class="cmp-card"><h2>Resultado del análisis</h2>';
-    html += '<p class="gas-sum">'+esc(d.resumen||"")+'</p>';
+    // "Cumplen" / "Sin datos" ARRIBA (compactos, lista de países en bullets).
+    const bloqueLista = (lista, clase, titulo) => {
+      if(!lista.length) return '';
+      return '<div class="gas-ok"><div class="gas-ok-h"><span class="badge '+clase+'">'+titulo+'</span> '+
+        lista.length+' '+(lista.length===1?'jurisdicción':'jurisdicciones')+'</div>'+
+        '<ul class="gas-ok-list">'+lista.map(r => '<li>'+esc(r.pais)+'</li>').join("")+'</ul></div>';
+    };
+    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="cumple"), "cumple", "Cumplen");
+    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="sin_datos"), "sin_datos", "Sin datos");
     // Países con incidencia (no cumple / alerta): tarjeta con el/los parámetro(s) que la motivan.
     paisesOrd.filter(r => r.veredicto==="no_cumple" || r.veredicto==="alerta").forEach(r => {
       const relev = r.parametros.filter(p => p.estado===r.veredicto);
@@ -883,15 +891,6 @@
         '<div class="gas-det">'+lineas+'</div>'+
       '</div>';
     });
-    // Apartados compactos "Cumplen" y "Sin datos": solo la lista de países en bullets.
-    const bloqueLista = (lista, clase, titulo) => {
-      if(!lista.length) return '';
-      return '<div class="gas-ok"><div class="gas-ok-h"><span class="badge '+clase+'">'+titulo+'</span> '+
-        lista.length+' '+(lista.length===1?'jurisdicción':'jurisdicciones')+'</div>'+
-        '<ul class="gas-ok-list">'+lista.map(r => '<li>'+esc(r.pais)+'</li>').join("")+'</ul></div>';
-    };
-    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="cumple"), "cumple", "Cumplen");
-    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="sin_datos"), "sin_datos", "Sin datos");
     const info = (d.componentes||[]).filter(c => c.informativo);
     if(info.length){
       html += '<div class="gas-info-box"><b>No evaluados</b> (composición sin límite normativo directo): '+
