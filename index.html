@@ -256,6 +256,8 @@
   .gas-ok-list{margin:0;padding-left:20px;columns:3;column-gap:20px;font-size:13px;color:var(--ink)}
   .gas-ok-list li{margin:2px 0;break-inside:avoid}
   @media(max-width:720px){.gas-ok-list{columns:2}}
+  .gas-inc-list{margin:4px 0 0;padding-left:20px;font-size:12.5px;line-height:1.55;color:var(--ink)}
+  .gas-inc-list li{margin:5px 0}
   .gas-info-box{background:var(--panel-2);border:1px dashed var(--line);border-radius:6px;padding:11px 13px;margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.5}
   @media(max-width:720px){.gas-head,.gas-row{grid-template-columns:1.4fr 1fr 1fr 34px}}
   /* --- Exportación de la matriz --- */
@@ -866,31 +868,27 @@
         lista.length+' '+(lista.length===1?'jurisdicción':'jurisdicciones')+'</div>'+
         '<ul class="gas-ok-list">'+lista.map(r => '<li>'+esc(r.pais)+'</li>').join("")+'</ul></div>';
     };
-    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="cumple"), "cumple", "Cumplen");
-    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="sin_datos"), "sin_datos", "Sin datos");
-    // Países con incidencia (no cumple / alerta): tarjeta con el/los parámetro(s) que la motivan.
-    paisesOrd.filter(r => r.veredicto==="no_cumple" || r.veredicto==="alerta").forEach(r => {
-      const relev = r.parametros.filter(p => p.estado===r.veredicto);
-      const motTxt = relev.length ? "por "+esc(Array.from(new Set(relev.map(p => p.label))).join(", ")) : "";
-      const lineas = relev.map(p => {
-        const src = (p.url && /^https?:/i.test(p.url))
-          ? ' · <a href="'+esc(p.url)+'" target="_blank" rel="noopener" class="gas-src">fuente</a>' : '';
-        return '<div class="gas-line">'+
-          '<span class="gas-st '+esc(p.estado)+'">'+esc(ESTADO_TXT[p.estado]||p.estado)+'</span> '+
-          '<b>'+esc(p.label)+'</b>: '+esc(p.valor_usuario)+' '+esc(p.unidad_usuario||"")+
-          ' vs límite '+esc(p.limite)+' '+esc(p.unidad_limite||"")+
-          (p.detalle?' · '+esc(p.detalle):'')+src+
-        '</div>';
+    // Apartado de incidencia (No cumple / Alerta): cada bullet = país + el/los parámetro(s) que la motivan.
+    const bloqueIncidencia = (lista, clase, titulo) => {
+      if(!lista.length) return '';
+      const items = lista.map(r => {
+        const det = r.parametros.filter(p => p.estado===r.veredicto).map(p => {
+          const src = (p.url && /^https?:/i.test(p.url))
+            ? ' · <a href="'+esc(p.url)+'" target="_blank" rel="noopener" class="gas-src">fuente</a>' : '';
+          return '<b>'+esc(p.label)+'</b>: '+esc(p.valor_usuario)+' '+esc(p.unidad_usuario||"")+
+            ' vs límite '+esc(p.limite)+' '+esc(p.unidad_limite||"")+
+            (p.detalle?' · '+esc(p.detalle):'')+src;
+        }).join(' · ');
+        return '<li><b>'+esc(r.pais)+'</b> — '+det+'</li>';
       }).join("");
-      html += '<div class="gas-pais">'+
-        '<div class="gas-pais-h">'+
-          '<span class="gas-pais-n">'+esc(r.pais)+'</span>'+
-          '<span class="badge '+esc(r.veredicto)+'">'+esc(VEREDICTO_TXT[r.veredicto]||r.veredicto)+'</span>'+
-          '<span class="gas-motivo">'+motTxt+'</span>'+
-        '</div>'+
-        '<div class="gas-det">'+lineas+'</div>'+
-      '</div>';
-    });
+      return '<div class="gas-ok"><div class="gas-ok-h"><span class="badge '+clase+'">'+titulo+'</span> '+
+        lista.length+' '+(lista.length===1?'jurisdicción':'jurisdicciones')+'</div>'+
+        '<ul class="gas-inc-list">'+items+'</ul></div>';
+    };
+    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="cumple"), "cumple", "Cumplen");
+    html += bloqueIncidencia(paisesOrd.filter(r => r.veredicto==="no_cumple"), "no_cumple", "No cumple");
+    html += bloqueIncidencia(paisesOrd.filter(r => r.veredicto==="alerta"), "alerta", "Alerta");
+    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="sin_datos"), "sin_datos", "Sin datos");
     const info = (d.componentes||[]).filter(c => c.informativo);
     if(info.length){
       html += '<div class="gas-info-box"><b>No evaluados</b> (composición sin límite normativo directo): '+
