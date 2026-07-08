@@ -1153,6 +1153,8 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
             # en la UE el Wobbe es 15/15 pero las concentraciones se expresan a 0/0.
             ccomb, cmed = _parse_notac(m.get("notacion") or "(0/0)")
             cond_txt = f"comb. {_coma(ccomb)} °C · med. {_coma(cmed)} °C"
+            if "m3" in _normalize_unit(unidad_reg):  # unidad por volumen de gas → aclarar Nm³/Sm³
+                cond_txt += " (Nm³)" if cmed == 0 else (" (Sm³)" if cmed == 15 else "")
             sin_lim = _sin_limite(inf_raw) and _sin_limite(sup_raw)
             es_base = _norm_pais(pais) == _norm_pais(PAIS_BASE)
 
