@@ -818,11 +818,11 @@
   }
   function initGas(){
     $("gasFilas").innerHTML = "";
-    // Precarga un ejemplo (biometano) para que se entienda de un vistazo.
-    addFilaGas("co2", 2, "% molar");
-    addFilaGas("o2", 50, "ppm");
-    addFilaGas("h2s+cos", 3, "ppm");
-    addFilaGas("pcs", 11.5, "kWh/m³");
+    // Plantilla con los parámetros habituales; el usuario introduce los VALORES (vacíos al inicio).
+    addFilaGas("co2", null, "% molar");
+    addFilaGas("o2", null, "ppm");
+    addFilaGas("h2s+cos", null, "ppm");
+    addFilaGas("pcs", null, "kWh/m³");
     gasReady = true;
   }
   const VEREDICTO_TXT = {cumple:"Cumple", alerta:"Zona de alerta", no_cumple:"No cumple", sin_datos:"Sin datos"};
