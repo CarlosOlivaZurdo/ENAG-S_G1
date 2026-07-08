@@ -247,6 +247,10 @@
   .gas-st.cumple{color:var(--green)} .gas-st.alerta{color:var(--amber)} .gas-st.no_cumple{color:var(--red)}
   .gas-st.sin_limite,.gas-st.no_evaluable,.gas-st.sin_datos{color:var(--muted-2)}
   .gas-cite{color:var(--muted-2);font-size:11.5px}
+  .gas-line{padding:6px 2px;border-bottom:1px solid var(--line-2);font-size:12.5px;line-height:1.5}
+  .gas-line:last-child{border-bottom:0}
+  .gas-src{color:var(--accent-d);font-size:11px;text-decoration:none}
+  .gas-src:hover{text-decoration:underline}
   .gas-info-box{background:var(--panel-2);border:1px dashed var(--line);border-radius:6px;padding:11px 13px;margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.5}
   @media(max-width:720px){.gas-head,.gas-row{grid-template-columns:1.4fr 1fr 1fr 34px}}
   /* --- Exportación de la matriz --- */
@@ -856,17 +860,20 @@
         r.parametros.filter(p => p.estado===r.veredicto && r.veredicto!=="cumple" && r.veredicto!=="sin_datos").map(p => p.label)));
       const motTxt = motivos.length ? "por "+esc(motivos.join(", ")) : "";
       const abierto = (r.veredicto==="cumple"||r.veredicto==="sin_datos") ? "none" : "";
-      const rows = r.parametros.map(p => {
-        let cita = esc(p.fuente||"");
-        if(p.articulo) cita += ' · '+esc(p.articulo);
-        if(p.url && /^https?:/i.test(p.url)) cita = '<a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+cita+'</a>';
-        return '<tr>'+
-          '<td><b>'+esc(p.label)+'</b></td>'+
-          '<td>'+esc(p.valor_usuario)+' '+esc(p.unidad_usuario||"")+'</td>'+
-          '<td>'+esc(p.limite)+' '+esc(p.unidad_limite||"")+'</td>'+
-          '<td class="gas-st '+esc(p.estado)+'">'+esc(ESTADO_TXT[p.estado]||p.estado)+'</td>'+
-          '<td>'+esc(p.detalle||"")+(cita?'<br><span class="gas-cite">'+cita+'</span>':'')+'</td>'+
-        '</tr>';
+      // Compacto: en NO CUMPLE / ALERTA solo los parámetros que motivan el veredicto;
+      // en cumple/sin datos, todos (visibles solo al desplegar).
+      const mostrar = (r.veredicto==="no_cumple"||r.veredicto==="alerta")
+        ? r.parametros.filter(p => p.estado===r.veredicto)
+        : r.parametros;
+      const lineas = mostrar.map(p => {
+        const src = (p.url && /^https?:/i.test(p.url))
+          ? ' · <a href="'+esc(p.url)+'" target="_blank" rel="noopener" class="gas-src">fuente</a>' : '';
+        return '<div class="gas-line">'+
+          '<span class="gas-st '+esc(p.estado)+'">'+esc(ESTADO_TXT[p.estado]||p.estado)+'</span> '+
+          '<b>'+esc(p.label)+'</b>: '+esc(p.valor_usuario)+' '+esc(p.unidad_usuario||"")+
+          ' vs límite '+esc(p.limite)+' '+esc(p.unidad_limite||"")+
+          (p.detalle?' · '+esc(p.detalle):'')+src+
+        '</div>';
       }).join("");
       html += '<div class="gas-pais">'+
         '<div class="gas-pais-h" onclick="var n=this.nextElementSibling;n.style.display=(n.style.display===\'none\'?\'\':\'none\')">'+
@@ -874,10 +881,8 @@
           '<span class="badge '+esc(r.veredicto)+'">'+esc(VEREDICTO_TXT[r.veredicto]||r.veredicto)+'</span>'+
           '<span class="gas-motivo">'+motTxt+'</span>'+
         '</div>'+
-        '<div class="gas-det" style="display:'+abierto+'">'+
-          '<table class="gas-ptable"><thead><tr><th>Parámetro</th><th>Tu gas</th><th>Límite del país</th><th>Estado</th><th>Detalle · fuente</th></tr></thead>'+
-          '<tbody>'+rows+'</tbody></table>'+
-        '</div></div>';
+        '<div class="gas-det" style="display:'+abierto+'">'+lineas+'</div>'+
+      '</div>';
     });
     const info = (d.componentes||[]).filter(c => c.informativo);
     if(info.length){
