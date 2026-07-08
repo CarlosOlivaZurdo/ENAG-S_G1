@@ -434,6 +434,10 @@
             <h2 class="cmp-card-h2">Composición del gas</h2>
             <div class="gas-head"><span>Parámetro</span><span>Valor</span><span>Unidad</span><span></span></div>
             <div class="gas-rows" id="gasFilas"></div>
+            <button class="gas-add" id="gasAddBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Añadir componente
+            </button>
             <div class="gas-base-block">
               <label for="gasBase">Indica en qué base están medidos el PCS y el Índice de Wobbe</label>
               <select id="gasBase">
@@ -445,10 +449,6 @@
               </select>
             </div>
             <div class="gas-actions">
-              <button class="gas-add" id="gasAddBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                Añadir componente
-              </button>
               <button class="cmp-btn" id="gasBtn" style="grid-column:auto">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Analizar
