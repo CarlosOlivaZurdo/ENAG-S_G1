@@ -506,6 +506,10 @@ def _normalize_parameter(text: str) -> Optional[str]:
     return None
 
 
+# Slugs exactos del BIOMETANO (los que envía el desplegable). Se comprueban primero,
+# para que "co" no choque con "co2" por subcadena.
+_SLUGS_BIOMETANO = {"ch4_min", "o2", "co2", "co", "s total", "h2s+cos", "h2o(rocío)",
+                    "siloxanos", "comp_oil", "aminas", "nh3", "halogenados"}
 # Alias específicos del BIOMETANO (parámetros que no existen en gas natural). Mapa
 # propio para no contaminar `_normalize_parameter` del gas natural (riesgo R2).
 _ALIASES_BIOMETANO = {
@@ -514,6 +518,7 @@ _ALIASES_BIOMETANO = {
     "silicio": "siloxanos", "silicium": "siloxanos", "silicon": "siloxanos", "silizium": "siloxanos",
     "aceite": "comp_oil", "compresor": "comp_oil", "comp_oil": "comp_oil", "compressor": "comp_oil",
     "amina": "aminas", "aminas": "aminas", "amine": "aminas", "ammine": "aminas",
+    "monoxido de carbono": "co", "carbon monoxide": "co", "monoxide de carbone": "co", "kohlenmonoxid": "co",
     "nh3": "nh3", "amoniaco": "nh3", "amonio": "nh3", "ammonia": "nh3", "ammoniak": "nh3",
     "halogen": "halogenados", "halogenados": "halogenados", "halogenado": "halogenados",
     "cloro": "halogenados", "fluor": "halogenados", "chlorine": "halogenados", "fluorine": "halogenados",
@@ -521,9 +526,12 @@ _ALIASES_BIOMETANO = {
 
 
 def _normalize_parameter_biometano(text: str) -> Optional[str]:
-    """Normaliza el nombre de un componente a un slug de BIOMETANO. Primero los
-    parámetros específicos del biometano; luego los que SOLAPAN con el gas natural
-    (O₂, CO₂, azufre total, H₂S+COS, rocío de agua) reusando el normalizador general."""
+    """Normaliza el nombre de un componente a un slug de BIOMETANO. Primero el slug
+    exacto del desplegable, luego los alias específicos del biometano, y por último
+    los parámetros que SOLAPAN con el gas natural (O₂, CO₂, azufre, H₂S+COS, rocío)."""
+    raw = (text or "").strip().lower()
+    if raw in _SLUGS_BIOMETANO:
+        return raw
     na = text.lower().translate(_SUB_SUP_DIGITS).translate(str.maketrans("áéíóúü", "aeiouu"))
     for key in sorted(_ALIASES_BIOMETANO, key=len, reverse=True):
         if key in na:
@@ -531,6 +539,42 @@ def _normalize_parameter_biometano(text: str) -> Optional[str]:
     slug = _normalize_parameter(text)
     if slug in {"o2", "co2", "s total", "h2s+cos", "h2o(rocío)"}:
         return slug
+    return None
+
+
+# Slugs y alias del HIDRÓGENO (ISO 14687 Grade D). El desplegable envía el slug exacto.
+_SLUGS_HIDROGENO = {"h2_pureza", "no_h2", "h2o", "thc", "ch4", "o2", "he", "n2", "ar", "co2",
+                    "co", "s total", "hcho", "hcooh", "nh3", "halogenados", "particulas"}
+_ALIASES_HIDROGENO = {
+    "pureza": "h2_pureza", "purity": "h2_pureza", "reinheit": "h2_pureza", "purete": "h2_pureza",
+    "gases no hidrogeno": "no_h2", "non-hydrogen": "no_h2",
+    "agua": "h2o", "water": "h2o",
+    "hidrocarburos": "thc", "hydrocarbons": "thc",
+    "metano": "ch4", "methane": "ch4",
+    "oxigeno": "o2", "oxygen": "o2", "sauerstoff": "o2",
+    "helio": "he", "helium": "he",
+    "nitrogeno": "n2", "nitrogen": "n2",
+    "argon": "ar",
+    "dioxido de carbono": "co2", "carbon dioxide": "co2",
+    "monoxido de carbono": "co", "carbon monoxide": "co",
+    "azufre": "s total", "sulfur": "s total", "sulphur": "s total",
+    "formaldehido": "hcho", "formaldehyde": "hcho",
+    "acido formico": "hcooh", "formic acid": "hcooh",
+    "amoniaco": "nh3", "ammonia": "nh3",
+    "halogen": "halogenados", "halide": "halogenados", "cloruro": "halogenados",
+    "particulas": "particulas", "particulates": "particulas", "polvo": "particulas",
+}
+
+
+def _normalize_parameter_hidrogeno(text: str) -> Optional[str]:
+    """Normaliza el nombre de un componente a un slug de HIDRÓGENO (ISO 14687 Grade D)."""
+    raw = (text or "").strip().lower()
+    if raw in _SLUGS_HIDROGENO:
+        return raw
+    na = text.lower().translate(_SUB_SUP_DIGITS).translate(str.maketrans("áéíóúü", "aeiouu"))
+    for key in sorted(_ALIASES_HIDROGENO, key=len, reverse=True):
+        if key in na:
+            return _ALIASES_HIDROGENO[key]
     return None
 
 
@@ -1158,6 +1202,7 @@ PARAMETROS_UI_BIOMETANO = [
     {"slug": "ch4_min", "label": "CH₄ (metano) mínimo", "unidades": ["% molar"], "onto": "CH4_MIN"},
     {"slug": "o2", "label": "O₂ (oxígeno)", "unidades": ["% molar", "ppm"], "onto": "O2"},
     {"slug": "co2", "label": "CO₂", "unidades": ["% molar", "ppm"], "onto": "CO2"},
+    {"slug": "co", "label": "CO (monóxido de carbono)", "unidades": ["% molar", "ppm"], "onto": "CO"},
     {"slug": "s total", "label": "Azufre total (S)", "unidades": ["mg/m³", "mg/Nm³", "ppm"], "onto": "S_TOTAL"},
     {"slug": "h2s+cos", "label": "H₂S + COS", "unidades": ["mg/m³", "mg/Nm³", "ppm"], "onto": "H2S_COS"},
     {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"], "onto": "PR_H2O"},
@@ -1166,6 +1211,27 @@ PARAMETROS_UI_BIOMETANO = [
     {"slug": "aminas", "label": "Aminas", "unidades": ["mg/m³", "ppm"], "onto": "AMINAS"},
     {"slug": "nh3", "label": "Amoníaco (NH₃)", "unidades": ["mg/m³", "ppm"], "onto": "NH3"},
     {"slug": "halogenados", "label": "Compuestos halogenados (Cl+F)", "unidades": ["mg/m³", "ppm"], "onto": "HALOGENADOS"},
+]
+# Catálogo del HIDRÓGENO (ISO 14687:2019 Grade D / EN 17124). Trazas en ppm (≡ μmol/mol);
+# pureza en % molar; partículas en mg/kg. Jurisdicción única: ISO 14687 Grade D.
+PARAMETROS_UI_HIDROGENO = [
+    {"slug": "h2_pureza", "label": "Pureza H₂ (mínimo)", "unidades": ["% molar"], "onto": "H2_PUREZA"},
+    {"slug": "no_h2", "label": "Total gases no-H₂", "unidades": ["ppm"], "onto": "NO_H2"},
+    {"slug": "h2o", "label": "Agua (H₂O)", "unidades": ["ppm"], "onto": "H2O"},
+    {"slug": "thc", "label": "Hidrocarburos (excepto CH₄)", "unidades": ["ppm"], "onto": "THC"},
+    {"slug": "ch4", "label": "Metano (CH₄)", "unidades": ["ppm"], "onto": "CH4"},
+    {"slug": "o2", "label": "O₂ (oxígeno)", "unidades": ["ppm"], "onto": "O2"},
+    {"slug": "he", "label": "Helio (He)", "unidades": ["ppm"], "onto": "HE"},
+    {"slug": "n2", "label": "Nitrógeno (N₂)", "unidades": ["ppm"], "onto": "N2"},
+    {"slug": "ar", "label": "Argón (Ar)", "unidades": ["ppm"], "onto": "AR"},
+    {"slug": "co2", "label": "CO₂", "unidades": ["ppm"], "onto": "CO2"},
+    {"slug": "co", "label": "CO (monóxido de carbono)", "unidades": ["ppm"], "onto": "CO"},
+    {"slug": "s total", "label": "Azufre total (S)", "unidades": ["ppm"], "onto": "S_TOTAL"},
+    {"slug": "hcho", "label": "Formaldehído (HCHO)", "unidades": ["ppm"], "onto": "HCHO"},
+    {"slug": "hcooh", "label": "Ácido fórmico (HCOOH)", "unidades": ["ppm"], "onto": "HCOOH"},
+    {"slug": "nh3", "label": "Amoníaco (NH₃)", "unidades": ["ppm"], "onto": "NH3"},
+    {"slug": "halogenados", "label": "Compuestos halogenados", "unidades": ["ppm"], "onto": "HALOGENADOS"},
+    {"slug": "particulas", "label": "Partículas", "unidades": ["mg/kg"], "onto": "PARTICULAS"},
 ]
 PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]  # España es siempre la base de referencia
 
@@ -1303,11 +1369,15 @@ PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "Paíse
 # Enrutado por tipo de gas (para "Analizar gas"). El gas natural es el actual.
 # El biometano usa su propio catálogo y una única jurisdicción (EN 16723-1); NO se
 # mezcla con la matriz de 21 países del gas natural (riesgos R4/R5).
-CATALOGO_POR_GAS = {"gas_natural": PARAMETROS_UI, "biometano": PARAMETROS_UI_BIOMETANO}
+CATALOGO_POR_GAS = {"gas_natural": PARAMETROS_UI, "biometano": PARAMETROS_UI_BIOMETANO,
+                    "hidrogeno": PARAMETROS_UI_HIDROGENO}
 # Biometano: EN16723 (marco UE) + FR (requisito de red GRTgaz, con valores reales).
-JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ, "biometano": ["EN16723", "FR"]}
-# Nombre legible de cada jurisdicción cuyo código no es ya un nombre de país (biometano).
-JURISDICCION_DISPLAY = {"EN16723": "EN 16723-1 (marco UE)", "FR": "Francia (red GRTgaz)"}
+# Hidrógeno: ISO14687 (especificación de producto ISO 14687 Grade D / EN 17124).
+JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ, "biometano": ["EN16723", "FR"],
+                          "hidrogeno": ["ISO14687"]}
+# Nombre legible de cada jurisdicción cuyo código no es ya un nombre de país.
+JURISDICCION_DISPLAY = {"EN16723": "EN 16723-1 (marco UE)", "FR": "Francia (red GRTgaz)",
+                        "ISO14687": "ISO 14687 Grade D (PEM)"}
 
 
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
@@ -2772,13 +2842,16 @@ def analizar_gas(
     veredicto (cumple/alerta/no_cumple/sin_datos) y el detalle por parámetro con su cita.
 
     `tipo_gas` por defecto "gas_natural" → comportamiento idéntico al actual (21 países).
-    "biometano" usa el catálogo de biometano y la única jurisdicción EN 16723-1; al haber
-    una sola especificación NO se normalizan condiciones entre jurisdicciones."""
-    es_bio = tipo_gas == "biometano"
-    normalizar = _normalize_parameter_biometano if es_bio else _normalize_parameter
+    "biometano" (EN 16723-1 + red FR) e "hidrogeno" (ISO 14687 Grade D) usan su propio
+    catálogo y jurisdicciones; al no ser matriz por país NO se normalizan condiciones."""
+    es_gn = tipo_gas == "gas_natural"
+    normalizadores = {"biometano": _normalize_parameter_biometano,
+                      "hidrogeno": _normalize_parameter_hidrogeno}
+    normalizar = normalizadores.get(tipo_gas, _normalize_parameter)
     labels = {p["slug"]: p["label"] for p in CATALOGO_POR_GAS.get(tipo_gas, PARAMETROS_UI)}
-    base_ref = "EN16723" if es_bio else PAIS_BASE
     orden_paises = paises or list(JURISDICCIONES_POR_GAS.get(tipo_gas, PAISES_MATRIZ))
+    # Base de referencia para la unidad: España (gas natural) o la 1.ª jurisdicción del gas.
+    base_ref = PAIS_BASE if es_gn else orden_paises[0]
     comp_out: List[Dict[str, Any]] = []
     evaluables: List[Dict[str, Any]] = []
     for c in componentes:
@@ -2794,8 +2867,8 @@ def analizar_gas(
         es = fuente_oficial.consultar(slug, base_ref, tipo_gas)
         unidad_es = ((es["matches"][0].get("unidad") if es.get("matches") else "") or unidad_user or "")
         # Gas natural: normaliza el valor del usuario a las condiciones de España (ISO 13443).
-        # Biometano: una sola especificación UE → no hay normalización entre jurisdicciones.
-        v_norm = valor if es_bio else _valor_a_condiciones_es(valor, unidad_user, unidad_es, slug, base_pcs)
+        # Biometano/hidrógeno: una sola especificación → no hay normalización entre jurisdicciones.
+        v_norm = _valor_a_condiciones_es(valor, unidad_user, unidad_es, slug, base_pcs) if es_gn else valor
         comp_out.append({"parametro": slug, "label": label, "valor": valor,
                          "unidad": unidad_user or unidad_es, "informativo": False})
         evaluables.append({"slug": slug, "label": label, "valor": valor,

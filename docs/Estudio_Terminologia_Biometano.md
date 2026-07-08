@@ -1,37 +1,45 @@
-# Estudio de consistencia terminológica — Biometano (Fase 1)
+# Estudio de consistencia terminológica — Biometano e Hidrógeno
 
 > Objetivo (indicación del profesor): medir cuánto varía la terminología entre normas antes de decidir si montar una capa vectorial en el RAG. La búsqueda actual es **léxica** (SQLite `LIKE`, sin sinónimos); si la variación es alta, el vectorial aporta algo que el léxico no capta.
 
 ## Metodología
 
-Para cada parámetro se recogen, a través de todas las jurisdicciones disponibles en la ontología, las **formas de nombrarlo** (alias + expresiones originales), las **unidades** y las **condiciones de referencia**, más una señal de **divergencia semántica** (mismo nombre, alcance distinto). El **Índice de Variación Terminológica (IVT)** = nº expresiones distintas + nº unidades + nº condiciones + (2 si hay divergencia semántica). Umbral heurístico para justificar el vectorial: **7.0**.
+Para cada parámetro se recogen, a través de todas las jurisdicciones disponibles en la ontología, las **formas de nombrarlo** (alias + expresiones originales), las **unidades** y las **condiciones de referencia**, más una señal de **divergencia semántica** (mismo nombre, alcance distinto). El **Índice de Variación Terminológica (IVT)** = nº expresiones distintas + nº unidades + nº condiciones + **nº de alias multilingües** + (2 si hay divergencia semántica). Umbral heurístico para justificar el vectorial: **7.0**.
 
 ## Resumen y veredicto
 
-- IVT medio (parámetros que **solapan** con gas natural, con datos de 21 jurisdicciones): **22.6**
-- IVT medio (parámetros **específicos** de biometano, aún sin corpus): **2.0**
-- IVT medio global: **11.36**
-- ¿Capa vectorial justificada para biometano? **SÍ**
+- IVT medio · **Gas natural (21 jurisdicciones)**: **27.4**  (✅ vectorial justificado)
+- IVT medio · **Biometano**: **9.17**  (✅ vectorial justificado)
+- IVT medio · **Hidrógeno (ISO 14687)**: **7.29**  (✅ vectorial justificado)
+- IVT medio global: **13.5**
+- ¿Capa vectorial justificada? **SÍ**
 
-> Los parámetros específicos de biometano aún no tienen corpus (Fase 2). La variación real de hidrógeno (ENTSOG/ENNOH) se medirá al añadir esos documentos; se ESPERA que supere el umbral (pureza de H₂ / fracción molar de hidrógeno / Wasserstoffreinheit), reabriendo la puerta de la capa vectorial.
+> El hidrógeno tiene UNA sola jurisdicción (ISO 14687 Grade D), así que su variación NO está entre jurisdicciones sino en la diversidad MULTILINGÜE de nombres del mismo parámetro (pureza de H₂ / hydrogen purity / Wasserstoffreinheit / fracción molar de hidrógeno) — justo lo que el léxico (LIKE) no capta y el vectorial sí. Al añadir el corpus de hidrógeno (ENTSOG/ENNOH) la señal aumentará. Confirma la hipótesis del profesor.
 
 ## Detalle por parámetro
 
-| Parámetro | Solapa GN | Jurisd. | Alias | Expr. dist. | Uds. | Cond. | Diverg. sem. | IVT |
+| Parámetro | Vector | Jurisd. | Alias | Expr. dist. | Uds. | Cond. | Diverg. sem. | IVT |
 |---|---|---|---|---|---|---|---|---|
-| H₂S + COS (expresado como S) (`H2S_COS`) | sí | 21 | 6 | 21 | 1 | 0 | ⚠️ sí | **24** |
-| Punto de Rocío de Agua (`PR_H2O`) | sí | 21 | 4 | 21 | 3 | 0 | — | **24** |
-| Oxígeno (`O2`) | sí | 21 | 5 | 21 | 1 | 0 | — | **22** |
-| Azufre Total (`S_TOTAL`) | sí | 21 | 5 | 21 | 1 | 0 | — | **22** |
-| Dióxido de Carbono (`CO2`) | sí | 21 | 4 | 20 | 1 | 0 | — | **21** |
-| Siloxanos (como silicio total) (`SILOXANOS`) | no | 2 | 8 | 1 | 1 | 1 | — | **3** |
-| Amoníaco (`NH3`) | no | 2 | 6 | 1 | 1 | 1 | — | **3** |
-| Contenido mínimo de metano (`CH4_MIN`) | no | 1 | 7 | 1 | 1 | 0 | — | **2** |
-| Compuestos halogenados (Cl + F) (`HALOGENADOS`) | no | 2 | 9 | 1 | 1 | 0 | — | **2** |
-| Aceite de compresor (`COMP_OIL`) | no | 1 | 5 | 0 | 1 | 0 | — | **1** |
-| Aminas (`AMINAS`) | no | 1 | 4 | 0 | 1 | 0 | — | **1** |
+| H₂S + COS (expresado como S) (`H2S_COS`) | gas nat. | 21 | 6 | 21 | 1 | 0 | ⚠️ sí | **30** |
+| Punto de Rocío de Agua (`PR_H2O`) | gas nat. | 21 | 4 | 21 | 3 | 0 | — | **28** |
+| Oxígeno (`O2`) | gas nat. | 21 | 5 | 21 | 1 | 0 | — | **27** |
+| Azufre Total (`S_TOTAL`) | gas nat. | 21 | 5 | 21 | 1 | 0 | — | **27** |
+| Dióxido de Carbono (`CO2`) | gas nat. | 21 | 4 | 20 | 1 | 0 | — | **25** |
+| Siloxanos (como silicio total) (`SILOXANOS`) | biometano | 2 | 8 | 2 | 1 | 1 | — | **12** |
+| Compuestos halogenados (Cl + F) (`HALOGENADOS`) | biometano | 2 | 9 | 1 | 1 | 0 | — | **11** |
+| Pureza de hidrógeno (índice de H₂) (`H2_PUREZA`) | hidrógeno | 1 | 9 | 1 | 1 | 0 | — | **11** |
+| Amoníaco (`NH3`) | biometano | 2 | 6 | 2 | 1 | 1 | — | **10** |
+| Contenido mínimo de metano (`CH4_MIN`) | biometano | 1 | 7 | 1 | 1 | 0 | — | **9** |
+| Azufre total (equiv. S1) (`S_TOTAL`) | hidrógeno | 1 | 6 | 1 | 1 | 0 | — | **8** |
+| Compuestos halogenados (equiv. ión halógeno) (`HALOGENADOS`) | hidrógeno | 1 | 6 | 1 | 1 | 0 | — | **8** |
+| Monóxido de carbono (`CO`) | biometano | 1 | 5 | 1 | 1 | 0 | — | **7** |
+| Aminas (`AMINAS`) | biometano | 1 | 4 | 1 | 1 | 0 | — | **6** |
+| Oxígeno (producto PEM) (`O2`) | hidrógeno | 1 | 4 | 1 | 1 | 0 | — | **6** |
+| Monóxido de carbono (`CO`) | hidrógeno | 1 | 4 | 1 | 1 | 0 | — | **6** |
+| Hidrocarburos totales excepto CH₄ (equiv. C1) (`THC`) | hidrógeno | 1 | 4 | 1 | 1 | 0 | — | **6** |
+| Formaldehído (`HCHO`) | hidrógeno | 1 | 4 | 1 | 1 | 0 | — | **6** |
 
-### H₂S + COS (expresado como S) (`H2S_COS`)  ·  IVT = 24
+### H₂S + COS (expresado como S) (`H2S_COS`)  ·  IVT = 30
 
 - **Unidades distintas** (1): mg_per_nm3
 - **Divergencia semántica**: unas normas regulan «H₂S» y otras «H₂S + COS» (mismo nombre, alcance distinto).
@@ -55,7 +63,7 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `sulfuro de hidrógeno` → 0 aciertos
     - `hydrogen sulphide` → 5 aciertos en 1 doc(s)
 
-### Punto de Rocío de Agua (`PR_H2O`)  ·  IVT = 24
+### Punto de Rocío de Agua (`PR_H2O`)  ·  IVT = 28
 
 - **Unidades distintas** (3): g_per_nm3, grados_C, mg_per_nm3
 - **Formas encontradas** (21):
@@ -78,7 +86,7 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `point de rosée eau` → 5 aciertos en 1 doc(s)
     - `ponto de orvalho da água` → 2 aciertos en 1 doc(s)
 
-### Oxígeno (`O2`)  ·  IVT = 22
+### Oxígeno (`O2`)  ·  IVT = 27
 
 - **Unidades distintas** (1): pct_mol
 - **Formas encontradas** (21):
@@ -101,7 +109,7 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `oxygène` → 0 aciertos
     - `oxigénio` → 1 aciertos en 1 doc(s)
 
-### Azufre Total (`S_TOTAL`)  ·  IVT = 22
+### Azufre Total (`S_TOTAL`)  ·  IVT = 27
 
 - **Unidades distintas** (1): mg_per_nm3
 - **Formas encontradas** (21):
@@ -124,7 +132,7 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `total sulphur` → 5 aciertos en 1 doc(s)
     - `soufre total` → 5 aciertos en 3 doc(s)
 
-### Dióxido de Carbono (`CO2`)  ·  IVT = 21
+### Dióxido de Carbono (`CO2`)  ·  IVT = 25
 
 - **Unidades distintas** (1): pct_mol
 - **Formas encontradas** (20):
@@ -147,11 +155,12 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `co₂` → 0 aciertos
     - `carbon dioxide` → 5 aciertos en 1 doc(s)
 
-### Siloxanos (como silicio total) (`SILOXANOS`)  ·  IVT = 3
+### Siloxanos (como silicio total) (`SILOXANOS`)  ·  IVT = 12
 
 - **Unidades distintas** (1): mg_per_nm3
 - **Condiciones distintas** (1): @0/0
-- **Formas encontradas** (1):
+- **Formas encontradas** (2):
+    - Silicio volátil total (como Si): 0,3 – 1 mg Si/m³ (rango propuesto; foco en siloxanos)
     - Teneur en siloxanes < 5 mg/m3 (n)
 - **Cobertura léxica en el corpus** (alias → nº aciertos):
     - `siloxanos` → 0 aciertos
@@ -159,30 +168,7 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `siloxane` → 5 aciertos en 1 doc(s)
     - `silicium` → 0 aciertos
 
-### Amoníaco (`NH3`)  ·  IVT = 3
-
-- **Unidades distintas** (1): mg_per_nm3
-- **Condiciones distintas** (1): @0/0
-- **Formas encontradas** (1):
-    - Teneur en NH3 < 3 mg/m³(n)
-- **Cobertura léxica en el corpus** (alias → nº aciertos):
-    - `amoníaco` → 2 aciertos en 1 doc(s)
-    - `amoniaco` → 2 aciertos en 1 doc(s)
-    - `nh3` → 0 aciertos
-    - `nh₃` → 0 aciertos
-
-### Contenido mínimo de metano (`CH4_MIN`)  ·  IVT = 2
-
-- **Unidades distintas** (1): pct_mol
-- **Formas encontradas** (1):
-    - EN 16723-1 no fija un CH₄ mínimo explícito (regula por impurezas).
-- **Cobertura léxica en el corpus** (alias → nº aciertos):
-    - `metano` → 5 aciertos en 2 doc(s)
-    - `ch4` → 1 aciertos en 1 doc(s)
-    - `ch₄` → 0 aciertos
-    - `methane content` → 3 aciertos en 2 doc(s)
-
-### Compuestos halogenados (Cl + F) (`HALOGENADOS`)  ·  IVT = 2
+### Compuestos halogenados (Cl + F) (`HALOGENADOS`)  ·  IVT = 11
 
 - **Unidades distintas** (1): mg_per_nm3
 - **Formas encontradas** (1):
@@ -193,19 +179,124 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `halogenated compounds` → 0 aciertos
     - `halogene` → 0 aciertos
 
-### Aceite de compresor (`COMP_OIL`)  ·  IVT = 1
+### Pureza de hidrógeno (índice de H₂) (`H2_PUREZA`)  ·  IVT = 11
+
+- **Unidades distintas** (1): pct_mol
+- **Formas encontradas** (1):
+    - Índice de combustible hidrógeno mínimo 99,97 % (fracción molar) = 100 % − gases no-H₂
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `pureza de h2` → 0 aciertos
+    - `pureza de hidrogeno` → 2 aciertos en 1 doc(s)
+    - `indice de h2` → 1 aciertos en 1 doc(s)
+    - `hydrogen purity` → 0 aciertos
+
+### Amoníaco (`NH3`)  ·  IVT = 10
 
 - **Unidades distintas** (1): mg_per_nm3
-- **Cobertura léxica en el corpus**: sin aciertos directos (esperado en parámetros específicos: aún no hay PDFs de biometano en `data/raw`).
+- **Condiciones distintas** (1): @0/0
+- **Formas encontradas** (2):
+    - Amoníaco (NH₃) ≤ 10 mg/m³
+    - Teneur en NH3 < 3 mg/m³(n)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `amoníaco` → 2 aciertos en 1 doc(s)
+    - `amoniaco` → 2 aciertos en 1 doc(s)
+    - `nh3` → 0 aciertos
+    - `nh₃` → 0 aciertos
 
-### Aminas (`AMINAS`)  ·  IVT = 1
+### Contenido mínimo de metano (`CH4_MIN`)  ·  IVT = 9
+
+- **Unidades distintas** (1): pct_mol
+- **Formas encontradas** (1):
+    - EN 16723-1 no fija un CH₄ mínimo explícito (regula por impurezas).
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `metano` → 5 aciertos en 2 doc(s)
+    - `ch4` → 1 aciertos en 1 doc(s)
+    - `ch₄` → 0 aciertos
+    - `methane content` → 3 aciertos en 2 doc(s)
+
+### Azufre total (equiv. S1) (`S_TOTAL`)  ·  IVT = 8
+
+- **Unidades distintas** (1): ppm_vol
+- **Formas encontradas** (1):
+    - Azufre total (eq. S1): 0,004 μmol/mol (incl. H₂S, COS, CS₂, mercaptanos)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `azufre total` → 0 aciertos
+    - `total sulfur` → 5 aciertos en 1 doc(s)
+    - `gesamtschwefel` → 1 aciertos en 1 doc(s)
+    - `soufre total` → 5 aciertos en 3 doc(s)
+
+### Compuestos halogenados (equiv. ión halógeno) (`HALOGENADOS`)  ·  IVT = 8
+
+- **Unidades distintas** (1): ppm_vol
+- **Formas encontradas** (1):
+    - Compuestos halogenados (eq. ión halógeno): 0,05 μmol/mol (HCl, R-Cl)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `halogenados` → 2 aciertos en 1 doc(s)
+    - `halogenated` → 0 aciertos
+    - `halide` → 5 aciertos en 2 doc(s)
+    - `hcl` → 0 aciertos
+
+### Monóxido de carbono (`CO`)  ·  IVT = 7
+
+- **Unidades distintas** (1): pct_mol
+- **Formas encontradas** (1):
+    - Monóxido de carbono (CO) ≤ 0,1 % mol (valor de ejemplo)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `monoxido de carbono` → 0 aciertos
+    - `monóxido de carbono` → 0 aciertos
+    - `carbon monoxide` → 0 aciertos
+    - `kohlenmonoxid` → 3 aciertos en 1 doc(s)
+
+### Aminas (`AMINAS`)  ·  IVT = 6
 
 - **Unidades distintas** (1): mg_per_nm3
+- **Formas encontradas** (1):
+    - Aminas: valor límite máximo fijado en EN 16723-1 (norma de pago; el valor numérico no consta en la fuente secundaria pública).
 - **Cobertura léxica en el corpus** (alias → nº aciertos):
     - `aminas` → 2 aciertos en 2 doc(s)
     - `amines` → 0 aciertos
     - `amine` → 3 aciertos en 2 doc(s)
     - `ammine` → 1 aciertos en 1 doc(s)
+
+### Oxígeno (producto PEM) (`O2`)  ·  IVT = 6
+
+- **Unidades distintas** (1): ppm_vol
+- **Formas encontradas** (1):
+    - Oxígeno (O₂): 5 μmol/mol (crítico para UGS y redes)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `o2` → 5 aciertos en 2 doc(s)
+    - `oxigeno` → 5 aciertos en 2 doc(s)
+    - `oxygen` → 5 aciertos en 1 doc(s)
+    - `sauerstoff` → 5 aciertos en 2 doc(s)
+
+### Monóxido de carbono (`CO`)  ·  IVT = 6
+
+- **Unidades distintas** (1): ppm_vol
+- **Formas encontradas** (1):
+    - Monóxido de carbono (CO): 0,2 μmol/mol; Σ(CO+HCHO+HCOOH) ≤ 0,2
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `co` → 5 aciertos en 1 doc(s)
+    - `monoxido de carbono` → 0 aciertos
+    - `carbon monoxide` → 0 aciertos
+    - `kohlenmonoxid` → 3 aciertos en 1 doc(s)
+
+### Hidrocarburos totales excepto CH₄ (equiv. C1) (`THC`)  ·  IVT = 6
+
+- **Unidades distintas** (1): ppm_vol
+- **Formas encontradas** (1):
+    - Hidrocarburos totales excepto CH₄ (eq. C1): 2 μmol/mol (incluye especies oxigenadas)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `hidrocarburos totales` → 0 aciertos
+    - `total hydrocarbons` → 1 aciertos en 1 doc(s)
+    - `thc` → 1 aciertos en 1 doc(s)
+    - `hydrocarbons except methane` → 0 aciertos
+
+### Formaldehído (`HCHO`)  ·  IVT = 6
+
+- **Unidades distintas** (1): ppm_vol
+- **Formas encontradas** (1):
+    - Formaldehído (HCHO): 0,2 μmol/mol (cuenta en la Σ con CO)
+- **Cobertura léxica en el corpus**: sin aciertos directos (esperado en parámetros específicos: aún no hay PDFs de biometano en `data/raw`).
 
 ---
 _Generado por `estudio_terminologia.py` (solo lectura). Reejecutar tras añadir los PDFs de biometano/hidrógeno en la Fase 2 para medir su variación real._

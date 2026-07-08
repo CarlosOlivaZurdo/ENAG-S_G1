@@ -29,9 +29,22 @@ _PARAM_A_ONTO = {
 # slug -> clave en `parametros_biometano` (dominio BIOMETANO; mapa PROPIO para no
 # contaminar el camino de gas natural — riesgo R2). Única jurisdicción: EN16723.
 _PARAM_A_ONTO_BIOMETANO = {
-    "ch4_min": "CH4_MIN", "o2": "O2", "co2": "CO2", "s total": "S_TOTAL",
+    "ch4_min": "CH4_MIN", "o2": "O2", "co2": "CO2", "co": "CO", "s total": "S_TOTAL",
     "h2s+cos": "H2S_COS", "h2o(rocío)": "PR_H2O", "siloxanos": "SILOXANOS",
     "comp_oil": "COMP_OIL", "aminas": "AMINAS", "nh3": "NH3", "halogenados": "HALOGENADOS",
+}
+# slug -> clave en `parametros_hidrogeno` (dominio HIDRÓGENO; ISO 14687 Grade D).
+# Jurisdicción única: ISO14687.
+_PARAM_A_ONTO_HIDROGENO = {
+    "h2_pureza": "H2_PUREZA", "no_h2": "NO_H2", "h2o": "H2O", "thc": "THC",
+    "ch4": "CH4", "o2": "O2", "he": "HE", "n2": "N2", "ar": "AR", "co2": "CO2",
+    "co": "CO", "s total": "S_TOTAL", "hcho": "HCHO", "hcooh": "HCOOH",
+    "nh3": "NH3", "halogenados": "HALOGENADOS", "particulas": "PARTICULAS",
+}
+# Sección de ontología + mapa slug→clave por tipo de gas (los que NO son gas natural).
+_SECCION_POR_GAS = {
+    "biometano": ("parametros_biometano", _PARAM_A_ONTO_BIOMETANO),
+    "hidrogeno": ("parametros_hidrogeno", _PARAM_A_ONTO_HIDROGENO),
 }
 _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "fr": "FR", "ue": "UE", "europa": "UE",
                   "italia": "IT", "italy": "IT", "alemania": "DE", "germany": "DE",
@@ -51,9 +64,10 @@ _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "fr": "FR",
                   "eslovaquia": "SK", "slovakia": "SK", "slovensko": "SK",
                   "turquia": "TR", "turkey": "TR", "turkiye": "TR",
                   "reino unido": "GB", "united kingdom": "GB", "gran bretana": "GB", "britain": "GB",
-                  "en16723": "EN16723", "biometano": "EN16723"}
+                  "en16723": "EN16723", "biometano": "EN16723",
+                  "iso14687": "ISO14687", "hidrogeno": "ISO14687"}
 _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE",
-                  "EN16723": "EN 16723-1",
+                  "EN16723": "EN 16723-1", "ISO14687": "ISO 14687 Grade D",
                   "IT": "Italia", "DE": "Alemania", "NL": "Países Bajos", "BE": "Bélgica",
                   "NOR": "Noruega", "PL": "Polonia", "DK": "Dinamarca", "HU": "Hungría", "AT": "Austria", "CH": "Suiza", "CZ": "Chequia", "GR": "Grecia",
                   "IE": "Irlanda", "RO": "Rumanía", "SK": "Eslovaquia", "TR": "Turquía", "GB": "Reino Unido"}
@@ -71,6 +85,7 @@ _UNIDAD_DISPLAY = {
     "kWh_per_nm3": "kWh/m³", "MJ_per_nm3": "MJ/m³", "kcal_per_nm3": "kcal/m³",
     "mg_per_nm3": "mg/Nm³", "mg_per_sm3": "mg/sm³", "g_per_nm3": "g/Nm³",
     "pct_mol": "% molar", "pct_vol": "% vol", "ppm_vol": "ppm",
+    "umol_per_mol": "μmol/mol", "mg_per_kg": "mg/kg",
     "grados_C": "°C", "adimensional": "",
 }
 
@@ -182,12 +197,12 @@ def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Op
     # Gas natural (por defecto): `parametros` + jurisdicción por país (comportamiento actual).
     # Biometano: `parametros_biometano` + jurisdicción única EN16723.
     onto = cargar_ontologia()
-    if tipo_gas == "biometano":
-        params = onto.get("parametros_biometano") or {}
-        key = _PARAM_A_ONTO_BIOMETANO.get(slug)
-        # Jurisdicción del biometano: EN16723 (marco UE) o códigos de país (p. ej. FR).
+    seccion = _SECCION_POR_GAS.get(tipo_gas)
+    if seccion:  # biometano / hidrógeno: sección propia y jurisdicción por código (EN16723, FR, ISO14687)
+        params = onto.get(seccion[0]) or {}
+        key = seccion[1].get(slug)
         cod = _PAIS_A_CODIGO.get(_norm(pais), pais)
-    else:
+    else:  # gas natural: comportamiento actual
         params = onto.get("parametros") or {}
         key = _PARAM_A_ONTO.get(slug)
         cod = _PAIS_A_CODIGO.get(_norm(pais))
@@ -198,9 +213,10 @@ def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Op
 
 def _nombre_param(slug: str, tipo_gas: str = "gas_natural") -> str:
     onto = cargar_ontologia()
-    if tipo_gas == "biometano":
-        params = onto.get("parametros_biometano") or {}
-        key = _PARAM_A_ONTO_BIOMETANO.get(slug)
+    seccion = _SECCION_POR_GAS.get(tipo_gas)
+    if seccion:
+        params = onto.get(seccion[0]) or {}
+        key = seccion[1].get(slug)
     else:
         params = onto.get("parametros") or {}
         key = _PARAM_A_ONTO.get(slug)

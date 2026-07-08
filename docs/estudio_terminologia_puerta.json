@@ -1,15 +1,24 @@
 {
   "resumen": {
     "umbral_ivt": 7.0,
-    "ivt_medio_parametros_solapados": 22.6,
-    "ivt_medio_parametros_especificos": 2.0,
-    "ivt_medio_global": 11.36,
-    "vectorial_justificado_para_biometano": true,
-    "nota_hidrogeno": "Los parámetros específicos de biometano aún no tienen corpus (Fase 2). La variación real de hidrógeno (ENTSOG/ENNOH) se medirá al añadir esos documentos; se ESPERA que supere el umbral (pureza de H₂ / fracción molar de hidrógeno / Wasserstoffreinheit), reabriendo la puerta de la capa vectorial."
+    "ivt_por_vector": {
+      "gas_natural": 27.4,
+      "biometano": 9.17,
+      "hidrogeno": 7.29
+    },
+    "ivt_medio_global": 13.5,
+    "vectorial_justificado_por_vector": {
+      "gas_natural": true,
+      "biometano": true,
+      "hidrogeno": true
+    },
+    "vectorial_justificado": true,
+    "nota_hidrogeno": "El hidrógeno tiene UNA sola jurisdicción (ISO 14687 Grade D), así que su variación NO está entre jurisdicciones sino en la diversidad MULTILINGÜE de nombres del mismo parámetro (pureza de H₂ / hydrogen purity / Wasserstoffreinheit / fracción molar de hidrógeno) — justo lo que el léxico (LIKE) no capta y el vectorial sí. Al añadir el corpus de hidrógeno (ENTSOG/ENNOH) la señal aumentará. Confirma la hipótesis del profesor."
   },
   "parametros": [
     {
       "clave": "O2",
+      "vector": "gas_natural",
       "nombre": "Oxígeno",
       "nombre_ingles": "Oxygen",
       "solapa_gas_natural": true,
@@ -83,10 +92,11 @@
           ]
         }
       ],
-      "IVT": 22
+      "IVT": 27
     },
     {
       "clave": "CO2",
+      "vector": "gas_natural",
       "nombre": "Dióxido de Carbono",
       "nombre_ingles": "Carbon dioxide",
       "solapa_gas_natural": true,
@@ -158,10 +168,11 @@
           ]
         }
       ],
-      "IVT": 21
+      "IVT": 25
     },
     {
       "clave": "S_TOTAL",
+      "vector": "gas_natural",
       "nombre": "Azufre Total",
       "nombre_ingles": "Total sulphur",
       "solapa_gas_natural": true,
@@ -235,10 +246,11 @@
           ]
         }
       ],
-      "IVT": 22
+      "IVT": 27
     },
     {
       "clave": "H2S_COS",
+      "vector": "gas_natural",
       "nombre": "H₂S + COS (expresado como S)",
       "nombre_ingles": "H2S + COS (as S)",
       "solapa_gas_natural": true,
@@ -313,10 +325,11 @@
           ]
         }
       ],
-      "IVT": 24
+      "IVT": 30
     },
     {
       "clave": "PR_H2O",
+      "vector": "gas_natural",
       "nombre": "Punto de Rocío de Agua",
       "nombre_ingles": "Water dew point",
       "solapa_gas_natural": true,
@@ -391,10 +404,11 @@
           ]
         }
       ],
-      "IVT": 24
+      "IVT": 28
     },
     {
       "clave": "CH4_MIN",
+      "vector": "biometano",
       "nombre": "Contenido mínimo de metano",
       "nombre_ingles": "Methane content (minimum)",
       "solapa_gas_natural": false,
@@ -451,10 +465,11 @@
           ]
         }
       ],
-      "IVT": 2
+      "IVT": 9
     },
     {
       "clave": "SILOXANOS",
+      "vector": "biometano",
       "nombre": "Siloxanos (como silicio total)",
       "nombre_ingles": "Siloxanes / total silicon",
       "solapa_gas_natural": false,
@@ -470,8 +485,9 @@
         "silicio total",
         "Si"
       ],
-      "n_expresiones_distintas": 1,
+      "n_expresiones_distintas": 2,
       "expresiones": [
+        "Silicio volátil total (como Si): 0,3 – 1 mg Si/m³ (rango propuesto; foco en siloxanos)",
         "Teneur en siloxanes < 5 mg/m3 (n)"
       ],
       "n_unidades_distintas": 1,
@@ -509,57 +525,64 @@
           "documentos": []
         }
       ],
-      "IVT": 3
+      "IVT": 12
     },
     {
-      "clave": "COMP_OIL",
-      "nombre": "Aceite de compresor",
-      "nombre_ingles": "Compressor oil",
+      "clave": "CO",
+      "vector": "biometano",
+      "nombre": "Monóxido de carbono",
+      "nombre_ingles": "Carbon monoxide",
       "solapa_gas_natural": false,
       "n_jurisdicciones": 1,
       "n_aliases": 5,
       "aliases": [
-        "aceite de compresor",
-        "compressor oil",
-        "verdichteröl",
-        "huile de compresseur",
-        "olio del compressore"
+        "monoxido de carbono",
+        "monóxido de carbono",
+        "carbon monoxide",
+        "kohlenmonoxid",
+        "monoxyde de carbone",
+        "co"
       ],
-      "n_expresiones_distintas": 0,
-      "expresiones": [],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Monóxido de carbono (CO) ≤ 0,1 % mol (valor de ejemplo)"
+      ],
       "n_unidades_distintas": 1,
       "unidades": [
-        "mg_per_nm3"
+        "pct_mol"
       ],
       "n_condiciones_distintas": 0,
       "condiciones": [],
       "divergencia_semantica": false,
       "cobertura_corpus": [
         {
-          "alias": "aceite de compresor",
+          "alias": "monoxido de carbono",
           "hits": 0,
           "documentos": []
         },
         {
-          "alias": "compressor oil",
+          "alias": "monóxido de carbono",
           "hits": 0,
           "documentos": []
         },
         {
-          "alias": "verdichteröl",
+          "alias": "carbon monoxide",
           "hits": 0,
           "documentos": []
         },
         {
-          "alias": "huile de compresseur",
-          "hits": 0,
-          "documentos": []
+          "alias": "kohlenmonoxid",
+          "hits": 3,
+          "documentos": [
+            "CH_SVGW_G13_Entwurf_2024.pdf"
+          ]
         }
       ],
-      "IVT": 1
+      "IVT": 7
     },
     {
       "clave": "AMINAS",
+      "vector": "biometano",
       "nombre": "Aminas",
       "nombre_ingles": "Amines",
       "solapa_gas_natural": false,
@@ -571,8 +594,10 @@
         "amine",
         "ammine"
       ],
-      "n_expresiones_distintas": 0,
-      "expresiones": [],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Aminas: valor límite máximo fijado en EN 16723-1 (norma de pago; el valor numérico no consta en la fuente secundaria pública)."
+      ],
       "n_unidades_distintas": 1,
       "unidades": [
         "mg_per_nm3"
@@ -610,10 +635,11 @@
           ]
         }
       ],
-      "IVT": 1
+      "IVT": 6
     },
     {
       "clave": "NH3",
+      "vector": "biometano",
       "nombre": "Amoníaco",
       "nombre_ingles": "Ammonia",
       "solapa_gas_natural": false,
@@ -629,8 +655,9 @@
         "ammoniac",
         "ammoniaca"
       ],
-      "n_expresiones_distintas": 1,
+      "n_expresiones_distintas": 2,
       "expresiones": [
+        "Amoníaco (NH₃) ≤ 10 mg/m³",
         "Teneur en NH3 < 3 mg/m³(n)"
       ],
       "n_unidades_distintas": 1,
@@ -668,10 +695,11 @@
           "documentos": []
         }
       ],
-      "IVT": 3
+      "IVT": 10
     },
     {
       "clave": "HALOGENADOS",
+      "vector": "biometano",
       "nombre": "Compuestos halogenados (Cl + F)",
       "nombre_ingles": "Halogenated compounds (Cl + F)",
       "solapa_gas_natural": false,
@@ -725,7 +753,395 @@
           "documentos": []
         }
       ],
-      "IVT": 2
+      "IVT": 11
+    },
+    {
+      "clave": "H2_PUREZA",
+      "vector": "hidrogeno",
+      "nombre": "Pureza de hidrógeno (índice de H₂)",
+      "nombre_ingles": "Hydrogen fuel index (purity)",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 9,
+      "aliases": [
+        "pureza de h2",
+        "pureza de hidrogeno",
+        "indice de h2",
+        "hydrogen purity",
+        "hydrogen fuel index",
+        "wasserstoffreinheit",
+        "purete de l'hydrogene",
+        "fraccion molar de hidrogeno",
+        "h2 purity"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Índice de combustible hidrógeno mínimo 99,97 % (fracción molar) = 100 % − gases no-H₂"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "pct_mol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "pureza de h2",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "pureza de hidrogeno",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "indice de h2",
+          "hits": 1,
+          "documentos": [
+            "Prescriptions_techniques_GRDF.pdf"
+          ]
+        },
+        {
+          "alias": "hydrogen purity",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 11
+    },
+    {
+      "clave": "O2",
+      "vector": "hidrogeno",
+      "nombre": "Oxígeno (producto PEM)",
+      "nombre_ingles": "Oxygen",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 4,
+      "aliases": [
+        "o2",
+        "oxigeno",
+        "oxygen",
+        "sauerstoff"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Oxígeno (O₂): 5 μmol/mol (crítico para UGS y redes)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "ppm_vol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "o2",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf",
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "oxigeno",
+          "hits": 5,
+          "documentos": [
+            "BOE-A-2006-15345-consolidado.pdf",
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "oxygen",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        },
+        {
+          "alias": "sauerstoff",
+          "hits": 5,
+          "documentos": [
+            "CH_SVGW_G13_Entwurf_2024.pdf",
+            "CH_SVGW_Gazette_2023-01.pdf"
+          ]
+        }
+      ],
+      "IVT": 6
+    },
+    {
+      "clave": "CO",
+      "vector": "hidrogeno",
+      "nombre": "Monóxido de carbono",
+      "nombre_ingles": "Carbon monoxide",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 4,
+      "aliases": [
+        "co",
+        "monoxido de carbono",
+        "carbon monoxide",
+        "kohlenmonoxid"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Monóxido de carbono (CO): 0,2 μmol/mol; Σ(CO+HCHO+HCOOH) ≤ 0,2"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "ppm_vol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "co",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        },
+        {
+          "alias": "monoxido de carbono",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "carbon monoxide",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "kohlenmonoxid",
+          "hits": 3,
+          "documentos": [
+            "CH_SVGW_G13_Entwurf_2024.pdf"
+          ]
+        }
+      ],
+      "IVT": 6
+    },
+    {
+      "clave": "S_TOTAL",
+      "vector": "hidrogeno",
+      "nombre": "Azufre total (equiv. S1)",
+      "nombre_ingles": "Total sulfur (S1 basis)",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 6,
+      "aliases": [
+        "azufre total",
+        "total sulfur",
+        "gesamtschwefel",
+        "soufre total",
+        "sulfur",
+        "h2s"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Azufre total (eq. S1): 0,004 μmol/mol (incl. H₂S, COS, CS₂, mercaptanos)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "ppm_vol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "azufre total",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "total sulfur",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        },
+        {
+          "alias": "gesamtschwefel",
+          "hits": 1,
+          "documentos": [
+            "DE_GASCADE_Gasbeschaffenheit.pdf"
+          ]
+        },
+        {
+          "alias": "soufre total",
+          "hits": 5,
+          "documentos": [
+            "BE_Fluxys_NaturalGasSpecs_H.pdf",
+            "Prescriptions_techniques_GRDF.pdf",
+            "annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
+          ]
+        }
+      ],
+      "IVT": 8
+    },
+    {
+      "clave": "THC",
+      "vector": "hidrogeno",
+      "nombre": "Hidrocarburos totales excepto CH₄ (equiv. C1)",
+      "nombre_ingles": "Total hydrocarbons except methane (C1 basis)",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 4,
+      "aliases": [
+        "hidrocarburos totales",
+        "total hydrocarbons",
+        "thc",
+        "hydrocarbons except methane"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Hidrocarburos totales excepto CH₄ (eq. C1): 2 μmol/mol (incluye especies oxigenadas)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "ppm_vol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "hidrocarburos totales",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "total hydrocarbons",
+          "hits": 1,
+          "documentos": [
+            "NO_Gassled_Terms_Conditions.pdf"
+          ]
+        },
+        {
+          "alias": "thc",
+          "hits": 1,
+          "documentos": [
+            "CH_SVGW_Gazette_2023-01.pdf"
+          ]
+        },
+        {
+          "alias": "hydrocarbons except methane",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 6
+    },
+    {
+      "clave": "HCHO",
+      "vector": "hidrogeno",
+      "nombre": "Formaldehído",
+      "nombre_ingles": "Formaldehyde",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 4,
+      "aliases": [
+        "formaldehido",
+        "formaldehyde",
+        "hcho",
+        "metanal"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Formaldehído (HCHO): 0,2 μmol/mol (cuenta en la Σ con CO)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "ppm_vol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "formaldehido",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "formaldehyde",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "hcho",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "metanal",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 6
+    },
+    {
+      "clave": "HALOGENADOS",
+      "vector": "hidrogeno",
+      "nombre": "Compuestos halogenados (equiv. ión halógeno)",
+      "nombre_ingles": "Halogenated compounds (halide ion basis)",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 6,
+      "aliases": [
+        "halogenados",
+        "halogenated",
+        "halide",
+        "hcl",
+        "cloruros",
+        "chlorine"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Compuestos halogenados (eq. ión halógeno): 0,05 μmol/mol (HCl, R-Cl)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "ppm_vol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "halogenados",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "halogenated",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "halide",
+          "hits": 5,
+          "documentos": [
+            "GB_NTS_GasQualityParameters_2022.pdf",
+            "IE_GNI_Code_PartG.pdf"
+          ]
+        },
+        {
+          "alias": "hcl",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 8
     }
   ]
 }

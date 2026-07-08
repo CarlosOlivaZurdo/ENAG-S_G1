@@ -45,17 +45,27 @@ UMBRAL_IVT = 7.0
 # de variación: los que SOLAPAN con gas natural se leen de `parametros` (ahí hay datos de
 # las 21 jurisdicciones = señal real de variación); los específicos, de `parametros_biometano`.
 PARAMETROS = [
-    {"clave": "O2",          "seccion": "parametros",             "solapa_gn": True},
-    {"clave": "CO2",         "seccion": "parametros",             "solapa_gn": True},
-    {"clave": "S_TOTAL",     "seccion": "parametros",             "solapa_gn": True},
-    {"clave": "H2S_COS",     "seccion": "parametros",             "solapa_gn": True},
-    {"clave": "PR_H2O",      "seccion": "parametros",             "solapa_gn": True},
-    {"clave": "CH4_MIN",     "seccion": "parametros_biometano",   "solapa_gn": False},
-    {"clave": "SILOXANOS",   "seccion": "parametros_biometano",   "solapa_gn": False},
-    {"clave": "COMP_OIL",    "seccion": "parametros_biometano",   "solapa_gn": False},
-    {"clave": "AMINAS",      "seccion": "parametros_biometano",   "solapa_gn": False},
-    {"clave": "NH3",         "seccion": "parametros_biometano",   "solapa_gn": False},
-    {"clave": "HALOGENADOS", "seccion": "parametros_biometano",   "solapa_gn": False},
+    {"clave": "O2",          "seccion": "parametros",             "vector": "gas_natural", "solapa_gn": True},
+    {"clave": "CO2",         "seccion": "parametros",             "vector": "gas_natural", "solapa_gn": True},
+    {"clave": "S_TOTAL",     "seccion": "parametros",             "vector": "gas_natural", "solapa_gn": True},
+    {"clave": "H2S_COS",     "seccion": "parametros",             "vector": "gas_natural", "solapa_gn": True},
+    {"clave": "PR_H2O",      "seccion": "parametros",             "vector": "gas_natural", "solapa_gn": True},
+    {"clave": "CH4_MIN",     "seccion": "parametros_biometano",   "vector": "biometano",   "solapa_gn": False},
+    {"clave": "SILOXANOS",   "seccion": "parametros_biometano",   "vector": "biometano",   "solapa_gn": False},
+    {"clave": "CO",          "seccion": "parametros_biometano",   "vector": "biometano",   "solapa_gn": False},
+    {"clave": "AMINAS",      "seccion": "parametros_biometano",   "vector": "biometano",   "solapa_gn": False},
+    {"clave": "NH3",         "seccion": "parametros_biometano",   "vector": "biometano",   "solapa_gn": False},
+    {"clave": "HALOGENADOS", "seccion": "parametros_biometano",   "vector": "biometano",   "solapa_gn": False},
+    # Hidrógeno (ISO 14687 Grade D). Una sola jurisdicción → la variación real está en la
+    # diversidad MULTILINGÜE de nombres (aliases), no entre jurisdicciones. Es donde el
+    # profesor espera que el vectorial aporte más (pureza/purity/Wasserstoffreinheit...).
+    {"clave": "H2_PUREZA",   "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
+    {"clave": "O2",          "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
+    {"clave": "CO",          "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
+    {"clave": "S_TOTAL",     "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
+    {"clave": "THC",         "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
+    {"clave": "HCHO",        "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
+    {"clave": "HALOGENADOS", "seccion": "parametros_hidrogeno",   "vector": "hidrogeno",   "solapa_gn": False},
 ]
 
 
@@ -119,10 +129,15 @@ def analizar_parametro(onto: Dict[str, Any], spec: Dict[str, Any]) -> Dict[str, 
         docs = sorted({m.get("name") for m in (r.get("matches") or []) if m.get("name")})
         cobertura.append({"alias": alias, "hits": r.get("count", 0), "documentos": docs})
 
-    ivt = len(expresiones) + len(unidades) + len(condiciones) + (2 if divergencia else 0)
+    # IVT = variación entre jurisdicciones (expresiones+unidades+condiciones) + diversidad
+    # léxica MULTILINGÜE (aliases) + divergencia semántica. Los aliases capturan la variación
+    # de gases de una sola jurisdicción (hidrógeno: pureza/purity/Wasserstoffreinheit...).
+    n_aliases = len(set(_norm(a) for a in aliases))
+    ivt = len(expresiones) + len(unidades) + len(condiciones) + n_aliases + (2 if divergencia else 0)
 
     return {
         "clave": spec["clave"],
+        "vector": spec.get("vector", "gas_natural"),
         "nombre": nombre,
         "nombre_ingles": nombre_en,
         "solapa_gas_natural": spec["solapa_gn"],
@@ -141,35 +156,37 @@ def analizar_parametro(onto: Dict[str, Any], spec: Dict[str, Any]) -> Dict[str, 
     }
 
 
-def construir_informe(resultados: List[Dict[str, Any]]) -> Dict[str, Any]:
-    solapan = [r for r in resultados if r["solapa_gas_natural"]]
-    especificos = [r for r in resultados if not r["solapa_gas_natural"]]
-    ivt_solapan = round(sum(r["IVT"] for r in solapan) / len(solapan), 2) if solapan else 0.0
-    ivt_especificos = round(sum(r["IVT"] for r in especificos) / len(especificos), 2) if especificos else 0.0
-    ivt_global = round(sum(r["IVT"] for r in resultados) / len(resultados), 2) if resultados else 0.0
+def _media_ivt(rs: List[Dict[str, Any]]) -> float:
+    return round(sum(r["IVT"] for r in rs) / len(rs), 2) if rs else 0.0
 
-    # Veredicto de la puerta de Fase 3 (capa vectorial). El biometano se evalúa con los
-    # parámetros que SOLAPAN con gas natural (los que tienen datos reales de 21 países);
-    # los específicos aún no tienen corpus (llegará en Fase 2), así que se anota aparte.
-    justificado_biometano = ivt_solapan >= UMBRAL_IVT
+
+def construir_informe(resultados: List[Dict[str, Any]]) -> Dict[str, Any]:
+    por_vector = {v: [r for r in resultados if r["vector"] == v]
+                  for v in ("gas_natural", "biometano", "hidrogeno")}
+    ivt_por_vector = {v: _media_ivt(rs) for v, rs in por_vector.items()}
+    ivt_global = _media_ivt(resultados)
+
+    # Puerta de Fase 3 (capa vectorial): justificada si ALGÚN vector supera el umbral.
+    justificado = {v: ivt >= UMBRAL_IVT for v, ivt in ivt_por_vector.items()}
     return {
         "umbral_ivt": UMBRAL_IVT,
-        "ivt_medio_parametros_solapados": ivt_solapan,
-        "ivt_medio_parametros_especificos": ivt_especificos,
+        "ivt_por_vector": ivt_por_vector,
         "ivt_medio_global": ivt_global,
-        "vectorial_justificado_para_biometano": justificado_biometano,
+        "vectorial_justificado_por_vector": justificado,
+        "vectorial_justificado": any(justificado.values()),
         "nota_hidrogeno": (
-            "Los parámetros específicos de biometano aún no tienen corpus (Fase 2). "
-            "La variación real de hidrógeno (ENTSOG/ENNOH) se medirá al añadir esos "
-            "documentos; se ESPERA que supere el umbral (pureza de H₂ / fracción molar "
-            "de hidrógeno / Wasserstoffreinheit), reabriendo la puerta de la capa vectorial."
+            "El hidrógeno tiene UNA sola jurisdicción (ISO 14687 Grade D), así que su variación "
+            "NO está entre jurisdicciones sino en la diversidad MULTILINGÜE de nombres del mismo "
+            "parámetro (pureza de H₂ / hydrogen purity / Wasserstoffreinheit / fracción molar de "
+            "hidrógeno) — justo lo que el léxico (LIKE) no capta y el vectorial sí. Al añadir el "
+            "corpus de hidrógeno (ENTSOG/ENNOH) la señal aumentará. Confirma la hipótesis del profesor."
         ),
     }
 
 
 def render_md(resultados: List[Dict[str, Any]], resumen: Dict[str, Any]) -> str:
     L = []
-    L.append("# Estudio de consistencia terminológica — Biometano (Fase 1)\n")
+    L.append("# Estudio de consistencia terminológica — Biometano e Hidrógeno\n")
     L.append(
         "> Objetivo (indicación del profesor): medir cuánto varía la terminología entre "
         "normas antes de decidir si montar una capa vectorial en el RAG. La búsqueda actual "
@@ -182,23 +199,30 @@ def render_md(resultados: List[Dict[str, Any]], resumen: Dict[str, Any]) -> str:
         "la ontología, las **formas de nombrarlo** (alias + expresiones originales), las "
         "**unidades** y las **condiciones de referencia**, más una señal de **divergencia "
         "semántica** (mismo nombre, alcance distinto). El **Índice de Variación Terminológica "
-        "(IVT)** = nº expresiones distintas + nº unidades + nº condiciones + (2 si hay "
-        f"divergencia semántica). Umbral heurístico para justificar el vectorial: **{resumen['umbral_ivt']}**.\n"
+        "(IVT)** = nº expresiones distintas + nº unidades + nº condiciones + **nº de alias "
+        "multilingües** + (2 si hay divergencia semántica). Umbral heurístico para justificar "
+        f"el vectorial: **{resumen['umbral_ivt']}**.\n"
     )
     L.append("## Resumen y veredicto\n")
-    L.append(f"- IVT medio (parámetros que **solapan** con gas natural, con datos de 21 jurisdicciones): **{resumen['ivt_medio_parametros_solapados']}**")
-    L.append(f"- IVT medio (parámetros **específicos** de biometano, aún sin corpus): **{resumen['ivt_medio_parametros_especificos']}**")
+    ivtv = resumen["ivt_por_vector"]
+    just = resumen["vectorial_justificado_por_vector"]
+    etq = {"gas_natural": "Gas natural (21 jurisdicciones)", "biometano": "Biometano",
+           "hidrogeno": "Hidrógeno (ISO 14687)"}
+    for v in ("gas_natural", "biometano", "hidrogeno"):
+        marca = "✅ vectorial justificado" if just.get(v) else "— por debajo del umbral"
+        L.append(f"- IVT medio · **{etq[v]}**: **{ivtv.get(v, 0.0)}**  ({marca})")
     L.append(f"- IVT medio global: **{resumen['ivt_medio_global']}**")
-    veredicto = "**SÍ**" if resumen["vectorial_justificado_para_biometano"] else "**NO (de momento)**"
-    L.append(f"- ¿Capa vectorial justificada para biometano? {veredicto}\n")
+    vered = "**SÍ**" if resumen["vectorial_justificado"] else "**NO (de momento)**"
+    L.append(f"- ¿Capa vectorial justificada? {vered}\n")
     L.append(f"> {resumen['nota_hidrogeno']}\n")
 
     L.append("## Detalle por parámetro\n")
-    L.append("| Parámetro | Solapa GN | Jurisd. | Alias | Expr. dist. | Uds. | Cond. | Diverg. sem. | IVT |")
+    L.append("| Parámetro | Vector | Jurisd. | Alias | Expr. dist. | Uds. | Cond. | Diverg. sem. | IVT |")
     L.append("|---|---|---|---|---|---|---|---|---|")
+    vetq = {"gas_natural": "gas nat.", "biometano": "biometano", "hidrogeno": "hidrógeno"}
     for r in sorted(resultados, key=lambda x: x["IVT"], reverse=True):
         L.append(
-            f"| {r['nombre']} (`{r['clave']}`) | {'sí' if r['solapa_gas_natural'] else 'no'} | "
+            f"| {r['nombre']} (`{r['clave']}`) | {vetq.get(r['vector'], r['vector'])} | "
             f"{r['n_jurisdicciones']} | {r['n_aliases']} | {r['n_expresiones_distintas']} | "
             f"{r['n_unidades_distintas']} | {r['n_condiciones_distintas']} | "
             f"{'⚠️ sí' if r['divergencia_semantica'] else '—'} | **{r['IVT']}** |"
@@ -248,9 +272,10 @@ def main() -> None:
     print("Estudio de terminología generado:")
     print(f"  - {os.path.relpath(OUT_MD, ROOT)}")
     print(f"  - {os.path.relpath(OUT_JSON, ROOT)}")
-    print(f"IVT medio (solapados)={resumen['ivt_medio_parametros_solapados']} | "
-          f"global={resumen['ivt_medio_global']} | umbral={resumen['umbral_ivt']} | "
-          f"vectorial biometano={'SÍ' if resumen['vectorial_justificado_para_biometano'] else 'NO'}")
+    ivtv = resumen["ivt_por_vector"]
+    print(f"IVT medio: gas_natural={ivtv['gas_natural']} biometano={ivtv['biometano']} "
+          f"hidrogeno={ivtv['hidrogeno']} | umbral={resumen['umbral_ivt']} | "
+          f"vectorial justificado={'SÍ' if resumen['vectorial_justificado'] else 'NO'}")
 
 
 if __name__ == "__main__":

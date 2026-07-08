@@ -436,6 +436,7 @@
               <select id="gasTipo">
                 <option value="gas_natural">Gas natural (grupo H) — 21 jurisdicciones</option>
                 <option value="biometano">Biometano — EN 16723-1 (inyección en red)</option>
+                <option value="hidrogeno">Hidrógeno — ISO 14687 Grade D (pureza PEM)</option>
               </select>
             </div>
             <h2 class="cmp-card-h2">Composición del gas</h2>
@@ -682,6 +683,7 @@
     {slug:"ch4_min", label:"CH₄ (metano) mínimo", unidades:["% molar"]},
     {slug:"o2", label:"O₂ (oxígeno)", unidades:["% molar","ppm"]},
     {slug:"co2", label:"CO₂", unidades:["% molar","ppm"]},
+    {slug:"co", label:"CO (monóxido de carbono)", unidades:["% molar","ppm"]},
     {slug:"s total", label:"Azufre total (S)", unidades:["mg/m³","mg/Nm³","ppm"]},
     {slug:"h2s+cos", label:"H₂S + COS", unidades:["mg/m³","mg/Nm³","ppm"]},
     {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
@@ -691,8 +693,28 @@
     {slug:"nh3", label:"Amoníaco (NH₃)", unidades:["mg/m³","ppm"]},
     {slug:"halogenados", label:"Compuestos halogenados (Cl+F)", unidades:["mg/m³","ppm"]},
   ];
+  // Catálogo de hidrógeno (ISO 14687:2019 Grade D / EN 17124). Trazas en ppm (≡ μmol/mol).
+  const PARAMS_HIDROGENO = [
+    {slug:"h2_pureza", label:"Pureza H₂ (mínimo)", unidades:["% molar"]},
+    {slug:"no_h2", label:"Total gases no-H₂", unidades:["ppm"]},
+    {slug:"h2o", label:"Agua (H₂O)", unidades:["ppm"]},
+    {slug:"thc", label:"Hidrocarburos (excepto CH₄)", unidades:["ppm"]},
+    {slug:"ch4", label:"Metano (CH₄)", unidades:["ppm"]},
+    {slug:"o2", label:"O₂ (oxígeno)", unidades:["ppm"]},
+    {slug:"he", label:"Helio (He)", unidades:["ppm"]},
+    {slug:"n2", label:"Nitrógeno (N₂)", unidades:["ppm"]},
+    {slug:"ar", label:"Argón (Ar)", unidades:["ppm"]},
+    {slug:"co2", label:"CO₂", unidades:["ppm"]},
+    {slug:"co", label:"CO (monóxido de carbono)", unidades:["ppm"]},
+    {slug:"s total", label:"Azufre total (S)", unidades:["ppm"]},
+    {slug:"hcho", label:"Formaldehído (HCHO)", unidades:["ppm"]},
+    {slug:"hcooh", label:"Ácido fórmico (HCOOH)", unidades:["ppm"]},
+    {slug:"nh3", label:"Amoníaco (NH₃)", unidades:["ppm"]},
+    {slug:"halogenados", label:"Compuestos halogenados", unidades:["ppm"]},
+    {slug:"particulas", label:"Partículas", unidades:["mg/kg"]},
+  ];
   // Parámetros de "Analizar gas" según el tipo de gas elegido en #gasTipo.
-  const CATALOGO = { gas_natural: PARAMS, biometano: PARAMS_BIOMETANO };
+  const CATALOGO = { gas_natural: PARAMS, biometano: PARAMS_BIOMETANO, hidrogeno: PARAMS_HIDROGENO };
   const PAISES_OPC = ["Portugal","Francia","Italia","Alemania","Países Bajos","Bélgica","Noruega","Polonia","Dinamarca","Hungría","Austria","Suiza","Chequia","Grecia","Irlanda","Rumanía","Eslovaquia","Turquía","Reino Unido","UE"];
   function initCompare(){
     const selP = $("cmpParam");
@@ -811,7 +833,12 @@
   const GAS_INFO_BIO = [{slug:"n2", label:"N₂ (nitrógeno) — informativo", unidades:["% molar","ppm"]}];
   function gasTipoActual(){ return ($("gasTipo") && $("gasTipo").value) || "gas_natural"; }
   function gasCatalogo(){ return CATALOGO[gasTipoActual()] || PARAMS; }
-  function gasInfoActual(){ return gasTipoActual() === "biometano" ? GAS_INFO_BIO : GAS_INFO; }
+  function gasInfoActual(){
+    const t = gasTipoActual();
+    if(t === "hidrogeno") return [];      // en H₂ todos los constituyentes son normativos
+    if(t === "biometano") return GAS_INFO_BIO;
+    return GAS_INFO;
+  }
   function gasAll(){ return gasCatalogo().concat(gasInfoActual()); }
   let gasReady = false;
   function gasParamOptions(){

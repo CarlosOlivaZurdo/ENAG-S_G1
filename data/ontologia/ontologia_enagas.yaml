@@ -188,6 +188,13 @@ ontologia:
       # (siloxanos, NH₃, Cl, F) que no existen en la vista de gas natural.
       jurisdicciones: [EN16723, FR]
       por_pais: false
+    - codigo: hidrogeno
+      nombre: "Hidrógeno (pureza y contaminantes)"
+      seccion_parametros: parametros_hidrogeno  # árbol NUEVO (al final del fichero)
+      # ISO14687 = especificación de PRODUCTO (ISO 14687:2019 Grade D / EN 17124).
+      # El marco de RED (ENNOH, Reg. UE 2024/1789) aún NO fija límites vinculantes.
+      jurisdicciones: [ISO14687]
+      por_pais: false
 
   # ---------------------------------------------------------------------------
   # FUENTES NORMATIVAS
@@ -296,10 +303,71 @@ ontologia:
       pdf: ""                                    # Norma de PAGO: no se descarga texto CEN
       url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:38200"
       descarga_auto: false
-      tabla_calidad: "§4 y Tabla 1 (límites de impurezas para inyección de biometano)"
+      tabla_calidad: "§4 y Tabla 1. EN 16723-1 fija valor límite SOLO a 4 parámetros: silicio volátil total (0,3–1 mg Si/m³), CO (≤0,1 % mol), NH₃ (≤10 mg/m³) y aminas. Aceite de compresor y polvo = «técnicamente libre de» (sin umbral numérico). El resto de parámetros de calidad se rigen por EN 16726 (Grupo H) y los halogenados por CEN/TR 17238:2018."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. EN 16723-1 regula IMPUREZAS para inyección (no fija un CH₄ mínimo). Cada límite concreto que se pueble citará su FUENTE SECUNDARIA pública en su propio `fuente`/`nota` (p. ej. EN 16726 §O₂ biometano, GRDF Prescriptions techniques, Snam Allegato 11/A biometano, BEK 230 biogás/H₂) y solo esa cifra pasa a VERIFICADO_SECUNDARIO. Lo no confirmado queda con valor null y PENDIENTE_EXTRACCION."
-      ambito: "Especificación europea de biometano para inyección en la red de gas natural."
+      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. Valores poblados con FUENTE SECUNDARIA pública (documento de investigación de corpus jul-2026; Springer AQUA 2023; MARCOGAZ; European Biogas Association) → VERIFICADO_SECUNDARIO. Lo no confirmado queda null/PENDIENTE. ⚠️ EN REVISIÓN ACTIVA (CEN/TC 408): la nueva edición armonizará O₂, índice de Wobbe, H₂, azufre y densidad relativa → verificar la fecha de publicación antes de fijar umbrales definitivos (los de O₂ y Wobbe pueden cambiar)."
+      ambito: "Especificación europea de biometano para inyección en la red de gas natural (CEN/TC 408, mandato M/475). Se complementa con EN 16726 (Grupo H) y EN 16723-2:2017 (uso automoción, que sí fija O₂/H₂/azufre)."
+
+    - id: CEN_TR_17238
+      tipo: informe_tecnico
+      pais: UE
+      gas: biometano
+      nombre: "CEN/TR 17238:2018 — Metodología de evaluación de valores límite para contaminantes del biometano con posible impacto en la salud (compuestos clorados y fluorados)"
+      organismo: "CEN — Comité Europeo de Normalización (TC 408)"
+      publicacion: "2018"
+      pdf: ""
+      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:64637"
+      descarga_auto: false
+      tabla_calidad: "Metodología de evaluación basada en salud para compuestos clorados/fluorados (halogenados)."
+      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      nota: "Informe técnico que sustenta cómo EN 16723-1 evalúa los compuestos halogenados (Cl/F). No fija un umbral único: evaluación basada en salud."
+      ambito: "Contaminantes del biometano con impacto en salud."
+
+    # --- Hidrógeno: especificación de producto (ISO/CEN) + marco de red (ENNOH) ---
+    - id: ISO_14687
+      tipo: norma_tecnica
+      pais: INT
+      gas: hidrogeno
+      nombre: "ISO 14687:2019 — Hydrogen fuel quality — Product specification"
+      organismo: "ISO — Organización Internacional de Normalización (TC 197)"
+      publicacion: "2019 (unifica ISO 14687-1/-2/-3). ⚠️ La literatura de 2026 ya cita ISO 14687:2025 (nueva edición): verificar la edición vigente."
+      pdf: ""
+      url: "https://www.iso.org/standard/69539.html"
+      descarga_auto: false
+      tabla_calidad: "Tabla 2 — Grade D (pilas PEM de vehículos de carretera): pureza H₂ ≥ 99,97 % y 15 contaminantes en μmol/mol."
+      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      nota: "Norma de PAGO (ISO). Valores del Grade D tomados de fuente pública secundaria (documento de corpus jul-2026; muestra oficial iTeh/ISO; Anal. Chem. 2026) → VERIFICADO_SECUNDARIO. En Europa se transpone como EN 17124 (PEM). ⚠️ En revisión (ISO 14687:2025 ya citada)."
+      ambito: "Especificación de calidad de PRODUCTO del hidrógeno combustible. Grade D = pilas PEM de automoción (la más exigente y citada)."
+
+    - id: EN_17124
+      tipo: norma_tecnica
+      pais: UE
+      gas: hidrogeno
+      nombre: "EN 17124 — Hydrogen fuel — Product specification and quality assurance — PEM fuel cell applications for vehicles"
+      organismo: "CEN — Comité Europeo de Normalización"
+      publicacion: "Transposición europea de ISO 14687 Grade D (aplicaciones PEM)."
+      pdf: ""
+      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:66054"
+      descarga_auto: false
+      tabla_calidad: "Equivalente a ISO 14687 Grade D (PEM)."
+      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      nota: "Transposición europea de ISO 14687 Grade D (mismos límites)."
+      ambito: "Calidad del hidrógeno para hidrogeneras PEM en Europa."
+
+    - id: ENNOH_REG_2024_1789
+      tipo: marco_regulatorio
+      pais: UE
+      gas: hidrogeno
+      nombre: "Reglamento (UE) 2024/1789 (Hydrogen and Decarbonised Gas Market Package) — crea ENNOH; consulta pública de calidad de hidrógeno de ENNOH (Groundwork Document, 30-ene-2026)"
+      organismo: "Comisión Europea / ENNOH (European Network of Network Operators for Hydrogen)"
+      publicacion: "Reglamento en vigor desde jun-2024 (Art. 59: Hydrogen Quality Monitoring Report bienal). ENNOH establecida a finales de 2025. Consulta pública 30-ene-2026 (cierre 30-mar-2026)."
+      pdf: ""
+      url: "https://www.ennoh.eu/ennohs-public-consultation-on-hydrogen-quality"
+      descarga_auto: false
+      tabla_calidad: "NO existe todavía un código de red de hidrógeno con especificación de calidad vinculante a nivel UE (en construcción)."
+      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      nota: "Marco de RED de hidrógeno (distinto de la especificación de PRODUCTO ISO 14687). La responsabilidad pasó de ENTSOG a ENNOH (Reg. UE 2024/1789). Aún SIN límites de calidad de red vinculantes: el ENNOH Groundwork Document (2026) consolida prácticas y alimentará el 1.er Hydrogen Quality Monitoring Report 2026. VIGILAR."
+      ambito: "Marco institucional/regulatorio de la calidad del hidrógeno en la red europea (en desarrollo)."
 
     - id: UE_2021_C78_05
       tipo: comunicacion_ue
@@ -3040,6 +3108,25 @@ parametros_biometano:
         estado_verificacion: VERIFICADO
         nota: "Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
 
+  CO:
+    nombre_completo: "Monóxido de carbono"
+    simbolo: "CO"
+    nombre_ingles: "Carbon monoxide"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Fracción de monóxido de carbono en el biometano de inyección."
+    aliases: [monoxido de carbono, monóxido de carbono, carbon monoxide, kohlenmonoxid, monoxyde de carbone, co]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1 (monóxido de carbono). Serie EN ISO 6974"
+        tipo_limite: maximo
+        valor: 0.1
+        unidad: pct_mol
+        expresion_original: "Monóxido de carbono (CO) ≤ 0,1 % mol (valor de ejemplo)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "Uno de los 4 parámetros con límite en EN 16723-1. Fuente secundaria: documento de corpus jul-2026. ⚠️ EN 16723-1 en revisión."
+
   S_TOTAL:
     nombre_completo: "Azufre total (como S)"
     simbolo: "S"
@@ -3138,13 +3225,13 @@ parametros_biometano:
     limites:
       EN16723:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
+        articulo: "EN 16723-1, Tabla 1 (silicio volátil total, como Si). Método EN ISO 16017-1 (TDS-GC-MS)"
         tipo_limite: maximo
-        valor: null
+        valor: 1
         unidad: mg_per_nm3           # mg Si/m³ (base silicio): NO convertir a ppm sin masa molar
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Siloxanos como silicio total, mg Si/m³. Base silicio: no convertir a ppm ni corregir volumen sin respaldo de la fuente (riesgo R6). Poblar desde fuente secundaria pública."
+        expresion_original: "Silicio volátil total (como Si): 0,3 – 1 mg Si/m³ (rango propuesto; foco en siloxanos)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "Uno de los 4 parámetros con límite en EN 16723-1. Valor límite típico/propuesto 0,3–1 mg Si/m³ (como Si); se fija 1 mg Si/m³ como cota superior. Base silicio: no convertir a ppm/volumen sin respaldo (riesgo R6). ⚠️ EN 16723-1 en revisión. Fuente secundaria: documento de corpus jul-2026; Springer AQUA 2023."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, «Teneur en siloxanes» (pág. 1)"
@@ -3167,13 +3254,13 @@ parametros_biometano:
     limites:
       EN16723:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
-        tipo_limite: maximo
+        articulo: "EN 16723-1, Tabla 1 (aceite de compresor y polvo). Método serie ISO 8573"
+        tipo_limite: cualitativo
         valor: null
-        unidad: mg_per_nm3
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Poblar desde fuente secundaria pública."
+        unidad: adimensional
+        expresion_original: "Aceite de compresor / polvo: «técnicamente libre de» (sin valor numérico); fracciones que no hagan el gas inaceptable para transporte y uso final."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "EN 16723-1 NO fija umbral numérico: es una restricción CUALITATIVA («técnicamente libre de»). No evaluable de forma determinista contra un número."
 
   AMINAS:
     nombre_completo: "Aminas"
@@ -3186,13 +3273,13 @@ parametros_biometano:
     limites:
       EN16723:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
+        articulo: "EN 16723-1, Tabla 1 (aminas, derivadas del proceso de upgrading)"
         tipo_limite: maximo
         valor: null
         unidad: mg_per_nm3
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Poblar desde fuente secundaria pública."
+        expresion_original: "Aminas: valor límite máximo fijado en EN 16723-1 (norma de pago; el valor numérico no consta en la fuente secundaria pública)."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Uno de los 4 parámetros con límite en EN 16723-1, pero el número no está en las fuentes públicas consultadas (norma de pago). No se inventa. ⚠️ EN 16723-1 en revisión."
 
   NH3:
     nombre_completo: "Amoníaco"
@@ -3205,13 +3292,13 @@ parametros_biometano:
     limites:
       EN16723:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
+        articulo: "EN 16723-1, Tabla 1 (amoníaco). Métodos FTIR/CRDS (NEN 2826 / refs. VDI)"
         tipo_limite: maximo
-        valor: null
+        valor: 10
         unidad: mg_per_nm3
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Poblar desde fuente secundaria pública."
+        expresion_original: "Amoníaco (NH₃) ≤ 10 mg/m³"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "Uno de los 4 parámetros con límite en EN 16723-1. Fuente secundaria: documento de corpus jul-2026. ⚠️ EN 16723-1 en revisión."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, «Teneur en NH3» (pág. 1)"
@@ -3250,3 +3337,342 @@ parametros_biometano:
         expresion_original: "Teneur en Cl < 1 mg/m³(n) ; Teneur en F < 10 mg/m³(n)"
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "GRTgaz fija cloro y flúor por SEPARADO (Cl < 1 mg/m³(n); F < 10 mg/m³(n)), NO un límite combinado «Cl+F». No se inventa un valor combinado: el comparador aún no evalúa Cl y F por separado."
+
+
+# =============================================================================
+# PARÁMETROS DE HIDRÓGENO (dominio nuevo — NO altera gas natural ni biometano)
+# =============================================================================
+# Especificación de PRODUCTO ISO 14687:2019 Grade D (pilas PEM de automoción), la
+# más exigente y citada; en Europa EN 17124. Jurisdicción: ISO14687. Trazas en
+# μmol/mol (≡ ppm molar; se usa la unidad ppm). Norma de PAGO → valores de fuente
+# pública secundaria (documento de corpus jul-2026) → VERIFICADO_SECUNDARIO.
+# ⚠️ ISO 14687 en revisión (edición 2025 ya citada). El marco de RED (ENNOH,
+# Reg. UE 2024/1789) aún NO fija límites vinculantes (ver fuente ENNOH_REG_2024_1789).
+# Nota semántica: el O₂ de PRODUCTO PEM (5 μmol/mol) es distinto del O₂ de red/UGS.
+# Restricción de suma no modelada como número único: CO+HCHO+HCOOH ≤ 0,2 μmol/mol.
+# =============================================================================
+
+parametros_hidrogeno:
+
+  H2_PUREZA:
+    nombre_completo: "Pureza de hidrógeno (índice de H₂)"
+    simbolo: "H₂"
+    nombre_ingles: "Hydrogen fuel index (purity)"
+    grupo: pureza
+    tipo: pureza
+    definicion: "Fracción molar mínima de H₂ (100 % menos los gases no-hidrógeno)."
+    aliases: [pureza de h2, pureza de hidrogeno, indice de h2, hydrogen purity, hydrogen fuel index, wasserstoffreinheit, purete de l'hydrogene, fraccion molar de hidrogeno, h2 purity]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: minimo
+        valor: 99.97
+        unidad: pct_mol
+        expresion_original: "Índice de combustible hidrógeno mínimo 99,97 % (fracción molar) = 100 % − gases no-H₂"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "Grade D (PEM). Fuente secundaria: documento de corpus jul-2026. ⚠️ ISO 14687 en revisión."
+
+  NO_H2:
+    nombre_completo: "Total de gases no-hidrógeno"
+    simbolo: "Σ no-H₂"
+    nombre_ingles: "Total non-hydrogen gases"
+    grupo: pureza
+    tipo: impureza
+    definicion: "Suma de todos los gases distintos del hidrógeno."
+    aliases: [gases no hidrogeno, total non-hydrogen gases, no-h2, suma impurezas]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 300
+        unidad: ppm_vol
+        expresion_original: "Total gases no-hidrógeno: 300 μmol/mol (suma)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM). Fuente secundaria: documento de corpus jul-2026."
+
+  H2O:
+    nombre_completo: "Agua"
+    simbolo: "H₂O"
+    nombre_ingles: "Water"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de agua en el hidrógeno."
+    aliases: [agua, water, wasser, eau, h2o]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: ppm_vol
+        expresion_original: "Agua (H₂O): 5 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  THC:
+    nombre_completo: "Hidrocarburos totales excepto CH₄ (equiv. C1)"
+    simbolo: "THC"
+    nombre_ingles: "Total hydrocarbons except methane (C1 basis)"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Suma de hidrocarburos distintos del metano, en base C1; incluye especies oxigenadas."
+    aliases: [hidrocarburos totales, total hydrocarbons, thc, hydrocarbons except methane]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 2
+        unidad: ppm_vol
+        expresion_original: "Hidrocarburos totales excepto CH₄ (eq. C1): 2 μmol/mol (incluye especies oxigenadas)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  CH4:
+    nombre_completo: "Metano"
+    simbolo: "CH₄"
+    nombre_ingles: "Methane"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de metano en el hidrógeno."
+    aliases: [metano, methane, ch4, methananteil]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 100
+        unidad: ppm_vol
+        expresion_original: "Metano (CH₄): 100 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  O2:
+    nombre_completo: "Oxígeno (producto PEM)"
+    simbolo: "O₂"
+    nombre_ingles: "Oxygen"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Oxígeno en el hidrógeno de producto (PEM). Distinto del O₂ crítico en red/almacenamiento (UGS)."
+    aliases: [o2, oxigeno, oxygen, sauerstoff]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: ppm_vol
+        expresion_original: "Oxígeno (O₂): 5 μmol/mol (crítico para UGS y redes)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. O₂ de PRODUCTO PEM; el O₂ de RED/almacenamiento (UGS) es un contexto distinto. Grade D."
+
+  HE:
+    nombre_completo: "Helio"
+    simbolo: "He"
+    nombre_ingles: "Helium"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de helio."
+    aliases: [helio, helium, he]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 300
+        unidad: ppm_vol
+        expresion_original: "Helio (He): 300 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  N2:
+    nombre_completo: "Nitrógeno"
+    simbolo: "N₂"
+    nombre_ingles: "Nitrogen"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de nitrógeno."
+    aliases: [nitrogeno, nitrogen, stickstoff, azote, n2]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 300
+        unidad: ppm_vol
+        expresion_original: "Nitrógeno (N₂): 300 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  AR:
+    nombre_completo: "Argón"
+    simbolo: "Ar"
+    nombre_ingles: "Argon"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de argón."
+    aliases: [argon, argon, ar]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 300
+        unidad: ppm_vol
+        expresion_original: "Argón (Ar): 300 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  CO2:
+    nombre_completo: "Dióxido de carbono"
+    simbolo: "CO₂"
+    nombre_ingles: "Carbon dioxide"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de CO₂."
+    aliases: [co2, dioxido de carbono, carbon dioxide, kohlendioxid]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 2
+        unidad: ppm_vol
+        expresion_original: "Dióxido de carbono (CO₂): 2 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  CO:
+    nombre_completo: "Monóxido de carbono"
+    simbolo: "CO"
+    nombre_ingles: "Carbon monoxide"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Monóxido de carbono. Comparte restricción de suma con HCHO y HCOOH (Σ ≤ 0,2 μmol/mol)."
+    aliases: [co, monoxido de carbono, carbon monoxide, kohlenmonoxid]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: ppm_vol
+        expresion_original: "Monóxido de carbono (CO): 0,2 μmol/mol; Σ(CO+HCHO+HCOOH) ≤ 0,2"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Además del límite individual, CO+HCHO+HCOOH ≤ 0,2 μmol/mol (restricción de suma NO modelada como número único). Grade D."
+
+  S_TOTAL:
+    nombre_completo: "Azufre total (equiv. S1)"
+    simbolo: "S"
+    nombre_ingles: "Total sulfur (S1 basis)"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Suma de compuestos de azufre (H₂S, COS, CS₂, mercaptanos), base S1."
+    aliases: [azufre total, total sulfur, gesamtschwefel, soufre total, sulfur, h2s]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 0.004
+        unidad: ppm_vol
+        expresion_original: "Azufre total (eq. S1): 0,004 μmol/mol (incl. H₂S, COS, CS₂, mercaptanos)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Parámetro ADITIVO (suma), como en gas natural, pero ~3 órdenes de magnitud menor. Grade D."
+
+  HCHO:
+    nombre_completo: "Formaldehído"
+    simbolo: "HCHO"
+    nombre_ingles: "Formaldehyde"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Formaldehído. Cuenta en la suma con CO y HCOOH."
+    aliases: [formaldehido, formaldehyde, hcho, metanal]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: ppm_vol
+        expresion_original: "Formaldehído (HCHO): 0,2 μmol/mol (cuenta en la Σ con CO)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Σ(CO+HCHO+HCOOH) ≤ 0,2. Grade D."
+
+  HCOOH:
+    nombre_completo: "Ácido fórmico"
+    simbolo: "HCOOH"
+    nombre_ingles: "Formic acid"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Ácido fórmico. Cuenta en la suma con CO y HCHO."
+    aliases: [acido formico, formic acid, hcooh, ameisensaure]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 0.2
+        unidad: ppm_vol
+        expresion_original: "Ácido fórmico (HCOOH): 0,2 μmol/mol (cuenta en la Σ con CO)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Σ(CO+HCHO+HCOOH) ≤ 0,2. Grade D."
+
+  NH3:
+    nombre_completo: "Amoníaco"
+    simbolo: "NH₃"
+    nombre_ingles: "Ammonia"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido de amoníaco."
+    aliases: [amoniaco, ammonia, ammoniak, nh3]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 0.1
+        unidad: ppm_vol
+        expresion_original: "Amoníaco (NH₃): 0,1 μmol/mol"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  HALOGENADOS:
+    nombre_completo: "Compuestos halogenados (equiv. ión halógeno)"
+    simbolo: "X⁻"
+    nombre_ingles: "Halogenated compounds (halide ion basis)"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Compuestos halogenados (HCl, R-Cl), en base ión halógeno."
+    aliases: [halogenados, halogenated, halide, hcl, cloruros, chlorine]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 0.05
+        unidad: ppm_vol
+        expresion_original: "Compuestos halogenados (eq. ión halógeno): 0,05 μmol/mol (HCl, R-Cl)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+
+  PARTICULAS:
+    nombre_completo: "Partículas"
+    simbolo: "part."
+    nombre_ingles: "Particulates"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Concentración de partículas; sin aceite visible en la boquilla."
+    aliases: [particulas, particulates, particules, partikel, polvo, dust]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        tipo_limite: maximo
+        valor: 1
+        unidad: mg_per_kg
+        expresion_original: "Partículas: 1 mg/kg (sin aceite visible en boquilla)"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "mg/kg (masa). Grade D (PEM)."
