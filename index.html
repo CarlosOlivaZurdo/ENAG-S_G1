@@ -251,6 +251,11 @@
   .gas-line:last-child{border-bottom:0}
   .gas-src{color:var(--accent-d);font-size:11px;text-decoration:none}
   .gas-src:hover{text-decoration:underline}
+  .gas-ok{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;padding:11px 14px;background:var(--panel-2)}
+  .gas-ok-h{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .gas-ok-list{margin:0;padding-left:20px;columns:3;column-gap:20px;font-size:13px;color:var(--ink)}
+  .gas-ok-list li{margin:2px 0;break-inside:avoid}
+  @media(max-width:720px){.gas-ok-list{columns:2}}
   .gas-info-box{background:var(--panel-2);border:1px dashed var(--line);border-radius:6px;padding:11px 13px;margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.5}
   @media(max-width:720px){.gas-head,.gas-row{grid-template-columns:1.4fr 1fr 1fr 34px}}
   /* --- Exportación de la matriz --- */
@@ -855,17 +860,11 @@
       (ord[a.veredicto]-ord[b.veredicto]) || (a.pais==="España"?-1:b.pais==="España"?1:a.pais.localeCompare(b.pais,'es')));
     let html = '<div class="cmp-card"><h2>Resultado del análisis</h2>';
     html += '<p class="gas-sum">'+esc(d.resumen||"")+'</p>';
-    paisesOrd.forEach(r => {
-      const motivos = Array.from(new Set(
-        r.parametros.filter(p => p.estado===r.veredicto && r.veredicto!=="cumple" && r.veredicto!=="sin_datos").map(p => p.label)));
-      const motTxt = motivos.length ? "por "+esc(motivos.join(", ")) : "";
-      const abierto = (r.veredicto==="cumple"||r.veredicto==="sin_datos") ? "none" : "";
-      // Compacto: en NO CUMPLE / ALERTA solo los parámetros que motivan el veredicto;
-      // en cumple/sin datos, todos (visibles solo al desplegar).
-      const mostrar = (r.veredicto==="no_cumple"||r.veredicto==="alerta")
-        ? r.parametros.filter(p => p.estado===r.veredicto)
-        : r.parametros;
-      const lineas = mostrar.map(p => {
+    // Países con incidencia (no cumple / alerta): tarjeta con el/los parámetro(s) que la motivan.
+    paisesOrd.filter(r => r.veredicto==="no_cumple" || r.veredicto==="alerta").forEach(r => {
+      const relev = r.parametros.filter(p => p.estado===r.veredicto);
+      const motTxt = relev.length ? "por "+esc(Array.from(new Set(relev.map(p => p.label))).join(", ")) : "";
+      const lineas = relev.map(p => {
         const src = (p.url && /^https?:/i.test(p.url))
           ? ' · <a href="'+esc(p.url)+'" target="_blank" rel="noopener" class="gas-src">fuente</a>' : '';
         return '<div class="gas-line">'+
@@ -876,14 +875,23 @@
         '</div>';
       }).join("");
       html += '<div class="gas-pais">'+
-        '<div class="gas-pais-h" onclick="var n=this.nextElementSibling;n.style.display=(n.style.display===\'none\'?\'\':\'none\')">'+
+        '<div class="gas-pais-h">'+
           '<span class="gas-pais-n">'+esc(r.pais)+'</span>'+
           '<span class="badge '+esc(r.veredicto)+'">'+esc(VEREDICTO_TXT[r.veredicto]||r.veredicto)+'</span>'+
           '<span class="gas-motivo">'+motTxt+'</span>'+
         '</div>'+
-        '<div class="gas-det" style="display:'+abierto+'">'+lineas+'</div>'+
+        '<div class="gas-det">'+lineas+'</div>'+
       '</div>';
     });
+    // Apartados compactos "Cumplen" y "Sin datos": solo la lista de países en bullets.
+    const bloqueLista = (lista, clase, titulo) => {
+      if(!lista.length) return '';
+      return '<div class="gas-ok"><div class="gas-ok-h"><span class="badge '+clase+'">'+titulo+'</span> '+
+        lista.length+' '+(lista.length===1?'jurisdicción':'jurisdicciones')+'</div>'+
+        '<ul class="gas-ok-list">'+lista.map(r => '<li>'+esc(r.pais)+'</li>').join("")+'</ul></div>';
+    };
+    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="cumple"), "cumple", "Cumplen");
+    html += bloqueLista(paisesOrd.filter(r => r.veredicto==="sin_datos"), "sin_datos", "Sin datos");
     const info = (d.componentes||[]).filter(c => c.informativo);
     if(info.length){
       html += '<div class="gas-info-box"><b>No evaluados</b> (composición sin límite normativo directo): '+
