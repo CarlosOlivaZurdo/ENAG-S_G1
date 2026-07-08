@@ -173,6 +173,7 @@ slide_contenido("Índice", nxt(),
     bullets=[
         "Contexto y objetivo",
         "Arquitectura general del sistema",
+        "Funcionalidades: consulta libre, comparativa, analizar gas e interconexión",
         "Las tres capas de datos y la base de conocimiento",
         "El servidor de aplicación (FastAPI) frente a la API de OpenAI",
         "El motor determinista y la normalización (ISO 13443)",
@@ -243,7 +244,24 @@ _notes(s, "El sistema se estructura en cuatro componentes. La interfaz web prese
           "es un proveedor externo que se emplea de forma acotada, solo para redactar respuestas de texto, sin "
           "capacidad de generar cifras.")
 
-# --- 6. Las tres capas de datos ---
+# --- 6. Funcionalidades ---
+slide_contenido("Funcionalidades: qué puede hacer el sistema", nxt(),
+    intro="Cuatro formas de usarlo, todas con la misma garantía de cero cifras inventadas:",
+    bullets=[
+        "CONSULTA LIBRE (chat): preguntas en lenguaje natural sobre límites, cumplimiento, fuentes y comparaciones. Incluye ANÁLISIS DE INTERCONEXIÓN EN CADENA: para una ruta (p. ej. España-Francia-Alemania) identifica el cuello de botella regulatorio y avisa de incompatibilidades.",
+        "COMPARATIVA: comparación puntual de un parámetro entre países y MATRIZ (heatmap) de países × parámetros, con EXPORTACIÓN a Excel/PDF de las jurisdicciones elegidas.",
+        "ANALIZAR GAS: se introduce la composición de un gas concreto y el sistema responde, país a país, si CUMPLE / está en ALERTA / NO CUMPLE, con la cita de cada límite.",
+        ("Acceso por HTTPS (conexión cifrada). La IA solo interviene en el texto abierto; el resto es determinista.", True),
+    ],
+    notas="El sistema ofrece cuatro funcionalidades. La consulta libre (chat) responde en lenguaje natural e "
+          "incluye el análisis de interconexión en cadena: para una ruta de varios países calcula qué gas puede "
+          "atravesarla entera e identifica el país y el parámetro que más restringen (el cuello de botella). La "
+          "comparativa permite comparar un parámetro entre países y ver la matriz completa, con exportación a "
+          "Excel o PDF. Analizar gas valida la composición de un gas concreto país a país. Todo se sirve por "
+          "HTTPS y mantiene la garantía de cero cifras inventadas.",
+    bsize=15)
+
+# --- 7. Las tres capas de datos ---
 slide_tabla("Las tres capas de datos", nxt(),
     ["Capa", "Contenido", "Función"],
     [
