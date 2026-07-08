@@ -1630,6 +1630,158 @@ def _intercambiabilidad(parametro: str, paises: Optional[list] = None) -> str:
     return "\n".join(lines)
 
 
+# ============================================================================
+# ALERTAS DE INCOMPATIBILIDAD EN CADENA (interconexión)
+# ---------------------------------------------------------------------------
+# Cuando el usuario pregunta por una interconexión (p. ej. "España-Francia-
+# Alemania"), un gas debe cumplir el límite de TODOS los países a la vez. Por
+# cada parámetro se calcula la INTERSECCIÓN de rangos (normalizados a España) y
+# qué país impone la restricción más dura (cuello de botella). Si para algún
+# parámetro no queda rango común → incompatibilidad. Reutiliza el motor
+# comparativo (`_rango_en_condiciones_es`).
+# ============================================================================
+
+_KEYWORDS_INTERCONEXION = (
+    "interconex", "cadena", "corredor", "transit", "pasa por", "pasando por",
+    "circular por", "cuello de botella", "gasoducto", "atravesar", "atraviesa", "encadenad",
+)
+
+
+def _extraer_cadena_paises(mensaje: str) -> List[str]:
+    """Países mencionados en el mensaje, EN ORDEN de aparición y sin repetir."""
+    txt = _norm_pais(mensaje)
+    hallados: List[tuple] = []
+    for alias, cod in _PAIS_A_CODIGO.items():
+        desde = 0
+        while True:
+            i = txt.find(alias, desde)
+            if i < 0:
+                break
+            antes = txt[i - 1] if i > 0 else " "
+            despues = txt[i + len(alias)] if i + len(alias) < len(txt) else " "
+            if not antes.isalpha() and not despues.isalpha():  # palabra completa
+                hallados.append((i, cod))
+            desde = i + 1
+    hallados.sort(key=lambda x: x[0])
+    orden: List[str] = []
+    for _, cod in hallados:
+        pais = "España" if cod == "ES" else _CODIGO_A_PAIS.get(cod, cod)
+        if pais not in orden:
+            orden.append(pais)
+    return orden
+
+
+def _es_consulta_interconexion(mensaje: str, paises: List[str]) -> bool:
+    """¿El mensaje pide un análisis de cadena/interconexión? (2+ países + señal explícita)."""
+    if len(paises) < 2:
+        return False
+    t = _norm_pais(mensaje)
+    if any(k in t for k in _KEYWORDS_INTERCONEXION):
+        return True
+    if re.search(r"[a-z]\s*[-–>→]\s*[a-z]", t):  # países encadenados: A-B-C, A→B…
+        return True
+    return False
+
+
+def analizar_cadena(paises: List[str]) -> Dict[str, Any]:
+    """Por cada parámetro: intersección de los rangos de todos los países de la cadena (en
+    condiciones de España) y qué país impone la restricción más dura. Marca incompatibilidades."""
+    filas: List[Dict[str, Any]] = []
+    cuellos: Dict[str, List[str]] = {}
+    incompat: List[str] = []
+    for pinfo in PARAMETROS_UI:
+        slug, label = pinfo["slug"], pinfo["label"]
+        unidad_es = _unidad_de_pais(slug, PAIS_BASE) or ""
+        lo_max, hi_min = float("-inf"), float("inf")
+        pais_lo = pais_hi = None
+        hay = False
+        for pais in paises:
+            r = _rango_en_condiciones_es(slug, pais, unidad_es)
+            est = r.get("estado")
+            if est in ("sin_datos", "sin_limite", "incomparable"):
+                continue  # no impone una restricción numérica comparable
+            hay = True
+            lo = r["lo"] if r["lo"] is not None else float("-inf")
+            hi = r["hi"] if r["hi"] is not None else float("inf")
+            if hi < hi_min - 1e-9:
+                hi_min, pais_hi = hi, pais
+            if lo > lo_max + 1e-9:
+                lo_max, pais_lo = lo, pais
+        if not hay:
+            estado = "sin_datos"
+        elif lo_max > hi_min + 1e-9:
+            estado = "incompatible"
+            incompat.append(label)
+        else:
+            estado = "ok"
+        if estado in ("ok", "incompatible"):
+            if pais_hi:
+                cuellos.setdefault(pais_hi, []).append(label)
+            if pais_lo and pais_lo != pais_hi:
+                cuellos.setdefault(pais_lo, []).append(label + " (mín.)")
+        filas.append({
+            "parametro": slug, "label": label, "unidad": unidad_es,
+            "lo": (None if lo_max == float("-inf") else round(lo_max, 4)),
+            "hi": (None if hi_min == float("inf") else round(hi_min, 4)),
+            "cuello_max": pais_hi, "cuello_min": pais_lo, "estado": estado,
+        })
+    return {"cadena": paises, "parametros": filas, "cuellos": cuellos, "incompatibilidades": incompat}
+
+
+def _formatear_cadena(res: Dict[str, Any]) -> str:
+    """Respuesta de chat (markdown) del análisis de cadena."""
+    paises = res["cadena"]
+    L = [f"**Interconexión: {' → '.join(paises)}**", "",
+         "Para que un gas circule por toda la cadena debe cumplir el límite de **todos** los "
+         "países a la vez. Rango común admisible por parámetro (en condiciones de España) y quién "
+         "impone la restricción más estricta (cuello de botella):", "",
+         "| Parámetro | Rango común admisible | Cuello de botella |",
+         "| --- | --- | --- |"]
+    mostrados = 0
+    for f in res["parametros"]:
+        if f["estado"] not in ("ok", "incompatible"):
+            continue
+        mostrados += 1
+        u = f["unidad"]
+        if f["estado"] == "incompatible":
+            rango = "🔴 **vacío — incompatible**"
+        else:
+            a = _coma(f["lo"]) if f["lo"] is not None else "—"
+            b = _coma(f["hi"]) if f["hi"] is not None else "—"
+            rango = f"{a} / {b} {u}".strip()
+        cuello = []
+        if f["cuello_max"]:
+            cuello.append(f"**{f['cuello_max']}** (máx.)")
+        if f["cuello_min"] and f["cuello_min"] != f["cuello_max"]:
+            cuello.append(f"**{f['cuello_min']}** (mín.)")
+        L.append(f"| {f['label']} | {rango} | {' · '.join(cuello) or '—'} |")
+    if not mostrados:
+        return (f"**Interconexión: {' → '.join(paises)}**\n\nNinguno de los países de la cadena fija "
+                "límites numéricos comparables para los parámetros de calidad, así que no puedo "
+                "identificar cuellos de botella.")
+    if res["incompatibilidades"]:
+        L += ["", "⛔ **Incompatibilidad detectada:** ningún gas puede atravesar toda la cadena, porque "
+              "los límites de **" + ", ".join(dict.fromkeys(res["incompatibilidades"])) +
+              "** no dejan un rango común entre los países."]
+    else:
+        L += ["", "✅ **Existe gas admisible** para toda la cadena: el que cumpla los rangos comunes de la tabla."]
+    if res["cuellos"]:
+        partes = [f"**{pais}** ({', '.join(dict.fromkeys(params))})" for pais, params in res["cuellos"].items()]
+        L += ["", "**Cuellos de botella regulatorios** (país con el límite más estricto por parámetro): "
+              + "; ".join(partes) + "."]
+    L += ["", "_Método: intersección de los límites de cada país normalizados a las condiciones de "
+          "España (ISO 13443). El cuello de botella es el país con el límite más estricto en cada parámetro._"]
+    return "\n".join(L)
+
+
+def _interconexion_response(mensaje: str) -> Optional[str]:
+    """Si el mensaje pide una interconexión/cadena, devuelve el análisis; si no, None."""
+    paises = _extraer_cadena_paises(mensaje)
+    if not _es_consulta_interconexion(mensaje, paises):
+        return None
+    return _formatear_cadena(analizar_cadena(paises))
+
+
 def _es_consulta_intercambio(texto_norm: str) -> bool:
     """¿Pregunta con qué país se puede intercambiar/compatibilizar el gas?"""
     if "intercambi" in texto_norm or "intercanvi" in texto_norm:
@@ -2174,6 +2326,12 @@ async def chat_endpoint(request: PeticionChat) -> RespuestaChat:
     if validation_response is not None:
         _registrar_turno(request.session_id, request.mensaje, validation_response)
         return RespuestaChat(respuesta=validation_response, modo="determinista")
+
+    # Interconexión / cadena: se resuelve SIEMPRE de forma determinista (cero cifras inventadas).
+    interconexion = _interconexion_response(request.mensaje)
+    if interconexion is not None:
+        _registrar_turno(request.session_id, request.mensaje, interconexion)
+        return RespuestaChat(respuesta=interconexion, modo="determinista")
 
     if not provider.is_available():
         respuesta = _fallback_deterministic_response(request.mensaje, request.session_id)
