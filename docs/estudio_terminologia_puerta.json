@@ -1,0 +1,721 @@
+{
+  "resumen": {
+    "umbral_ivt": 7.0,
+    "ivt_medio_parametros_solapados": 22.6,
+    "ivt_medio_parametros_especificos": 1.17,
+    "ivt_medio_global": 10.91,
+    "vectorial_justificado_para_biometano": true,
+    "nota_hidrogeno": "Los parámetros específicos de biometano aún no tienen corpus (Fase 2). La variación real de hidrógeno (ENTSOG/ENNOH) se medirá al añadir esos documentos; se ESPERA que supere el umbral (pureza de H₂ / fracción molar de hidrógeno / Wasserstoffreinheit), reabriendo la puerta de la capa vectorial."
+  },
+  "parametros": [
+    {
+      "clave": "O2",
+      "nombre": "Oxígeno",
+      "nombre_ingles": "Oxygen",
+      "solapa_gas_natural": true,
+      "n_jurisdicciones": 21,
+      "n_aliases": 5,
+      "aliases": [
+        "oxígeno",
+        "oxygen",
+        "oxygène",
+        "oxigénio",
+        "O2",
+        "O₂"
+      ],
+      "n_expresiones_distintas": 21,
+      "expresiones": [
+        "El Bijlage 7 de Fluxys no fija un límite de O₂ para el gas H",
+        "Kyslík (O₂): max. 0,02 %",
+        "La BEK 230 NO fija O₂ para gas natural H; los límites de O₂ (§23, §27/§28) son solo para bionaturgas e hidrógeno.",
+        "Maximum oxygen: 2 ppm vol (= 0,0002 % mol)",
+        "O2 «Grenzüberschreitender Transport»: 0,001 mol % (media móvil 24 h). «Innerhalb der CH» (distribución/biometano): 1 mol %. SVGW G18:2022",
+        "O2: no fijado como límite (solo monitorizado)",
+        "O2: – / 0,01 % mol",
+        "O2: – / 1 % mol (en la red); proceso de evaluación lo baja a 0,01 % o 0,001 % para instalaciones sensibles",
+        "Oksijen (O₂): Maks. % 0,5",
+        "Ossigeno: ≤ 0,6 % mol",
+        "Oxigéntartalom (V/V): legfeljebb 0,2% (método MSZ ISO 6974).",
+        "Oxygen (O₂): Maximum 0,02 % (mol) (Gas Connect Austria, Annex 2)",
+        "Oxygen < 0,2 mol%",
+        "Oxygen: ≤0,2 % molar (tubería >38 barg); ≤1,0 % molar (≤38 barg)",
+        "O₂: ≤0,2 % mole",
+        "Sauerstoff: ≤ 0,001 mol-% (10 ppm)",
+        "Teneur en O2 < 0,01 % (molaire)",
+        "Zawartość tlenu (O₂): ≤ 0,2 % mol/mol",
+        "Zuurstof (O₂): ≤ 0,5 mol% (daggemiddeld, afname). En el HTL nacional: ≤ 0,0005 mol% (5 ppm)",
+        "kyslík (O₂): max. 0,01 % mol",
+        "oxigen (O₂): maximum 0,02 % molare"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "pct_mol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "oxígeno",
+          "hits": 5,
+          "documentos": [
+            "BOE-A-2006-15345-consolidado.pdf",
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "oxygen",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        },
+        {
+          "alias": "oxygène",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "oxigénio",
+          "hits": 1,
+          "documentos": [
+            "regulacion_portugal_826-2023.pdf"
+          ]
+        }
+      ],
+      "IVT": 22
+    },
+    {
+      "clave": "CO2",
+      "nombre": "Dióxido de Carbono",
+      "nombre_ingles": "Carbon dioxide",
+      "solapa_gas_natural": true,
+      "n_jurisdicciones": 21,
+      "n_aliases": 4,
+      "aliases": [
+        "dióxido de carbono",
+        "co2",
+        "co₂",
+        "carbon dioxide",
+        "anhídrido carbónico"
+      ],
+      "n_expresiones_distintas": 20,
+      "expresiones": [
+        "Anidride Carbonica (CO₂): ≤ 2,5 % mol",
+        "CO2 «Grenzüberschreitender Transport»: 2,5 mol %. «Innerhalb der CH» (distribución/biometano): 4,0 mol %. SVGW G18:2022",
+        "CO2: – / 2,5 % mol",
+        "CO₂: ≤3 % mole",
+        "Carbon Dioxide < 2,5 mol% (no se considera incumplido si los inertes totales <8 %)",
+        "Carbon Dioxide ≤ 4,0 mol% — máx. estándar consolidado de los puntos NTS (St Fergus NSMP «at all other times»); la mayoría de puntos ≤2,0–2,5 %",
+        "Carbon dioxide (CO₂): Maximum 2,0 % (mol) (Gas Connect Austria, Annex 2)",
+        "El Anexo 11 no fija CO₂. El <4,5 mol% que circula procede de la norma MSZ 1648:2016 (de pago) citada por terceros, no verificable directamente.",
+        "El Bijlage 7 de Fluxys no fija un límite de CO₂ para el gas H",
+        "Karbondioksit (CO₂): Maks. % 3",
+        "Kohlenstoffdioxid (CO₂): ≤ 2,5 mol-%",
+        "Koolstofdioxide (CO₂): ≤ 2,5 mol%",
+        "La BEK 230 NO fija CO₂ para gas natural H; los límites de CO₂ (§23, §27) son solo para bionaturgas e hidrógeno.",
+        "La tabla de gas natural NO fija CO₂ (sólo se monitoriza). El 4 % mol de la norma aplica a gases renovables (Secção XI), no al gas natural",
+        "Maximum carbon dioxide: 2,50 mol %",
+        "Oxid uhličitý (CO₂): max. 3 %",
+        "Teneur en CO2 < 2,5 % (molaire)",
+        "Zawartość dwutlenku węgla (CO₂): ≤ 3,0 % mol/mol",
+        "dioxid de carbon (CO₂): maximum 8 % molare",
+        "oxid uhličitý (CO₂): max. 2 % mol"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "pct_mol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "dióxido de carbono",
+          "hits": 1,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "co2",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf",
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "co₂",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "carbon dioxide",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        }
+      ],
+      "IVT": 21
+    },
+    {
+      "clave": "S_TOTAL",
+      "nombre": "Azufre Total",
+      "nombre_ingles": "Total sulphur",
+      "solapa_gas_natural": true,
+      "n_jurisdicciones": 21,
+      "n_aliases": 5,
+      "aliases": [
+        "azufre total",
+        "s total",
+        "total sulphur",
+        "soufre total",
+        "enxofre total"
+      ],
+      "n_expresiones_distintas": 21,
+      "expresiones": [
+        "Det totale svovlindhold i naturgas må ikke overstige 30 mg/Nm3.",
+        "Gesamtschwefel ohne Odoriermittel: 20 mg/m³ (mit Odoriermittel: 30 mg/m³). SVGW G18:2022",
+        "Gesamtschwefel: ≤ 6 mg/m³ sin odorizar; ≤ 30 mg/m³ con odorizante",
+        "Maximum sulphur: 30 mg/Nm³",
+        "S Total: – / 50 mg/m³",
+        "S total: – / 50 mg/m³(n)",
+        "Síra celkem: max. 30 mg/m³",
+        "Teneur en soufre total < 30 mgS/m³(n)",
+        "Toplam Kükürt: Maks. 110,00 mg/m³",
+        "Totaal zwavel (voor odorisatie): ≤ 30 mg S/m³(n)",
+        "Totaal zwavelgehalte te allen tijde (uitgedrukt in S): ≤ 30 mg/m³(n)",
+        "Total Sulphur < 50 mg/m³ (including H₂S)",
+        "Total sulfur: Maximum 120,0 mgS/Nm³ (Gas Connect Austria, Annex 2, pt. Überackern)",
+        "Total sulphur content: ≤50 mg/m³ (including H₂S)",
+        "Total sulphur: – / 20 mg/m³ (sin odorizar; 30 con odorizante)",
+        "Zawartość siarki całkowitej: ≤ 40,0 mg/m³",
+        "Zolfo Totale (*): ≤ 20 mg/Sm³  (* escluso lo zolfo da odorizzante)",
+        "celková síra: max. 20 mg·m⁻³",
+        "sulf total pe o perioadă scurtă: maximum 100 mg/m³",
+        "Összes illó kéntartalom: legfeljebb 100 mg/m³ (método MSZ989 / MSZ ISO 6326).",
+        "Ολικό θείο (gas no odorizado): ≤80 mg/Nm³ (hasta 120 en casos excepcionales ≤48 h)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "azufre total",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "s total",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        },
+        {
+          "alias": "total sulphur",
+          "hits": 5,
+          "documentos": [
+            "GB_NTS_GasQualityParameters_2022.pdf"
+          ]
+        },
+        {
+          "alias": "soufre total",
+          "hits": 5,
+          "documentos": [
+            "BE_Fluxys_NaturalGasSpecs_H.pdf",
+            "Prescriptions_techniques_GRDF.pdf",
+            "annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
+          ]
+        }
+      ],
+      "IVT": 22
+    },
+    {
+      "clave": "H2S_COS",
+      "nombre": "H₂S + COS (expresado como S)",
+      "nombre_ingles": "H2S + COS (as S)",
+      "solapa_gas_natural": true,
+      "n_jurisdicciones": 21,
+      "n_aliases": 6,
+      "aliases": [
+        "h2s",
+        "h₂s",
+        "sulfuro de hidrógeno",
+        "hydrogen sulphide",
+        "ácido sulfhídrico",
+        "h2s+cos",
+        "cos"
+      ],
+      "n_expresiones_distintas": 21,
+      "expresiones": [
+        "Det samlede indhold af svovlbrinte (H2S) og carbonylsulfid (COS) målt som svovl i naturgas må ikke overstige 5 mg/Nm3.",
+        "H2S + COS (as S): – / 5 mg/m³",
+        "H2S + COS (como S): – / 15 mg/m³",
+        "H2S + COS: – / 5 mg/m³(n)",
+        "H2S, COS als S: ≤ 5 mg/m³",
+        "Hidrogén-szulfid-tartalom: legfeljebb 20 mg/m³ (método MSZ ISO 6326-2).",
+        "Hidrojen Sülfür (H₂S): Maks. 5,10 mg/m³",
+        "Hydrogen Sulphide < 5 mg/m³",
+        "Hydrogen sulfide (H₂S): Maximum 6,8 mg/Nm³ (Gas Connect Austria, Annex 2)",
+        "Hydrogen sulphide content: ≤5 mg/m³",
+        "Maximum hydrogen sulphide incl. COS: 5 mg/Nm³",
+        "Schwefelwasserstoff und Carbonylsulfid (H2S und COS) (als Schwefel): 5 mg/m³. SVGW G18:2022",
+        "Siarkowodór (H₂S): ≤ 7,0 mg/m³",
+        "Sirovodík (H₂S): max. 6 mg/m³",
+        "Solfuro di idrogeno (H₂S): ≤ 5 mg/Sm³",
+        "Teneur en soufre de H2S (+ COS) < 5 mgS/m³(n)",
+        "Waterstofsulfidegehalte (H₂S) (exclusief COS) (uitgedrukt in S): ≤ 5,00 mg/m³(n)",
+        "Zwavelwaterstof (H₂S), uitgedrukt in S: ≤ 5 mg S/m³(n)",
+        "hidrogen sulfurat (H₂S): maximum 6,8 mg/m³",
+        "sírovodík (H₂S): max. 2 mg·m⁻³",
+        "Υδρόθειο (H₂S): ≤5,4 mg/Nm³ (hasta 10,8 en casos ≤2 h)"
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": true,
+      "cobertura_corpus": [
+        {
+          "alias": "h2s",
+          "hits": 5,
+          "documentos": [
+            "CH_SVGW_G13_Entwurf_2024.pdf",
+            "DE_GASCADE_Gasbeschaffenheit.pdf",
+            "GR_DESFA_Network_Code_AnexoI.pdf",
+            "NO_Gassled_Terms_Conditions.pdf"
+          ]
+        },
+        {
+          "alias": "h₂s",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "sulfuro de hidrógeno",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "hydrogen sulphide",
+          "hits": 5,
+          "documentos": [
+            "GB_NTS_GasQualityParameters_2022.pdf"
+          ]
+        }
+      ],
+      "IVT": 24
+    },
+    {
+      "clave": "PR_H2O",
+      "nombre": "Punto de Rocío de Agua",
+      "nombre_ingles": "Water dew point",
+      "solapa_gas_natural": true,
+      "n_jurisdicciones": 21,
+      "n_aliases": 4,
+      "aliases": [
+        "punto de rocío de agua",
+        "water dew point",
+        "point de rosée eau",
+        "ponto de orvalho da água"
+      ],
+      "n_expresiones_distintas": 21,
+      "expresiones": [
+        "Agua: no se fija como temperatura de rocío, sino como contenido de agua ≤ 88 ppmv",
+        "El Bijlage 7 de Fluxys no fija el punto de rocío de agua para el gas H",
+        "H2O (punto de rocío): – / +2 ºC a 70 bar",
+        "H2O DP: – / -8 ºC a 70 bar",
+        "H2O: 50 mg/m³ (MOP ≥10 bar); 200 mg/m³ (MOP <10 bar). La G18:2022 fija el CONTENIDO de agua, no una temperatura de rocío.",
+        "Irlanda regula el CONTENIDO de agua (Water Content <50 mg/m³), no un punto de rocío en ºC",
+        "Point de rosée eau < -5 ºC à la Pression Maximale de Service du Réseau en aval du Raccordement",
+        "Punct de rouă al apei: maximum −15 ºC, la presiunea din punctul de predare/preluare comercial",
+        "Punto di rugiada dell'acqua: ≤ -5 ºC alla pressione di 7000 kPa relativi",
+        "Rosný bod vody vztažený na tlak 4 MPa nesmí být vyšší než −7 ºC",
+        "Su Çiğlenme Noktası: Maksimum 0 ºC (verano), −5 ºC (resto del año), a 44 Barg",
+        "Temperatura punktu rosy wody a 5,5 MPa: ≤ -5 ºC (1 oct–31 mar); ≤ +3,7 ºC (1 abr–30 sep)",
+        "Vanddugpunktet i naturgas må ikke overstige minus 8 °C ved ethvert tryk op til 70 bar absolut tryk.",
+        "Vízgőztartalom: legfeljebb 0,17 g/m³ (Szállítóvezetéki / red de transporte); legfeljebb 1,0 g/m³ (Szigetüzemi / operación en isla). Método MSZ ISO 11541.",
+        "Wasserdampftaupunkt ≈ -8 ºC a 70 bar; G 260 lo fija como contenido de agua ≤ 200 mg/m³ (MOP ≤ 10 bar) / 50 mg/m³ (MOP > 10 bar)",
+        "Water dew point: -18 ºC at 69 barg",
+        "Water dew point: not higher than −8 ºC at a pressure of 64,0 bar (Gas Connect Austria, Annex 2)",
+        "Water dewpoint not more than −10 °C at eighty five bar gauge (85 barg) — NTS, Isle of Grain",
+        "Waterdauwpunt: ≤ -8 ºC (bij 70 bar(a))",
+        "rosný bod vody: max. −8 ºC pri tlaku 4,00 MPa",
+        "Σημείο Δρόσου Νερού (WDP): ≤+5 ºC σε πίεση αναφοράς 80 barg"
+      ],
+      "n_unidades_distintas": 3,
+      "unidades": [
+        "g_per_nm3",
+        "grados_C",
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "punto de rocío de agua",
+          "hits": 3,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "water dew point",
+          "hits": 5,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf"
+          ]
+        },
+        {
+          "alias": "point de rosée eau",
+          "hits": 5,
+          "documentos": [
+            "Prescriptions_techniques_GRDF.pdf"
+          ]
+        },
+        {
+          "alias": "ponto de orvalho da água",
+          "hits": 2,
+          "documentos": [
+            "regulacion_portugal_826-2023.pdf"
+          ]
+        }
+      ],
+      "IVT": 24
+    },
+    {
+      "clave": "CH4_MIN",
+      "nombre": "Contenido mínimo de metano",
+      "nombre_ingles": "Methane content (minimum)",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 7,
+      "aliases": [
+        "metano",
+        "ch4",
+        "ch₄",
+        "methane content",
+        "methananteil",
+        "teneur en méthane",
+        "fraction molaire de méthane",
+        "contenido de metano"
+      ],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "EN 16723-1 no fija un CH₄ mínimo explícito (regula por impurezas)."
+      ],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "pct_mol"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "metano",
+          "hits": 5,
+          "documentos": [
+            "BOE-A-2006-15345-consolidado.pdf",
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "ch4",
+          "hits": 1,
+          "documentos": [
+            "SK_eustream_Technicke_podmienky.pdf"
+          ]
+        },
+        {
+          "alias": "ch₄",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "methane content",
+          "hits": 3,
+          "documentos": [
+            "AT_GasConnect_ROHUAT_Annexes.pdf",
+            "NO_Gassled_Terms_Conditions.pdf"
+          ]
+        }
+      ],
+      "IVT": 2
+    },
+    {
+      "clave": "SILOXANOS",
+      "nombre": "Siloxanos (como silicio total)",
+      "nombre_ingles": "Siloxanes / total silicon",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 8,
+      "aliases": [
+        "siloxanos",
+        "siloxanes",
+        "siloxane",
+        "silicium",
+        "silizium",
+        "total silicon",
+        "silicio total",
+        "Si"
+      ],
+      "n_expresiones_distintas": 0,
+      "expresiones": [],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "siloxanos",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "siloxanes",
+          "hits": 1,
+          "documentos": [
+            "annexe-4-spec-grtgaz-methane-de-synthese-pour-injection.pdf"
+          ]
+        },
+        {
+          "alias": "siloxane",
+          "hits": 5,
+          "documentos": [
+            "DK_BEK230_Gaskvalitet.pdf"
+          ]
+        },
+        {
+          "alias": "silicium",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 1
+    },
+    {
+      "clave": "COMP_OIL",
+      "nombre": "Aceite de compresor",
+      "nombre_ingles": "Compressor oil",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 5,
+      "aliases": [
+        "aceite de compresor",
+        "compressor oil",
+        "verdichteröl",
+        "huile de compresseur",
+        "olio del compressore"
+      ],
+      "n_expresiones_distintas": 0,
+      "expresiones": [],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "aceite de compresor",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "compressor oil",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "verdichteröl",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "huile de compresseur",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 1
+    },
+    {
+      "clave": "AMINAS",
+      "nombre": "Aminas",
+      "nombre_ingles": "Amines",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 4,
+      "aliases": [
+        "aminas",
+        "amines",
+        "amine",
+        "ammine"
+      ],
+      "n_expresiones_distintas": 0,
+      "expresiones": [],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "aminas",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf",
+            "regulacion_portugal_826-2023.pdf"
+          ]
+        },
+        {
+          "alias": "amines",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "amine",
+          "hits": 3,
+          "documentos": [
+            "CH_SVGW_G13_Entwurf_2024.pdf",
+            "NO_Gassled_Terms_Conditions.pdf"
+          ]
+        },
+        {
+          "alias": "ammine",
+          "hits": 1,
+          "documentos": [
+            "IT_Snam_Allegato_11A.pdf"
+          ]
+        }
+      ],
+      "IVT": 1
+    },
+    {
+      "clave": "NH3",
+      "nombre": "Amoníaco",
+      "nombre_ingles": "Ammonia",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 6,
+      "aliases": [
+        "amoníaco",
+        "amoniaco",
+        "nh3",
+        "nh₃",
+        "ammonia",
+        "ammoniak",
+        "ammoniac",
+        "ammoniaca"
+      ],
+      "n_expresiones_distintas": 0,
+      "expresiones": [],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "amoníaco",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "amoniaco",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "nh3",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "nh₃",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 1
+    },
+    {
+      "clave": "HALOGENADOS",
+      "nombre": "Compuestos halogenados (Cl + F)",
+      "nombre_ingles": "Halogenated compounds (Cl + F)",
+      "solapa_gas_natural": false,
+      "n_jurisdicciones": 1,
+      "n_aliases": 9,
+      "aliases": [
+        "compuestos halogenados",
+        "halogenados",
+        "halogenated compounds",
+        "halogene",
+        "composés halogénés",
+        "cloro",
+        "flúor",
+        "chlorine",
+        "fluorine"
+      ],
+      "n_expresiones_distintas": 0,
+      "expresiones": [],
+      "n_unidades_distintas": 1,
+      "unidades": [
+        "mg_per_nm3"
+      ],
+      "n_condiciones_distintas": 0,
+      "condiciones": [],
+      "divergencia_semantica": false,
+      "cobertura_corpus": [
+        {
+          "alias": "compuestos halogenados",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "halogenados",
+          "hits": 2,
+          "documentos": [
+            "BOE-A-2025-3873-consolidado.pdf"
+          ]
+        },
+        {
+          "alias": "halogenated compounds",
+          "hits": 0,
+          "documentos": []
+        },
+        {
+          "alias": "halogene",
+          "hits": 0,
+          "documentos": []
+        }
+      ],
+      "IVT": 1
+    }
+  ]
+}

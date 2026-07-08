@@ -506,6 +506,34 @@ def _normalize_parameter(text: str) -> Optional[str]:
     return None
 
 
+# Alias específicos del BIOMETANO (parámetros que no existen en gas natural). Mapa
+# propio para no contaminar `_normalize_parameter` del gas natural (riesgo R2).
+_ALIASES_BIOMETANO = {
+    "ch4": "ch4_min", "ch4_min": "ch4_min", "metano": "ch4_min", "methane": "ch4_min", "methan": "ch4_min",
+    "siloxano": "siloxanos", "siloxanos": "siloxanos", "siloxane": "siloxanos",
+    "silicio": "siloxanos", "silicium": "siloxanos", "silicon": "siloxanos", "silizium": "siloxanos",
+    "aceite": "comp_oil", "compresor": "comp_oil", "comp_oil": "comp_oil", "compressor": "comp_oil",
+    "amina": "aminas", "aminas": "aminas", "amine": "aminas", "ammine": "aminas",
+    "nh3": "nh3", "amoniaco": "nh3", "amonio": "nh3", "ammonia": "nh3", "ammoniak": "nh3",
+    "halogen": "halogenados", "halogenados": "halogenados", "halogenado": "halogenados",
+    "cloro": "halogenados", "fluor": "halogenados", "chlorine": "halogenados", "fluorine": "halogenados",
+}
+
+
+def _normalize_parameter_biometano(text: str) -> Optional[str]:
+    """Normaliza el nombre de un componente a un slug de BIOMETANO. Primero los
+    parámetros específicos del biometano; luego los que SOLAPAN con el gas natural
+    (O₂, CO₂, azufre total, H₂S+COS, rocío de agua) reusando el normalizador general."""
+    na = text.lower().translate(_SUB_SUP_DIGITS).translate(str.maketrans("áéíóúü", "aeiouu"))
+    for key in sorted(_ALIASES_BIOMETANO, key=len, reverse=True):
+        if key in na:
+            return _ALIASES_BIOMETANO[key]
+    slug = _normalize_parameter(text)
+    if slug in {"o2", "co2", "s total", "h2s+cos", "h2o(rocío)"}:
+        return slug
+    return None
+
+
 def _normalize_condition_text(text: Optional[str]) -> str:
     if not text:
         return ""
@@ -677,11 +705,17 @@ def _detectar_discrepancia(rec_oficial: Dict[str, Any], excel: Optional[Dict[str
     return "; ".join(difs)
 
 
-def _consultar_norma(parametro: str, pais: str) -> Dict[str, Any]:
+def _consultar_norma(parametro: str, pais: str, tipo_gas: str = "gas_natural") -> Dict[str, Any]:
     """Consulta normativa. FUENTE PRIMARIA: documentación oficial (ontología verificada
     de los PDFs en data/raw). El Excel solo como índice/respaldo. Si hay dato oficial y
-    el Excel discrepa, prevalece el oficial y se marca la discrepancia."""
-    oficial = fuente_oficial.consultar(parametro, pais)
+    el Excel discrepa, prevalece el oficial y se marca la discrepancia.
+
+    `tipo_gas` por defecto "gas_natural" → comportamiento idéntico al actual. Para
+    "biometano" se consulta `parametros_biometano` y se OMITE el respaldo del Excel
+    (el Excel es solo de gas natural — riesgo R3)."""
+    oficial = fuente_oficial.consultar(parametro, pais, tipo_gas)
+    if tipo_gas != "gas_natural":
+        return oficial  # sin respaldo Excel para gases no naturales
     try:
         excel = consultar_excel(parametro, pais)
     except Exception:
@@ -1117,6 +1151,22 @@ PARAMETROS_UI = [
     {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"]},
     {"slug": "hc(rocío)", "label": "Punto de rocío de HC", "unidades": ["°C", "K", "°F"]},
 ]
+# Catálogo de parámetros del BIOMETANO (dominio nuevo; NO altera el de gas natural).
+# Cada entrada lleva su clave en la ontología (`onto`) para no tocar los mapas
+# _PARAM_A_ONTO del gas natural (riesgo R2). Jurisdicción única: EN 16723-1.
+PARAMETROS_UI_BIOMETANO = [
+    {"slug": "ch4_min", "label": "CH₄ (metano) mínimo", "unidades": ["% molar"], "onto": "CH4_MIN"},
+    {"slug": "o2", "label": "O₂ (oxígeno)", "unidades": ["% molar", "ppm"], "onto": "O2"},
+    {"slug": "co2", "label": "CO₂", "unidades": ["% molar", "ppm"], "onto": "CO2"},
+    {"slug": "s total", "label": "Azufre total (S)", "unidades": ["mg/m³", "mg/Nm³", "ppm"], "onto": "S_TOTAL"},
+    {"slug": "h2s+cos", "label": "H₂S + COS", "unidades": ["mg/m³", "mg/Nm³", "ppm"], "onto": "H2S_COS"},
+    {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"], "onto": "PR_H2O"},
+    {"slug": "siloxanos", "label": "Siloxanos (Si total)", "unidades": ["mg/m³"], "onto": "SILOXANOS"},
+    {"slug": "comp_oil", "label": "Aceite de compresor", "unidades": ["mg/m³"], "onto": "COMP_OIL"},
+    {"slug": "aminas", "label": "Aminas", "unidades": ["mg/m³", "ppm"], "onto": "AMINAS"},
+    {"slug": "nh3", "label": "Amoníaco (NH₃)", "unidades": ["mg/m³", "ppm"], "onto": "NH3"},
+    {"slug": "halogenados", "label": "Compuestos halogenados (Cl+F)", "unidades": ["mg/m³", "ppm"], "onto": "HALOGENADOS"},
+]
 PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]  # España es siempre la base de referencia
 
 
@@ -1249,6 +1299,12 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
 # de España, un NIVEL frente a España (para el color) y un FLAG si hubo diferencia
 # metodológica (unidad o condiciones distintas → se aplicó conversión).
 PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]
+
+# Enrutado por tipo de gas (para "Analizar gas"). El gas natural es el actual.
+# El biometano usa su propio catálogo y una única jurisdicción (EN 16723-1); NO se
+# mezcla con la matriz de 21 países del gas natural (riesgos R4/R5).
+CATALOGO_POR_GAS = {"gas_natural": PARAMETROS_UI, "biometano": PARAMETROS_UI_BIOMETANO}
+JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ, "biometano": ["EN16723"]}
 
 
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
@@ -2570,6 +2626,14 @@ class PeticionAnalisisGas(BaseModel):
         description="Fracción (0–1) para la zona de alerta por proximidad al límite. Por defecto 0.10 (10 %).",
         examples=[0.10],
     )
+    tipo_gas: Optional[str] = Field(
+        "gas_natural",
+        description=(
+            "Tipo de gas a validar: `gas_natural` (por defecto, 21 jurisdicciones) o "
+            "`biometano` (especificación UE EN 16723-1, jurisdicción única)."
+        ),
+        examples=["gas_natural", "biometano"],
+    )
 
 
 def _valor_a_condiciones_es(
@@ -2699,25 +2763,36 @@ def _resumen_analisis(resultados: List[Dict[str, Any]]) -> str:
 def analizar_gas(
     componentes: List[Any], paises: Optional[List[str]] = None,
     base_pcs: str = "España", margen: float = MARGEN_ALERTA,
+    tipo_gas: str = "gas_natural",
 ) -> Dict[str, Any]:
     """Valida un gas concreto contra la normativa de cada país. Devuelve, por país, un
-    veredicto (cumple/alerta/no_cumple/sin_datos) y el detalle por parámetro con su cita."""
-    orden_paises = paises or list(PAISES_MATRIZ)
+    veredicto (cumple/alerta/no_cumple/sin_datos) y el detalle por parámetro con su cita.
+
+    `tipo_gas` por defecto "gas_natural" → comportamiento idéntico al actual (21 países).
+    "biometano" usa el catálogo de biometano y la única jurisdicción EN 16723-1; al haber
+    una sola especificación NO se normalizan condiciones entre jurisdicciones."""
+    es_bio = tipo_gas == "biometano"
+    normalizar = _normalize_parameter_biometano if es_bio else _normalize_parameter
+    labels = {p["slug"]: p["label"] for p in CATALOGO_POR_GAS.get(tipo_gas, PARAMETROS_UI)}
+    base_ref = "EN16723" if es_bio else PAIS_BASE
+    orden_paises = paises or list(JURISDICCIONES_POR_GAS.get(tipo_gas, PAISES_MATRIZ))
     comp_out: List[Dict[str, Any]] = []
     evaluables: List[Dict[str, Any]] = []
     for c in componentes:
         parametro_in = str(getattr(c, "parametro", "") or "").strip()
         valor = getattr(c, "valor", None)
         unidad_user = str(getattr(c, "unidad", "") or "").strip()
-        slug = _normalize_parameter(parametro_in.lower())
+        slug = normalizar(parametro_in.lower())
         if not slug:  # componente no normativo (CH₄, N₂…): informativo, no se valida
             comp_out.append({"parametro": parametro_in, "label": parametro_in, "valor": valor,
                              "unidad": unidad_user, "informativo": True})
             continue
-        label = _LABEL_PARAM.get(slug, DISPLAY_MAP.get(slug, slug))
-        es = fuente_oficial.consultar(slug, PAIS_BASE)
+        label = labels.get(slug, _LABEL_PARAM.get(slug, DISPLAY_MAP.get(slug, slug)))
+        es = fuente_oficial.consultar(slug, base_ref, tipo_gas)
         unidad_es = ((es["matches"][0].get("unidad") if es.get("matches") else "") or unidad_user or "")
-        v_norm = _valor_a_condiciones_es(valor, unidad_user, unidad_es, slug, base_pcs)
+        # Gas natural: normaliza el valor del usuario a las condiciones de España (ISO 13443).
+        # Biometano: una sola especificación UE → no hay normalización entre jurisdicciones.
+        v_norm = valor if es_bio else _valor_a_condiciones_es(valor, unidad_user, unidad_es, slug, base_pcs)
         comp_out.append({"parametro": slug, "label": label, "valor": valor,
                          "unidad": unidad_user or unidad_es, "informativo": False})
         evaluables.append({"slug": slug, "label": label, "valor": valor,
@@ -2727,7 +2802,7 @@ def analizar_gas(
     for pais in orden_paises:
         params_res: List[Dict[str, Any]] = []
         for e in evaluables:
-            resp = _consultar_norma(e["slug"], pais)
+            resp = _consultar_norma(e["slug"], pais, tipo_gas)
             m = resp["matches"][0] if resp.get("matches") else None
             rango = _rango_de_match(m, e["slug"], pais, e["unidad_es"]) if m else {"estado": "sin_datos"}
             estado = _estado_desde_rango(e["v_norm"], rango, e["slug"], margen)
@@ -2751,7 +2826,7 @@ def analizar_gas(
     return {
         "componentes": comp_out, "paises": resultados,
         "resumen": _resumen_analisis(resultados),
-        "margen_alerta": margen, "base_pcs": base_pcs,
+        "margen_alerta": margen, "base_pcs": base_pcs, "tipo_gas": tipo_gas,
     }
 
 
@@ -2800,6 +2875,7 @@ async def analizar_gas_endpoint(req: PeticionAnalisisGas) -> Dict[str, Any]:
         req.paises,
         req.base_pcs or "España",
         req.margen_alerta if req.margen_alerta is not None else MARGEN_ALERTA,
+        req.tipo_gas or "gas_natural",
     )
 
 

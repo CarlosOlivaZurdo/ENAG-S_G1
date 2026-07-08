@@ -163,8 +163,27 @@ ontologia:
 
   estados_verificacion:
     VERIFICADO: Cifra contrastada verbatim contra su fuente oficial.
+    VERIFICADO_SECUNDARIO: Cifra no tomada del texto primario (p. ej. norma de pago) sino de una fuente pública secundaria concreta, nombrada en el propio registro (fuente/nota).
     NO_VERIFICABLE_SIN_FUENTE: La fuente citada no fija la cifra (no existe en ella).
     PENDIENTE_EXTRACCION: La cifra existe en el documento pero aún no se ha extraído.
+
+  # ---------------------------------------------------------------------------
+  # TIPOS DE GAS (dominio) — el gas natural es el actual; biometano se añade aparte
+  # ---------------------------------------------------------------------------
+  # Registro del dominio de cada gas. NO altera el gas natural: solo declara qué
+  # sección de parámetros y qué jurisdicciones usa cada tipo. El biometano usa una
+  # sección propia (`parametros_biometano`) y una única especificación UE (EN16723).
+  tipos_gas:
+    - codigo: gas_natural
+      nombre: "Gas natural (grupo H)"
+      seccion_parametros: parametros           # el árbol actual, sin cambios
+      jurisdicciones: [ES, PT, FR, UE, IT, DE, NL, BE, NOR, PL, DK, HU, AT, CH, CZ, GR, IE, RO, SK, TR, GB]
+      por_pais: true
+    - codigo: biometano
+      nombre: "Biometano para inyección en red"
+      seccion_parametros: parametros_biometano  # árbol NUEVO (al final del fichero)
+      jurisdicciones: [EN16723]                  # una sola especificación UE; sin matriz por país
+      por_pais: false
 
   # ---------------------------------------------------------------------------
   # FUENTES NORMATIVAS
@@ -261,6 +280,22 @@ ontologia:
       tabla_calidad: "§5 (Wobbe entrada/salida, O₂, densidad, H₂) + Tabla 1. Condiciones del Wobbe: 15 ºC/15 ºC"
       nota: "Norma de PAGO (CEN/AENOR): valores principales (Wobbe, densidad, O₂) verificados en la presentación oficial CEN/ENTSOG (nov-2025); el resto, sin cambios desde 2015+A1:2018, de fuente secundaria. Aún NO publicada como UNE-EN: en España rige todavía la UNE-EN 16726:2016+A1:2019."
       ambito: "Norma europea armonizada de calidad de gas grupo H. Alineada con Directiva (UE) 2024/1788 y Reglamento (UE) 2024/1789."
+
+    # --- Biometano (norma CEN de pago; valores de fuente secundaria pública) ---
+    - id: EN_16723_1
+      tipo: norma_tecnica
+      pais: UE
+      gas: biometano
+      nombre: "EN 16723-1:2016 — Natural gas and biomethane for use in transport and biomethane for injection in the natural gas network. Part 1: Specifications for biomethane for injection in the natural gas network"
+      organismo: "CEN — Comité Europeo de Normalización (TC 408)"
+      publicacion: "2016 (vigente; en España UNE-EN 16723-1:2017)"
+      pdf: ""                                    # Norma de PAGO: no se descarga texto CEN
+      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:38200"
+      descarga_auto: false
+      tabla_calidad: "§4 y Tabla 1 (límites de impurezas para inyección de biometano)"
+      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. EN 16723-1 regula IMPUREZAS para inyección (no fija un CH₄ mínimo). Cada límite concreto que se pueble citará su FUENTE SECUNDARIA pública en su propio `fuente`/`nota` (p. ej. EN 16726 §O₂ biometano, GRDF Prescriptions techniques, Snam Allegato 11/A biometano, BEK 230 biogás/H₂) y solo esa cifra pasa a VERIFICADO_SECUNDARIO. Lo no confirmado queda con valor null y PENDIENTE_EXTRACCION."
+      ambito: "Especificación europea de biometano para inyección en la red de gas natural."
 
     - id: UE_2021_C78_05
       tipo: comunicacion_ue
@@ -2905,3 +2940,231 @@ rag:
   respuesta:
     formato: "Texto del LLM + cita inline: (Fuente: [pais]/[documento_id], [artículo], p. [página])"
     garantia: "El LLM no responde sin fragmento recuperado de respaldo."
+
+
+# =============================================================================
+# PARÁMETROS DE BIOMETANO (dominio nuevo — NO altera el gas natural)
+# =============================================================================
+# Sección aparte, con el MISMO esquema que `parametros:`. Se consulta solo cuando
+# tipo_gas == "biometano"; el gas natural nunca la recorre (no contamina su matriz).
+# Una única "jurisdicción": EN16723 (EN 16723-1, especificación UE de inyección).
+#
+# FASE 1 (estructura): todos los valores van `null` + PENDIENTE_EXTRACCION. Los
+# números se poblarán en la FASE 2 desde fuentes públicas secundarias (EN 16726,
+# GRDF, Snam, BEK 230), marcando cada cifra como VERIFICADO_SECUNDARIO. EN 16723-1
+# es norma de pago: no se reproduce su texto (ver fuente EN_16723_1).
+# =============================================================================
+
+parametros_biometano:
+
+  # --- Composición ---------------------------------------------------------
+  CH4_MIN:
+    nombre_completo: "Contenido mínimo de metano"
+    simbolo: "CH₄"
+    nombre_ingles: "Methane content (minimum)"
+    grupo: composicion
+    tipo: composicion
+    definicion: "Fracción molar mínima de CH₄ exigida al biometano de inyección."
+    aliases: [metano, ch4, ch₄, methane content, methananteil, teneur en méthane, fraction molaire de méthane, contenido de metano]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, §4 (composición)"
+        tipo_limite: minimo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "EN 16723-1 no fija un CH₄ mínimo explícito (regula por impurezas)."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El CH₄ mínimo lo fijan specs nacionales de inyección (p. ej. GRDF), no EN 16723-1."
+
+  # --- Impurezas (solapan con gas natural: mismo slug) ---------------------
+  O2:
+    nombre_completo: "Oxígeno"
+    simbolo: "O₂"
+    nombre_ingles: "Oxygen"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Fracción de O₂ en el biometano de inyección (depende de la red receptora)."
+    aliases: [o2, o₂, oxígeno, oxygen, sauerstoff, oxygène, ossigeno]
+    limites:
+      EN16723:
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5.4 (O₂); límite de red que admite biometano"
+        tipo_limite: maximo
+        valor: 1.0
+        unidad: pct_mol
+        expresion_original: "O₂ ≤ 1 % (mol) — EN 16726:2025 subió el O₂ de 0,01 % a 1 % mol para facilitar la inyección de biometano (un proceso de evaluación puede rebajarlo a 0,01 %/0,001 % en redes sensibles)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "EN 16723-1 (de pago) no fija un valor único de O₂: remite al límite de la red receptora. Cifra tomada de la EN 16726:2025 (§5.4), fuente pública en data/raw, que fija O₂ ≤ 1 % mol precisamente para admitir biometano. Redes sensibles (con almacenamiento subterráneo) pueden exigir 0,01 %/0,001 %."
+
+  CO2:
+    nombre_completo: "Dióxido de carbono"
+    simbolo: "CO₂"
+    nombre_ingles: "Carbon dioxide"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Fracción de CO₂ en el biometano de inyección."
+    aliases: [co2, co₂, dióxido de carbono, carbon dioxide, kohlendioxid, dioxyde de carbone, anidride carbonica]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Poblar desde fuente secundaria pública."
+
+  S_TOTAL:
+    nombre_completo: "Azufre total (como S)"
+    simbolo: "S"
+    nombre_ingles: "Total sulfur (as S)"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Contenido total de azufre en el biometano de inyección, expresado como S."
+    aliases: [azufre total, s total, total sulfur, gesamtschwefel, soufre total, zolfo totale, azufre]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Poblar desde fuente secundaria pública."
+
+  H2S_COS:
+    nombre_completo: "H₂S + COS (expresado como S)"
+    simbolo: "H₂S+COS"
+    nombre_ingles: "H2S + COS (as S)"
+    grupo: impureza
+    tipo: impureza
+    definicion: "Suma de sulfuro de hidrógeno y sulfuro de carbonilo, como azufre."
+    aliases: [h2s, h₂s, sulfuro de hidrógeno, hydrogen sulphide, schwefelwasserstoff, cos, sulfuro de carbonilo, carbonyl sulphide, h2s+cos]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Poblar desde fuente secundaria pública."
+
+  PR_H2O:
+    nombre_completo: "Punto de rocío de agua"
+    simbolo: "PR H₂O"
+    nombre_ingles: "Water dew point"
+    grupo: fisico
+    tipo: rocio
+    definicion: "Temperatura de rocío del agua a la presión de referencia de la red."
+    aliases: [rocío de agua, punto de rocío de agua, water dew point, wassertaupunkt, point de rosée eau, punto di rugiada acqua]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1 (remite a límite de red)"
+        tipo_limite: maximo
+        valor: null
+        unidad: grados_C
+        expresion_original: ""
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El rocío de agua lo fija la red receptora, no EN 16723-1 con un valor único."
+
+  # --- Impurezas específicas del biometano (claves nuevas) -----------------
+  SILOXANOS:
+    nombre_completo: "Siloxanos (como silicio total)"
+    simbolo: "Si"
+    nombre_ingles: "Siloxanes / total silicon"
+    grupo: impureza_traza
+    tipo: impureza
+    definicion: "Contenido de siloxanos expresado como silicio total (base Si)."
+    aliases: [siloxanos, siloxanes, siloxane, silicium, silizium, total silicon, silicio total, Si]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3           # mg Si/m³ (base silicio): NO convertir a ppm sin masa molar
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Siloxanos como silicio total, mg Si/m³. Base silicio: no convertir a ppm ni corregir volumen sin respaldo de la fuente (riesgo R6). Poblar desde fuente secundaria pública."
+
+  COMP_OIL:
+    nombre_completo: "Aceite de compresor"
+    simbolo: "aceite"
+    nombre_ingles: "Compressor oil"
+    grupo: impureza_traza
+    tipo: impureza
+    definicion: "Contenido de aceite de compresión arrastrado."
+    aliases: [aceite de compresor, compressor oil, verdichteröl, huile de compresseur, olio del compressore]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Poblar desde fuente secundaria pública."
+
+  AMINAS:
+    nombre_completo: "Aminas"
+    simbolo: "aminas"
+    nombre_ingles: "Amines"
+    grupo: impureza_traza
+    tipo: impureza
+    definicion: "Contenido de aminas (arrastre de disolventes de upgrading)."
+    aliases: [aminas, amines, amine, ammine]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Poblar desde fuente secundaria pública."
+
+  NH3:
+    nombre_completo: "Amoníaco"
+    simbolo: "NH₃"
+    nombre_ingles: "Ammonia"
+    grupo: impureza_traza
+    tipo: impureza
+    definicion: "Contenido de amoníaco."
+    aliases: [amoníaco, amoniaco, nh3, nh₃, ammonia, ammoniak, ammoniac, ammoniaca]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Poblar desde fuente secundaria pública."
+
+  HALOGENADOS:
+    nombre_completo: "Compuestos halogenados (Cl + F)"
+    simbolo: "Cl+F"
+    nombre_ingles: "Halogenated compounds (Cl + F)"
+    grupo: impureza_traza
+    tipo: impureza
+    definicion: "Contenido de compuestos halogenados, como cloro y flúor."
+    aliases: [compuestos halogenados, halogenados, halogenated compounds, halogene, composés halogénés, cloro, flúor, chlorine, fluorine]
+    limites:
+      EN16723:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1, Tabla 1"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: ""
+        estado_verificacion: PENDIENTE_EXTRACCION
+        nota: "Cl y F. Poblar desde fuente secundaria pública."
