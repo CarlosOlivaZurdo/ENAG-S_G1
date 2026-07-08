@@ -33,7 +33,7 @@ _PARAM_A_ONTO_BIOMETANO = {
     "h2s+cos": "H2S_COS", "h2o(rocío)": "PR_H2O", "siloxanos": "SILOXANOS",
     "comp_oil": "COMP_OIL", "aminas": "AMINAS", "nh3": "NH3", "halogenados": "HALOGENADOS",
 }
-_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE",
+_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "fr": "FR", "ue": "UE", "europa": "UE",
                   "italia": "IT", "italy": "IT", "alemania": "DE", "germany": "DE",
                   "deutschland": "DE", "germania": "DE",
                   "paises bajos": "NL", "holanda": "NL", "netherlands": "NL", "nederland": "NL",
@@ -185,7 +185,8 @@ def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Op
     if tipo_gas == "biometano":
         params = onto.get("parametros_biometano") or {}
         key = _PARAM_A_ONTO_BIOMETANO.get(slug)
-        cod = "EN16723"
+        # Jurisdicción del biometano: EN16723 (marco UE) o códigos de país (p. ej. FR).
+        cod = _PAIS_A_CODIGO.get(_norm(pais), pais)
     else:
         params = onto.get("parametros") or {}
         key = _PARAM_A_ONTO.get(slug)

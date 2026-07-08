@@ -182,7 +182,11 @@ ontologia:
     - codigo: biometano
       nombre: "Biometano para inyección en red"
       seccion_parametros: parametros_biometano  # árbol NUEVO (al final del fichero)
-      jurisdicciones: [EN16723]                  # una sola especificación UE; sin matriz por país
+      # EN16723 = marco UE (EN 16723-1, en gran parte remite a la red). FR = requisito
+      # concreto de la red de transporte francesa (GRTgaz Annexe 4), que todo gas
+      # inyectado —biometano incluido— debe cumplir; aporta los límites de trazas
+      # (siloxanos, NH₃, Cl, F) que no existen en la vista de gas natural.
+      jurisdicciones: [EN16723, FR]
       por_pais: false
 
   # ---------------------------------------------------------------------------
@@ -2996,6 +3000,16 @@ parametros_biometano:
         expresion_original: "O₂ ≤ 1 % (mol) — EN 16726:2025 subió el O₂ de 0,01 % a 1 % mol para facilitar la inyección de biometano (un proceso de evaluación puede rebajarlo a 0,01 %/0,001 % en redes sensibles)."
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "EN 16723-1 (de pago) no fija un valor único de O₂: remite al límite de la red receptora. Cifra tomada de la EN 16726:2025 (§5.4), fuente pública en data/raw, que fija O₂ ≤ 1 % mol precisamente para admitir biometano. Redes sensibles (con almacenamiento subterráneo) pueden exigir 0,01 %/0,001 %."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en O2» (pág. 1)"
+        tipo_limite: maximo
+        valor: 0.01
+        unidad: pct_mol
+        expresion_original: "Teneur en O2 < 0,01% (molaire)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Requisito de la red de transporte francesa (GRTgaz) para TODO gas inyectado, biometano incluido. Mucho más estricto que el marco UE (EN 16726: 1 %): el transporte exige O₂ ≤ 0,01 %."
 
   CO2:
     nombre_completo: "Dióxido de carbono"
@@ -3015,6 +3029,16 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: PENDIENTE_EXTRACCION
         nota: "Poblar desde fuente secundaria pública."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en CO2» (pág. 1)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "Teneur en CO2 < 2,5 % (molaire)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
 
   S_TOTAL:
     nombre_completo: "Azufre total (como S)"
@@ -3034,6 +3058,16 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: PENDIENTE_EXTRACCION
         nota: "Poblar desde fuente secundaria pública."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en soufre total» (pág. 1)"
+        tipo_limite: maximo
+        valor: 30
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en soufre total < 30 mgS/m3(n)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "mgS/m³(n) a 0 ºC. Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
 
   H2S_COS:
     nombre_completo: "H₂S + COS (expresado como S)"
@@ -3053,6 +3087,16 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: PENDIENTE_EXTRACCION
         nota: "Poblar desde fuente secundaria pública."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en soufre de H2S (+ COS)» (pág. 1)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en soufre de H2S (+ COS) < 5 mgS/m³(n)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "mgS/m³(n) a 0 ºC. Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
 
   PR_H2O:
     nombre_completo: "Punto de rocío de agua"
@@ -3072,6 +3116,15 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
         nota: "El rocío de agua lo fija la red receptora, no EN 16723-1 con un valor único."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Point de rosée eau» (pág. 1)"
+        tipo_limite: maximo
+        valor: -5
+        unidad: grados_C
+        expresion_original: "Point de rosée eau: Inférieur à -5°C à la Pression Maximale de Service du Réseau de transport en aval du Raccordement."
+        estado_verificacion: VERIFICADO
+        nota: "≤ −5 ºC a la Presión Máxima de Servicio (PMS). Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
 
   # --- Impurezas específicas del biometano (claves nuevas) -----------------
   SILOXANOS:
@@ -3092,6 +3145,16 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: PENDIENTE_EXTRACCION
         nota: "Siloxanos como silicio total, mg Si/m³. Base silicio: no convertir a ppm ni corregir volumen sin respaldo de la fuente (riesgo R6). Poblar desde fuente secundaria pública."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en siloxanes» (pág. 1)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en siloxanes < 5 mg/m3 (n)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "GRTgaz lo expresa como siloxanos totales (mg/m³(n)), NO explícitamente como silicio. Requisito de la red de transporte francesa para todo gas inyectado; límite típico de impurezas de biometano. No convertir a ppm/base Si sin respaldo (riesgo R6)."
 
   COMP_OIL:
     nombre_completo: "Aceite de compresor"
@@ -3149,6 +3212,16 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: PENDIENTE_EXTRACCION
         nota: "Poblar desde fuente secundaria pública."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en NH3» (pág. 1)"
+        tipo_limite: maximo
+        valor: 3
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en NH3 < 3 mg/m³(n)"
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
 
   HALOGENADOS:
     nombre_completo: "Compuestos halogenados (Cl + F)"
@@ -3168,3 +3241,12 @@ parametros_biometano:
         expresion_original: ""
         estado_verificacion: PENDIENTE_EXTRACCION
         nota: "Cl y F. Poblar desde fuente secundaria pública."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Annexe 4, «Teneur en Cl» y «Teneur en F» (pág. 1)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "Teneur en Cl < 1 mg/m³(n) ; Teneur en F < 10 mg/m³(n)"
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "GRTgaz fija cloro y flúor por SEPARADO (Cl < 1 mg/m³(n); F < 10 mg/m³(n)), NO un límite combinado «Cl+F». No se inventa un valor combinado: el comparador aún no evalúa Cl y F por separado."

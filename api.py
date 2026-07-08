@@ -1304,7 +1304,10 @@ PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "Paíse
 # El biometano usa su propio catálogo y una única jurisdicción (EN 16723-1); NO se
 # mezcla con la matriz de 21 países del gas natural (riesgos R4/R5).
 CATALOGO_POR_GAS = {"gas_natural": PARAMETROS_UI, "biometano": PARAMETROS_UI_BIOMETANO}
-JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ, "biometano": ["EN16723"]}
+# Biometano: EN16723 (marco UE) + FR (requisito de red GRTgaz, con valores reales).
+JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ, "biometano": ["EN16723", "FR"]}
+# Nombre legible de cada jurisdicción cuyo código no es ya un nombre de país (biometano).
+JURISDICCION_DISPLAY = {"EN16723": "EN 16723-1 (marco UE)", "FR": "Francia (red GRTgaz)"}
 
 
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
@@ -2821,7 +2824,8 @@ def analizar_gas(
                 "estado_fuente": (m.get("estado") if m else "") or "",
                 "nota": (m.get("nota") if m else "") or "",
             })
-        resultados.append({"pais": pais, "veredicto": _veredicto_pais(params_res), "parametros": params_res})
+        resultados.append({"pais": JURISDICCION_DISPLAY.get(pais, pais),
+                           "veredicto": _veredicto_pais(params_res), "parametros": params_res})
 
     return {
         "componentes": comp_out, "paises": resultados,

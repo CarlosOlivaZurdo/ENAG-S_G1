@@ -2,8 +2,8 @@
   "resumen": {
     "umbral_ivt": 7.0,
     "ivt_medio_parametros_solapados": 22.6,
-    "ivt_medio_parametros_especificos": 1.17,
-    "ivt_medio_global": 10.91,
+    "ivt_medio_parametros_especificos": 2.0,
+    "ivt_medio_global": 11.36,
     "vectorial_justificado_para_biometano": true,
     "nota_hidrogeno": "Los parámetros específicos de biometano aún no tienen corpus (Fase 2). La variación real de hidrógeno (ENTSOG/ENNOH) se medirá al añadir esos documentos; se ESPERA que supere el umbral (pureza de H₂ / fracción molar de hidrógeno / Wasserstoffreinheit), reabriendo la puerta de la capa vectorial."
   },
@@ -458,7 +458,7 @@
       "nombre": "Siloxanos (como silicio total)",
       "nombre_ingles": "Siloxanes / total silicon",
       "solapa_gas_natural": false,
-      "n_jurisdicciones": 1,
+      "n_jurisdicciones": 2,
       "n_aliases": 8,
       "aliases": [
         "siloxanos",
@@ -470,14 +470,18 @@
         "silicio total",
         "Si"
       ],
-      "n_expresiones_distintas": 0,
-      "expresiones": [],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Teneur en siloxanes < 5 mg/m3 (n)"
+      ],
       "n_unidades_distintas": 1,
       "unidades": [
         "mg_per_nm3"
       ],
-      "n_condiciones_distintas": 0,
-      "condiciones": [],
+      "n_condiciones_distintas": 1,
+      "condiciones": [
+        "@0/0"
+      ],
       "divergencia_semantica": false,
       "cobertura_corpus": [
         {
@@ -505,7 +509,7 @@
           "documentos": []
         }
       ],
-      "IVT": 1
+      "IVT": 3
     },
     {
       "clave": "COMP_OIL",
@@ -613,7 +617,7 @@
       "nombre": "Amoníaco",
       "nombre_ingles": "Ammonia",
       "solapa_gas_natural": false,
-      "n_jurisdicciones": 1,
+      "n_jurisdicciones": 2,
       "n_aliases": 6,
       "aliases": [
         "amoníaco",
@@ -625,14 +629,18 @@
         "ammoniac",
         "ammoniaca"
       ],
-      "n_expresiones_distintas": 0,
-      "expresiones": [],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Teneur en NH3 < 3 mg/m³(n)"
+      ],
       "n_unidades_distintas": 1,
       "unidades": [
         "mg_per_nm3"
       ],
-      "n_condiciones_distintas": 0,
-      "condiciones": [],
+      "n_condiciones_distintas": 1,
+      "condiciones": [
+        "@0/0"
+      ],
       "divergencia_semantica": false,
       "cobertura_corpus": [
         {
@@ -660,14 +668,14 @@
           "documentos": []
         }
       ],
-      "IVT": 1
+      "IVT": 3
     },
     {
       "clave": "HALOGENADOS",
       "nombre": "Compuestos halogenados (Cl + F)",
       "nombre_ingles": "Halogenated compounds (Cl + F)",
       "solapa_gas_natural": false,
-      "n_jurisdicciones": 1,
+      "n_jurisdicciones": 2,
       "n_aliases": 9,
       "aliases": [
         "compuestos halogenados",
@@ -680,8 +688,10 @@
         "chlorine",
         "fluorine"
       ],
-      "n_expresiones_distintas": 0,
-      "expresiones": [],
+      "n_expresiones_distintas": 1,
+      "expresiones": [
+        "Teneur en Cl < 1 mg/m³(n) ; Teneur en F < 10 mg/m³(n)"
+      ],
       "n_unidades_distintas": 1,
       "unidades": [
         "mg_per_nm3"
@@ -715,7 +725,7 @@
           "documentos": []
         }
       ],
-      "IVT": 1
+      "IVT": 2
     }
   ]
 }

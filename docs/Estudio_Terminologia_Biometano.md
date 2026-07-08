@@ -9,8 +9,8 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
 ## Resumen y veredicto
 
 - IVT medio (parámetros que **solapan** con gas natural, con datos de 21 jurisdicciones): **22.6**
-- IVT medio (parámetros **específicos** de biometano, aún sin corpus): **1.17**
-- IVT medio global: **10.91**
+- IVT medio (parámetros **específicos** de biometano, aún sin corpus): **2.0**
+- IVT medio global: **11.36**
 - ¿Capa vectorial justificada para biometano? **SÍ**
 
 > Los parámetros específicos de biometano aún no tienen corpus (Fase 2). La variación real de hidrógeno (ENTSOG/ENNOH) se medirá al añadir esos documentos; se ESPERA que supere el umbral (pureza de H₂ / fracción molar de hidrógeno / Wasserstoffreinheit), reabriendo la puerta de la capa vectorial.
@@ -24,12 +24,12 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
 | Oxígeno (`O2`) | sí | 21 | 5 | 21 | 1 | 0 | — | **22** |
 | Azufre Total (`S_TOTAL`) | sí | 21 | 5 | 21 | 1 | 0 | — | **22** |
 | Dióxido de Carbono (`CO2`) | sí | 21 | 4 | 20 | 1 | 0 | — | **21** |
+| Siloxanos (como silicio total) (`SILOXANOS`) | no | 2 | 8 | 1 | 1 | 1 | — | **3** |
+| Amoníaco (`NH3`) | no | 2 | 6 | 1 | 1 | 1 | — | **3** |
 | Contenido mínimo de metano (`CH4_MIN`) | no | 1 | 7 | 1 | 1 | 0 | — | **2** |
-| Siloxanos (como silicio total) (`SILOXANOS`) | no | 1 | 8 | 0 | 1 | 0 | — | **1** |
+| Compuestos halogenados (Cl + F) (`HALOGENADOS`) | no | 2 | 9 | 1 | 1 | 0 | — | **2** |
 | Aceite de compresor (`COMP_OIL`) | no | 1 | 5 | 0 | 1 | 0 | — | **1** |
 | Aminas (`AMINAS`) | no | 1 | 4 | 0 | 1 | 0 | — | **1** |
-| Amoníaco (`NH3`) | no | 1 | 6 | 0 | 1 | 0 | — | **1** |
-| Compuestos halogenados (Cl + F) (`HALOGENADOS`) | no | 1 | 9 | 0 | 1 | 0 | — | **1** |
 
 ### H₂S + COS (expresado como S) (`H2S_COS`)  ·  IVT = 24
 
@@ -147,6 +147,30 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `co₂` → 0 aciertos
     - `carbon dioxide` → 5 aciertos en 1 doc(s)
 
+### Siloxanos (como silicio total) (`SILOXANOS`)  ·  IVT = 3
+
+- **Unidades distintas** (1): mg_per_nm3
+- **Condiciones distintas** (1): @0/0
+- **Formas encontradas** (1):
+    - Teneur en siloxanes < 5 mg/m3 (n)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `siloxanos` → 0 aciertos
+    - `siloxanes` → 1 aciertos en 1 doc(s)
+    - `siloxane` → 5 aciertos en 1 doc(s)
+    - `silicium` → 0 aciertos
+
+### Amoníaco (`NH3`)  ·  IVT = 3
+
+- **Unidades distintas** (1): mg_per_nm3
+- **Condiciones distintas** (1): @0/0
+- **Formas encontradas** (1):
+    - Teneur en NH3 < 3 mg/m³(n)
+- **Cobertura léxica en el corpus** (alias → nº aciertos):
+    - `amoníaco` → 2 aciertos en 1 doc(s)
+    - `amoniaco` → 2 aciertos en 1 doc(s)
+    - `nh3` → 0 aciertos
+    - `nh₃` → 0 aciertos
+
 ### Contenido mínimo de metano (`CH4_MIN`)  ·  IVT = 2
 
 - **Unidades distintas** (1): pct_mol
@@ -158,14 +182,16 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `ch₄` → 0 aciertos
     - `methane content` → 3 aciertos en 2 doc(s)
 
-### Siloxanos (como silicio total) (`SILOXANOS`)  ·  IVT = 1
+### Compuestos halogenados (Cl + F) (`HALOGENADOS`)  ·  IVT = 2
 
 - **Unidades distintas** (1): mg_per_nm3
+- **Formas encontradas** (1):
+    - Teneur en Cl < 1 mg/m³(n) ; Teneur en F < 10 mg/m³(n)
 - **Cobertura léxica en el corpus** (alias → nº aciertos):
-    - `siloxanos` → 0 aciertos
-    - `siloxanes` → 1 aciertos en 1 doc(s)
-    - `siloxane` → 5 aciertos en 1 doc(s)
-    - `silicium` → 0 aciertos
+    - `compuestos halogenados` → 2 aciertos en 1 doc(s)
+    - `halogenados` → 2 aciertos en 1 doc(s)
+    - `halogenated compounds` → 0 aciertos
+    - `halogene` → 0 aciertos
 
 ### Aceite de compresor (`COMP_OIL`)  ·  IVT = 1
 
@@ -180,24 +206,6 @@ Para cada parámetro se recogen, a través de todas las jurisdicciones disponibl
     - `amines` → 0 aciertos
     - `amine` → 3 aciertos en 2 doc(s)
     - `ammine` → 1 aciertos en 1 doc(s)
-
-### Amoníaco (`NH3`)  ·  IVT = 1
-
-- **Unidades distintas** (1): mg_per_nm3
-- **Cobertura léxica en el corpus** (alias → nº aciertos):
-    - `amoníaco` → 2 aciertos en 1 doc(s)
-    - `amoniaco` → 2 aciertos en 1 doc(s)
-    - `nh3` → 0 aciertos
-    - `nh₃` → 0 aciertos
-
-### Compuestos halogenados (Cl + F) (`HALOGENADOS`)  ·  IVT = 1
-
-- **Unidades distintas** (1): mg_per_nm3
-- **Cobertura léxica en el corpus** (alias → nº aciertos):
-    - `compuestos halogenados` → 2 aciertos en 1 doc(s)
-    - `halogenados` → 2 aciertos en 1 doc(s)
-    - `halogenated compounds` → 0 aciertos
-    - `halogene` → 0 aciertos
 
 ---
 _Generado por `estudio_terminologia.py` (solo lectura). Reejecutar tras añadir los PDFs de biometano/hidrógeno en la Fase 2 para medir su variación real._
