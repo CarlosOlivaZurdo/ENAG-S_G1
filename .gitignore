@@ -14,5 +14,10 @@ data/raw/NORM_17_06.csv
 # Claves locales (usar .env.example como plantilla)
 .env
 
+# Certificado TLS autofirmado (se genera en cada equipo con generar_certificado.py;
+# la clave privada NUNCA se versiona)
+cert.pem
+key.pem
+
 # Config local de Claude Code (no es del proyecto)
 .claude/

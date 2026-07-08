@@ -61,7 +61,7 @@ REM --- 2) Instalar dependencias (solo la PRIMERA vez tarda; luego es instantane
 echo Preparando el entorno...
 echo  (La PRIMERA vez instala las librerias y puede tardar 1-2 minutos. Espera, por favor.)
 echo.
-python -m pip install --quiet --disable-pip-version-check fastapi uvicorn pydantic python-dotenv pandas openpyxl xhtml2pdf pdfplumber openai pyyaml
+python -m pip install --quiet --disable-pip-version-check fastapi uvicorn pydantic python-dotenv pandas openpyxl xhtml2pdf pdfplumber openai pyyaml cryptography
 if errorlevel 1 (
     echo.
     echo [ERROR] No se pudieron instalar las dependencias.
@@ -71,6 +71,9 @@ if errorlevel 1 (
     exit /b
 )
 
+REM --- 2b) Certificado HTTPS autofirmado (solo la 1a vez; el navegador avisara la 1a visita) ---
+python generar_certificado.py
+
 REM --- 3) Liberar el puerto 8000 si quedo un servidor anterior abierto ---
 REM   (cerrar el navegador NO detiene el servidor; esto evita el error 10048
 REM    "solo se permite un uso de cada direccion de socket")
@@ -78,16 +81,16 @@ powershell -NoProfile -Command "$c = Get-NetTCPConnection -LocalPort 8000 -State
 
 echo Servidor listo. NO cierres esta ventana mientras uses la herramienta.
 echo.
-powershell -NoProfile -Command "$ip=(Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*'} | Select-Object -First 1).IPAddress; Write-Host '  Abrir en ESTE equipo:          http://localhost:8000/' -ForegroundColor Green; if($ip){ Write-Host ('  Compartir (misma red):         http://{0}:8000/' -f $ip) -ForegroundColor Cyan }"
+powershell -NoProfile -Command "$ip=(Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*'} | Select-Object -First 1).IPAddress; Write-Host '  Abrir en ESTE equipo:          https://localhost:8000/' -ForegroundColor Green; if($ip){ Write-Host ('  Compartir (misma red):         https://{0}:8000/' -f $ip) -ForegroundColor Cyan }; Write-Host '  (1a vez: el navegador dira ''no es privada'' -> Avanzado -> Continuar. Es normal: certificado autofirmado.)' -ForegroundColor DarkGray"
 echo.
 echo Para detener el servidor: pulsa Ctrl+C o cierra esta ventana.
 echo.
 
 REM Abre el navegador en este equipo (~4 s, cuando el servidor ya responde)
-start "" /b cmd /c "ping -n 5 127.0.0.1 >nul & explorer http://localhost:8000/"
+start "" /b cmd /c "ping -n 5 127.0.0.1 >nul & explorer https://localhost:8000/"
 
-REM Arranca el servidor (accesible en local y, si el firewall lo permite, en la red)
-python -m uvicorn api:app --host 0.0.0.0 --port 8000
+REM Arranca el servidor por HTTPS (TLS con el certificado autofirmado cert.pem/key.pem)
+python -m uvicorn api:app --host 0.0.0.0 --port 8000 --ssl-keyfile key.pem --ssl-certfile cert.pem
 
 echo.
 echo El servidor se ha detenido. Pulsa una tecla para cerrar.
