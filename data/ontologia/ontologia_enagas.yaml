@@ -262,6 +262,17 @@ ontologia:
       nota: "Norma de PAGO (CEN/AENOR): valores principales (Wobbe, densidad, O₂) verificados en la presentación oficial CEN/ENTSOG (nov-2025); el resto, sin cambios desde 2015+A1:2018, de fuente secundaria. Aún NO publicada como UNE-EN: en España rige todavía la UNE-EN 16726:2016+A1:2019."
       ambito: "Norma europea armonizada de calidad de gas grupo H. Alineada con Directiva (UE) 2024/1788 y Reglamento (UE) 2024/1789."
 
+    - id: UE_2021_C78_05
+      tipo: comunicacion_ue
+      pais: UE
+      nombre: "Comunicación de la Comisión 2021/C 78/05 — Lista de tipos de gas y presiones de suministro por Estado miembro (Reglamento (UE) 2016/426)"
+      organismo: "Comisión Europea"
+      publicacion: "8 de marzo de 2021 (DO C 78/05)"
+      url: "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:52021XC0308%2802%29"
+      tabla_calidad: "Tabla «ALEMANIA», 2.ª familia, Grupo H: PCS 34,5–44,7 MJ/m³; Wobbe 46,50–53,60 MJ/m³. Condiciones @15/15 (deducidas: el Wobbe coincide con el DVGW G 260 @25/0 al convertir a 15/15)."
+      nota: "Lista oficial UE de calidades de gas distribuidas por Estado miembro (base para la certificación de aparatos, Reglamento (UE) 2016/426). Es la fuente del rango de PCS de Alemania, que el DVGW G 260 no publica."
+      ambito: "Calidades de gas de la 2.ª familia (gas natural H/L) por Estado miembro."
+
     # --- Italia ---
     - id: NORM_IT_GAS
       tipo: regla_tecnica_nacional
@@ -623,10 +634,10 @@ parametros:
         valor_min: 47.0
         valor_max: 55.7
         unidad: MJ_per_nm3
-        expresion_original: "Wobbe-index hoogcalorisch gas: 47 – 55,7 MJ/m³(n) (entrada/Bijlage 1: 49,9–55,7)"
+        expresion_original: "Wobbe-index hoogcalorisch gas: 47 – 55,7 MJ/m³(n) (INYECCIÓN A RED; la entrega al cliente/Bijlage 1 es 49,9–55,7)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H. Combustión 25 ºC (298,15 K), volumen m³(n) a 0 ºC. Condiciones 25/0 (como Portugal) → ISO 13443 para comparar con España."
+        nota: "Gas H. Criterio confirmado: se usa el límite de INYECCIÓN A RED (mín. 47 MJ/m³(n)); la entrega al cliente es 49,9. Reglamento vigente: Energieregeling (https://wetten.overheid.nl/BWBR0051774/2026-05-01). Combustión 25 ºC (298,15 K), volumen m³(n) a 0 ºC (25/0, como Portugal) → ISO 13443 para comparar con España."
       BE:
         fuente: NORM_BE_FLUXYS
         articulo: "Fluxys, Bijlage 7 del Standaard Aansluitingscontract (Wobbe-index, gas H)"
@@ -648,7 +659,7 @@ parametros:
         expresion_original: "Wobbe Index: 14,17 – 15,47 kWh/Nm³ (= 51,0–55,7 MJ/Nm³)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H. Combustión 25 ºC, volumen Nm³ a 0 ºC → ISO 13443 (×1,0026) para comparar con España."
+        nota: "Gas H. Combustión 25 ºC, volumen Nm³ a 0 ºC → ISO 13443 (×1,0026) para comparar con España. Nota multipunto: de las áreas A–I de Gassled, SOLO el Área D (gas de exportación a Europa/UK) fija el Wobbe/GCV; las demás entradas son gas aguas arriba y no fijan Wobbe. No hay, por tanto, varios rangos que consolidar."
       DK:
         fuente: NORM_DK_BEK230
         articulo: "BEK 230, § 14, stk. 2 (pág. 3)"
@@ -681,7 +692,7 @@ parametros:
         expresion_original: "Wobbe-Index: Minimum 13,5 kWh/Nm³ — Maximum 15,5 kWh/Nm³ (Gas Connect Austria, Annex 2, pt. Überackern)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Wobbe superior, gas H, red de transporte (Gas Connect Austria, pt. Überackern). kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España. Otros puntos (p. ej. Baumgarten WAG) usan 13,3–15,5."
+        nota: "Wobbe superior, gas H, red de transporte (Gas Connect Austria). kWh/Nm³ @25/0 → ISO 13443 (×1,0026) para comparar con España. Nota multipunto: en el PDF oficial (ROHUAT, Annex 2), los puntos de entrada de Überackern (ABG, Sudal, 7-fields) fijan el MISMO rango 13,5–15,5 → no hay varios rangos que consolidar."
       CH:
         fuente: NORM_CH_SVGW_G18
         articulo: "SVGW G18, Tabelle 3 (gazette 1/2023)"
@@ -851,16 +862,16 @@ parametros:
         estado_verificacion: VERIFICADO
         nota: "Gas naturale Gruppo H. MJ/Sm³ @15/15 → ÷3,6 (MJ→kWh) e ISO 13443 para comparar con España (kWh/m³ @0/0)."
       DE:
-        fuente: DVGW_G260
-        articulo: "DVGW G 260:2021 (Brennwert de gas grupo H — rango en la tabla de pago de la norma)"
+        fuente: UE_2021_C78_05
+        articulo: "Comunicación de la Comisión 2021/C 78/05 (CELEX 52021XC0308(02)) — Alemania, 2.ª familia, Grupo H, «Poder calorífico superior»"
         tipo_limite: rango
-        valor_min: null
-        valor_max: null
-        unidad: kWh_per_nm3
-        expresion_original: "El rango de Brennwert (PCS) de gas grupo H está en la tabla de pago de DVGW G 260; no hay valor de especificación público verificable"
-        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "DVGW G 260 es de PAGO. Los valores operativos de red (p. ej. GASCADE ~10,5 kWh/m³ mín.) no son el rango de especificación. No se inventa un valor."
+        valor_min: 34.5
+        valor_max: 44.7
+        unidad: MJ_per_nm3
+        expresion_original: "Poder calorífico superior (Grupo H): Mínimo 34,5 — Máximo 44,7 MJ/m³ (2021/C 78/05)"
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        estado_verificacion: VERIFICADO
+        nota: "PCS (poder calorífico superior), gas grupo H. Valor de la lista UE de calidades de gas (Comunicación 2021/C 78/05). Condiciones @15/15 DEDUCIDAS: el Wobbe del mismo documento (46,50–53,60 MJ/m³) coincide con el DVGW G 260 (13,6–15,7 kWh/m³ @25/0) al convertir a 15/15. MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570) para comparar con España (@0/0); equivale a ~10,13–13,13 kWh/m³ @0/0."
       NL:
         fuente: NORM_NL_GAS
         articulo: "Energieregeling art. 3.16(1)(b); antes Regeling gaskwaliteit (no fija rango de calorische bovenwaarde para H-gas)"
@@ -892,7 +903,7 @@ parametros:
         expresion_original: "Gross Calorific Value: 11,17 – 12,78 kWh/Nm³ (= 40,2–46,0 MJ/Nm³)"
         condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
         estado_verificacion: VERIFICADO
-        nota: "Gas H. GCV/PCS @25/0 → ISO 13443 (×1,0026) para comparar con España."
+        nota: "Gas H. GCV/PCS @25/0 → ISO 13443 (×1,0026) para comparar con España. Nota multipunto: SOLO el Área D de Gassled (gas de exportación) fija el GCV/PCS; las demás áreas de entrada no lo fijan. No hay varios rangos que consolidar."
       DK:
         fuente: NORM_DK_BEK230
         articulo: "BEK 230, § 2 nr. 16 (define øvre brændværdi; sin rango para gas H)"
@@ -1003,15 +1014,15 @@ parametros:
         nota: "PCS (üst ısıl değer = GCV) en kcal/m³ @15/15 → /859,85 a kWh/m³ e ISO 13443 (×1,0570) para comparar con España."
       GB:
         fuente: NORM_GB_NTS
-        articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — punto Isle of Grain, Gross Calorific Value"
+        articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — rango consolidado de los puntos de entrada NTS, Gross Calorific Value"
         tipo_limite: rango
         valor_min: 36.9
-        valor_max: 42.3
+        valor_max: 43.7
         unidad: MJ_per_nm3
-        expresion_original: "Gross Calorific Value shall be within the range 36.9 to 42.3 MJ/SCM (real gross dry) — NTS, Isle of Grain"
+        expresion_original: "Gross Calorific Value: 36,9–43,7 MJ/SCM (real gross dry) — rango CONSOLIDADO de los puntos de entrada NTS (mín. más bajo / máx. más alto); el máx. 43,7 es de Easington-Langeled (la mayoría de puntos 36,9–42,3)"
         condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         estado_verificacion: VERIFICADO
-        nota: "PCS (GCV), gas H. El GS(M)R no fija rango; valor PÚBLICO de las NTS Gas Quality Parameters (National Grid oct-2022), punto Isle of Grain. Varía por punto (Easington-Langeled 36,9–43,7). MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570)."
+        nota: "PCS (GCV), gas H. El GS(M)R no fija rango; valores PÚBLICOS de las NTS Gas Quality Parameters (National Grid oct-2022). Rango CONSOLIDADO de todos los puntos de entrada NTS: mín. más bajo 36,9 y máx. más alto 43,7 (Easington-Langeled; la mayoría de puntos 36,9–42,3). MJ/m³ @15/15 → ÷3,6 e ISO 13443 (×1,0570)."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (ciepło spalania, gas grupo E)"
@@ -1339,7 +1350,7 @@ parametros:
         expresion_original: "Maximum sulphur: 30 mg/Nm³"
         condiciones_referencia: { temperatura_volumen_C: 0, presion_bar: 1.01325 }
         estado_verificacion: VERIFICADO
-        nota: "Azufre total, mg/Nm³ a 0 ºC → comparable con ES. Nota del reglamento (Gassled, «Entry specifications for Gas entering Area D», pág. 64, columna Notes nº 4): para el punto de entrada D8 (Ekofisk) el azufre total máximo es 150 mg/Nm³ (120 mg/Nm³ de media anual)."
+        nota: "Azufre total, mg/Nm³ a 0 ºC → comparable con ES. Área D (gas de exportación) = 30 mg/Nm³. Nota multipunto: los valores más altos corresponden a entradas aguas arriba o excepciones condicionales, no al gas entregado (E1 gas húmedo aguas arriba 120 mg/Nm³ en fase vapor; D8 Ekofisk 150 mg/Nm³ por Notes nº 4) → se mantiene el Área D como spec entregada."
       DK:
         fuente: NORM_DK_BEK230
         articulo: "BEK 230, § 18, stk. 4 (pág. 3)"
@@ -1992,7 +2003,7 @@ parametros:
         unidad: pct_mol
         expresion_original: "Maximum oxygen: 2 ppm vol (= 0,0002 % mol)"
         estado_verificacion: VERIFICADO
-        nota: "Límite muy estricto (2 ppm), por el transporte submarino. % mol → comparable directamente."
+        nota: "Límite muy estricto (2 ppm) en el Área D (gas de exportación), por el transporte submarino. % mol → comparable directamente. Nota multipunto: otras entradas aguas arriba difieren (Área F ≤10 ppm; Área E sin límite); se mantiene el Área D como spec entregada."
       DK:
         fuente: NORM_DK_BEK230
         articulo: "BEK 230 (sin límite de O₂ para gas natural H)"
@@ -2291,11 +2302,11 @@ parametros:
         fuente: NORM_GB_NTS
         articulo: "«Gas Quality Parameters at NTS Entry Points» (National Grid, oct-2022) — punto Isle of Grain, Carbon Dioxide"
         tipo_limite: maximo
-        valor: 2.0
+        valor: 4.0
         unidad: pct_mol
-        expresion_original: "Carbon Dioxide not more than 2.0 mol% — NTS, Isle of Grain"
+        expresion_original: "Carbon Dioxide ≤ 4,0 mol% — máx. estándar consolidado de los puntos NTS (St Fergus NSMP «at all other times»); la mayoría de puntos ≤2,0–2,5 %"
         estado_verificacion: VERIFICADO
-        nota: "CO₂ ≤2,0 % mol (el GS(M)R no fija CO₂; valor público de las NTS Gas Quality Parameters, punto Isle of Grain). Varía por punto (varios ≤2,5 %). % mol → comparable con España."
+        nota: "CO₂: el GS(M)R no fija CO₂; valores públicos de las NTS Gas Quality Parameters. Rango CONSOLIDADO de los puntos de entrada NTS: la mayoría ≤2,0–2,5 %, y el máx. estándar es 4,0 % en St Fergus NSMP («at all other times»). Excepción condicional: durante el «Modification Period» St Fergus NSMP admite ≤5,5 % (CO₂ agregado ≤7,0 %). % mol → comparable con España."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (dwutlenek węgla CO₂, grupa E)"
@@ -2511,7 +2522,7 @@ parametros:
         presion_referencia_bar: 85
         expresion_original: "Water dewpoint not more than −10 °C at eighty five bar gauge (85 barg) — NTS, Isle of Grain"
         estado_verificacion: VERIFICADO
-        nota: "Rocío de agua ≤−10 ºC a 85 bar (el GS(M)R lo deja cualitativo; valor público de las NTS Gas Quality Parameters, punto Isle of Grain)."
+        nota: "Rocío de agua ≤−10 ºC a 85 bar (el GS(M)R lo deja cualitativo; valor público de las NTS Gas Quality Parameters, punto Isle of Grain). Nota multipunto: varía por punto y a PRESIÓN de referencia distinta (p. ej. Bacton-Shell −9 ºC a 69 bar; la mayoría −10 ºC), por lo que no se consolida a un único mín/máx sin normalizar la presión."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie, Rozdział 8 (punkt rosy wody, grupa E)"
@@ -2730,7 +2741,7 @@ parametros:
         presion_referencia_bar: 70
         expresion_original: "Hydrocarbon Dewpoint not more than −2 °C at any pressure up to seventy bar gauge (70 barg) — NTS"
         estado_verificacion: VERIFICADO
-        nota: "Rocío de hidrocarburos ≤−2 ºC hasta 70 bar (el GS(M)R lo deja cualitativo; valor público de las NTS Gas Quality Parameters de transporte)."
+        nota: "Rocío de hidrocarburos ≤−2 ºC hasta 70 bar (el GS(M)R lo deja cualitativo; valor público de las NTS Gas Quality Parameters de transporte). Nota multipunto: varía por punto y presión (p. ej. Bacton-Shell −1 ºC), por lo que no se consolida a un único mín/máx sin normalizar la presión."
       PL:
         fuente: NORM_PL_GAZSYSTEM
         articulo: "Rozporządzenie (rocío de HC no fijado para grupo E)"

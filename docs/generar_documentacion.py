@@ -435,6 +435,10 @@ al no depender de servicios externos para localizar la información.
   *zona de alerta* marca los valores que cumplen pero quedan a menos del 10 % del límite. Reutiliza
   el motor determinista (unidad + condiciones ISO 13443); no inventa PCS/Wobbe a partir de la
   composición (los componentes no normativos, como el CH₄, se muestran como informativos).
+- **Exportación de informes (`/api/exportar-matriz`):** desde la matriz se puede seleccionar un
+  subconjunto de jurisdicciones y descargar la comparativa completa (países × 10 parámetros) en
+  **Excel** (`openpyxl`) o **PDF** (`xhtml2pdf`), con las celdas coloreadas por nivel. Serializa
+  los mismos datos que la matriz de la web (no genera cifras nuevas).
 - **Historial persistente:** cada turno (pregunta + respuesta) se guarda por sesión en el
   navegador (`localStorage`) y se **restaura al recargar la página o tras reiniciar el
   servidor**, de modo que el usuario no pierde sus consultas. «Nueva consulta» abre una sesión
@@ -496,7 +500,8 @@ hay incoherencias.
 **Frontend:** HTML + JavaScript vanilla (marked, DOMPurify).
 **Endpoints HTTP:** `/` (sirve la web) · `/api/status` · `/api/chat` · `/api/parametros` ·
 `/api/comparar` · `/api/matriz` · `/api/analizar-gas` (valida un gas concreto contra la
-normativa de cada país).
+normativa de cada país) · `/api/exportar-matriz` (informe Excel/PDF de la matriz para las
+jurisdicciones seleccionadas).
 **Despliegue:** `iniciar_chatbot.bat` — lanzador del equipo que se auto-actualiza
 (`git pull --ff-only`), libera el puerto 8000 y arranca `uvicorn`. La web se sirve **sin caché**
 (siempre la última versión tras un `git pull`).

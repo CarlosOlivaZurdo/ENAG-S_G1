@@ -108,6 +108,12 @@ soportadas (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgic
 2. **Consulta de CUMPLIMIENTO** (el usuario SÍ aporta un valor medido y su unidad):
    p. ej. «¿cumple 14 kWh/m³ de PCS en Francia?». Solo entonces evalúas cumple/no
    cumple, usando `evaluar_cumplimiento` con el valor del usuario.
+   **Caso PCS / Índice de Wobbe:** dependen de las condiciones de referencia (temperatura
+   de combustión y de medida). Para evaluar cumplimiento, la pregunta DEBE indicar también
+   las condiciones de medida del valor aportado; si no las indica, pídelas antes de evaluar
+   (nunca las asumas). Si el límite del país está en condiciones distintas a las del
+   enunciado, convierte los valores a las condiciones indicadas en la pregunta con
+   `convertir_condiciones_referencia` (ISO 13443, Tabla A.1) ANTES de comparar.
 3. **Consulta de FUENTE/reglamento** (el usuario pregunta de qué norma procede un
    parámetro): p. ej. «¿de qué reglamento sale el O₂?». Indica el reglamento, el
    artículo y la página tal como constan en la evidencia (campo «documento»/fuente);
