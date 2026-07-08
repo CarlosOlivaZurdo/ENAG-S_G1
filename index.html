@@ -786,7 +786,8 @@
   const GAS_ALL = PARAMS.concat(GAS_INFO);
   let gasReady = false;
   function gasParamOptions(){
-    return '<optgroup label="Parámetros normativos">'+
+    return '<option value="" disabled selected>— Elige un parámetro —</option>'+
+      '<optgroup label="Parámetros normativos">'+
       PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
       '</optgroup><optgroup label="Composición (informativo)">'+
       GAS_INFO.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
@@ -818,11 +819,9 @@
   }
   function initGas(){
     $("gasFilas").innerHTML = "";
-    // Plantilla con los parámetros habituales; el usuario introduce los VALORES (vacíos al inicio).
-    addFilaGas("co2", null, "% molar");
-    addFilaGas("o2", null, "ppm");
-    addFilaGas("h2s+cos", null, "ppm");
-    addFilaGas("pcs", null, "kWh/m³");
+    // Dos filas en blanco (sin parámetro ni valor) para empezar de cero.
+    addFilaGas();
+    addFilaGas();
     gasReady = true;
   }
   const VEREDICTO_TXT = {cumple:"Cumple", alerta:"Zona de alerta", no_cumple:"No cumple", sin_datos:"Sin datos"};
@@ -833,7 +832,7 @@
       const parametro = row.querySelector(".gas-param").value;
       const vraw = row.querySelector(".gas-valor").value;
       const unidad = row.querySelector(".gas-unidad").value;
-      if(vraw === "" || isNaN(parseFloat(vraw))) return;
+      if(!parametro || vraw === "" || isNaN(parseFloat(vraw))) return;
       componentes.push({ parametro, valor: parseFloat(vraw), unidad });
     });
     const res = $("gasResult");
