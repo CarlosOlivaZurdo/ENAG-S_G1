@@ -48,21 +48,23 @@ BOXES = [
     dict(x=120, y=70, w=1000, h=118, fill=AZUL_BG, stroke=CIAN,
          header="1 · NAVEGADOR  —  index.html  (SPA en JavaScript puro · identidad Enagás)",
          hfill=AZUL, hcolor="#ffffff", body=[], align="center"),
-    # sub-cajas del navegador
-    dict(x=150, y=120, w=455, h=52, fill="#ffffff", stroke=CIAN, header=None,
-         body=[("Pestaña  CONSULTA LIBRE  (chat)", "bodybold", AZUL)], align="center"),
-    dict(x=635, y=120, w=455, h=52, fill="#ffffff", stroke=CIAN, header=None,
-         body=[("Pestaña  COMPARATIVA  (puntual + matriz / heatmap)", "bodybold", AZUL)], align="center"),
+    # sub-cajas del navegador (3 pestañas)
+    dict(x=150, y=120, w=300, h=52, fill="#ffffff", stroke=CIAN, header=None,
+         body=[("CONSULTA LIBRE  (chat)", "bodybold", AZUL)], align="center"),
+    dict(x=470, y=120, w=300, h=52, fill="#ffffff", stroke=CIAN, header=None,
+         body=[("COMPARATIVA  (matriz + exportar)", "bodybold", AZUL)], align="center"),
+    dict(x=790, y=120, w=300, h=52, fill="#ffffff", stroke=CIAN, header=None,
+         body=[("ANALIZAR GAS", "bodybold", AZUL)], align="center"),
 
     dict(x=120, y=232, w=1000, h=172, fill="#f5f8fa", stroke=AZUL,
          header="2 · BACKEND  —  api.py  (FastAPI + uvicorn)",
          hfill=AZUL, hcolor="#ffffff",
-         body=[("Endpoints:  /   ·   /api/status   ·   /api/chat   ·   /api/parametros   ·   /api/comparar   ·   /api/matriz",
+         body=[("Endpoints:  /  ·  /api/status  ·  /api/chat  ·  /api/parametros  ·  /api/comparar  ·  /api/matriz  ·  /api/analizar-gas  ·  /api/exportar-matriz",
                 "small", TINTA)], align="center"),
     # router dentro del backend
     dict(x=150, y=305, w=940, h=88, fill=AZUL, stroke=AZUL, header=None,
          body=[("ROUTER DETERMINISTA   ·   _validate_measurement_gate()", "bodybold", "#ffffff"),
-               ("cumplimiento · límite · fuente · intercambiabilidad · restricción · comparación · condiciones",
+               ("cumplimiento · límite · fuente · intercambiabilidad · interconexión/cadena · comparación · condiciones",
                 "small", "#cfe8f6")], align="center"),
 
     dict(x=120, y=472, w=420, h=150, fill=AZUL_BG, stroke=CIAN,
@@ -99,7 +101,7 @@ BOXES = [
 
 # Flechas: x1,y1,x2,y2, label, label_dx, label_dy, label_anchor
 ARROWS = [
-    (620, 188, 620, 230, "HTTP / JSON  (sin caché)", 12, -10, "lm"),
+    (620, 188, 620, 230, "HTTPS / JSON  (TLS · sin caché)", 12, -10, "lm"),
     (330, 393, 330, 471, "modo «determinista»", -8, 0, "rm"),
     (910, 393, 910, 471, "None  →  modo «ia»", 10, 0, "lm"),
     (700, 545, 542, 545, "llama a las funciones", 0, -12, "cb"),
