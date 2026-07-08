@@ -58,8 +58,11 @@ ontología) y un **servicio de inteligencia artificial** externo, invocado de fo
 (`api.py`, FastAPI). Allí, un **router determinista** decide cómo resolverla: si es una
 consulta cuantitativa, la resuelve el propio código leyendo la ontología; si es de texto
 abierto, la deriva al modelo de lenguaje (OpenAI), que a su vez puede consultar la ontología
-y buscar en los documentos (RAG). El servidor expone unos pocos servicios (endpoints):
-interfaz, chat, comparación puntual y matriz comparativa.
+y buscar en los documentos (RAG). El servidor expone varios servicios (endpoints): interfaz,
+chat (con detección de **interconexiones/cadenas**), comparación puntual, matriz comparativa,
+**validación de un gas concreto** y **exportación de informes** (Excel/PDF). La arquitectura de
+cuatro componentes no cambia con estas funciones: son endpoints y vistas nuevos dentro de las
+mismas cajas.
 
 ---
 
@@ -87,7 +90,7 @@ organiza en **tres capas** con funciones distintas.
 |---|---|---|
 | **1. Documentos oficiales** | Los PDF de las normas (BOE, ERSE, DVGW, Fluxys, National Grid…) | Fuente primaria y última de verdad. |
 | **2. Ontología** | Fichero estructurado con las **210 cifras** extraídas de esos PDF | Repositorio del que salen las respuestas. |
-| **3. Índice documental (RAG)** | Índice del **texto** de los PDF, segmentado por página | Buscador interno, para consultas abiertas. |
+| **3. Índice documental (RAG)** | Índice del **texto** de los PDF, segmentado en fragmentos con solape (continuos, cruzan el salto de página) | Buscador interno, para consultas abiertas. |
 
 Las **cifras** residen en la capa 2 (la ontología), y cada una referencia su documento
 oficial de la capa 1. La capa 3 **no almacena ninguna cifra**: es un índice de búsqueda sobre
@@ -110,7 +113,7 @@ La ontología tiene dos partes principales:
 
 | Clave | Contenido |
 |---|---|
-| `ontologia.fuentes_normativas` | El **catálogo de las 28 normas** oficiales: `id`, `nombre`, `organismo`, `publicacion`, `url` (cita) y `pdf` (copia local). |
+| `ontologia.fuentes_normativas` | El **catálogo de las 29 normas** oficiales: `id`, `nombre`, `organismo`, `publicacion`, `url` (cita) y `pdf` (copia local). |
 | `parametros` | Los **10 parámetros**, cada uno con un bloque `limites:` con una entrada **por país**. |
 
 ![Estructura de la ontología](Ontologia_Estructura.png)
@@ -143,9 +146,9 @@ normativo. Ejemplo real del O₂ de España, con cada campo anotado:
 
 ### 5.3. Estados de verificación
 
-- **`VERIFICADO`** — cifra contrastada **verbatim** contra su fuente oficial (175 valores).
+- **`VERIFICADO`** — cifra contrastada **verbatim** contra su fuente oficial (176 valores).
 - **`NO_VERIFICABLE_SIN_FUENTE`** — la norma citada **no fija** esa cifra → **no se inventa**,
-  se marca como hueco honesto y se explica (35 valores).
+  se marca como hueco honesto y se explica (34 valores).
 
 No existe un estado intermedio: un valor consta en la norma, o se declara que la norma no lo
 establece. *(Ejemplo: en Dinamarca, los límites de O₂/CO₂ de la norma corresponden al biogás
@@ -322,9 +325,12 @@ el LLM **redacta** la explicación con esos valores, sin inventar nada.
 abierto, la respuesta se fundamente en los documentos oficiales.
 
 1. **Indexación:** al arrancar, el sistema lee los PDF de `data/raw/`, extrae el texto con
-   `pdfplumber`, lo **trocea por página** y lo guarda en una base **SQLite** que actúa de índice.
-   La indexación es **incremental**: solo se reprocesa un documento nuevo o modificado, por lo
-   que el arranque es casi inmediato.
+   `pdfplumber`, lo **trocea en fragmentos con solape mediante una ventana deslizante sobre el
+   documento completo** (no por página) y lo guarda en una base **SQLite** que actúa de índice.
+   Que la ventana sea continua garantiza que **una respuesta partida entre dos páginas quede
+   entera dentro de un mismo fragmento** y, por tanto, sea recuperable. La indexación es
+   **incremental**: solo se reprocesa un documento nuevo o modificado, por lo que el arranque
+   es casi inmediato.
 2. **Recuperación:** `buscar_pdfs(query)` realiza una **búsqueda léxica** (SQLite `LIKE` sobre el
    texto normalizado) y devuelve los fragmentos más relevantes con archivo, página y snippet.
 
@@ -337,8 +343,24 @@ al no depender de servicios externos para localizar la información.
 ## 13. El chat y el historial persistente
 
 - **Frontend (`index.html`):** SPA en JavaScript puro; render de Markdown con `marked` +
-  saneado con `DOMPurify`. Dos pestañas: *Consulta libre* (chat) y *Comparativa*
-  (puntual + matriz).
+  saneado con `DOMPurify`. Tres pestañas: *Consulta libre* (chat), *Comparativa*
+  (puntual + matriz) y *Analizar gas* (validación de un gas concreto).
+- **Analizar gas (`/api/analizar-gas`):** el usuario introduce la composición/medidas de un gas
+  (CO₂, O₂, H₂S, azufre, PCS, Wobbe, rocíos…) y el sistema responde, país a país, si **cumple /
+  está en zona de alerta / no cumple / no tiene límite**, con la cita oficial de cada límite. La
+  *zona de alerta* marca los valores que cumplen pero quedan a menos del 10 % del límite. Reutiliza
+  el motor determinista (unidad + condiciones ISO 13443); no inventa PCS/Wobbe a partir de la
+  composición (los componentes no normativos, como el CH₄, se muestran como informativos).
+- **Exportación de informes (`/api/exportar-matriz`):** desde la matriz se puede seleccionar un
+  subconjunto de jurisdicciones y descargar la comparativa completa (países × 10 parámetros) en
+  **Excel** (`openpyxl`) o **PDF** (`xhtml2pdf`), con las celdas coloreadas por nivel. Serializa
+  los mismos datos que la matriz de la web (no genera cifras nuevas).
+- **Interconexión / cadena (por el chat):** si el usuario pregunta por una interconexión (p. ej.
+  «interconexión España-Francia-Alemania»), el sistema detecta la cadena de países y calcula, por
+  parámetro, la **intersección** de los límites de todos ellos (normalizados a España, ISO 13443):
+  el rango de gas que puede atravesar toda la cadena, **qué país impone la restricción más estricta**
+  (cuello de botella) y una **alerta** si para algún parámetro no queda rango común (incompatibilidad).
+  Es determinista (intercepta antes del LLM) y reutiliza el motor comparativo (`_rango_en_condiciones_es`).
 - **Historial persistente:** cada turno (pregunta + respuesta) se guarda por sesión en el
   navegador (`localStorage`) y se **restaura al recargar la página o tras reiniciar el
   servidor**, de modo que el usuario no pierde sus consultas. «Nueva consulta» abre una sesión
@@ -351,7 +373,7 @@ al no depender de servicios externos para localizar la información.
 
 ## 14. Estado real de los datos
 
-Cobertura actual: **175 celdas VERIFICADO**, **35 NO_VERIFICABLE**, 0 pendientes,
+Cobertura actual: **176 celdas VERIFICADO**, **34 NO_VERIFICABLE**, 0 pendientes,
 sobre 210 celdas (10 parámetros × 21 jurisdicciones).
 Las 210 celdas resuelven por la ruta real de la aplicación.
 
@@ -360,7 +382,7 @@ Las 210 celdas resuelven por la ruta real de la aplicación.
 | Parámetro | ES | PT | FR | IT | DE | NL | BE | NOR | PL | DK | HU | AT | CH | CZ | GR | IE | RO | SK | TR | GB | UE |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | Índice de Wobbe | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ |
-| PCS | ✓ | ○ | ✓ | ✓ | ○ | ○ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ |
+| PCS | ✓ | ○ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ○ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ○ |
 | Densidad relativa | ✓ | ✓ | ✓ | ✓ | ✓ | ○ | ○ | ○ | ○ | ✓ | ○ | ○ | ✓ | ✓ | ✓ | ✓ | ○ | ✓ | ○ | ✓ | ✓ |
 | Azufre total | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | H₂S + COS | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -376,7 +398,6 @@ numéricamente** (y por política no se inventan). Detalle:
 | País | Parámetros que su norma no fija |
 |---|---|
 | Portugal | PCS, Mercaptanos, O₂, CO₂, Punto de rocío del agua, Punto de rocío de hidrocarburos |
-| Alemania | PCS |
 | Países Bajos | PCS, Densidad relativa, Punto de rocío de hidrocarburos |
 | Bélgica | Densidad relativa, Mercaptanos, O₂, CO₂, Punto de rocío del agua, Punto de rocío de hidrocarburos |
 | Noruega | Densidad relativa |
@@ -422,14 +443,19 @@ hay incoherencias.
 
 ## 17. Stack tecnológico y despliegue
 
-**Backend:** Python · FastAPI · uvicorn · OpenAI SDK (GPT-4o-mini, function-calling) · pydantic
-· PyYAML (ontología) · pdfplumber (extracción de PDF) · sqlite3 (índice RAG).
+**Backend:** Python · FastAPI · uvicorn (con TLS) · OpenAI SDK (GPT-4o-mini, function-calling) ·
+pydantic · PyYAML (ontología) · pdfplumber (extracción de PDF) · sqlite3 (índice RAG) ·
+openpyxl + xhtml2pdf (informes Excel/PDF) · cryptography (certificado HTTPS).
 **Frontend:** HTML + JavaScript vanilla (marked, DOMPurify).
-**Endpoints HTTP:** `/` (sirve la web) · `/api/status` · `/api/chat` · `/api/parametros` ·
-`/api/comparar` · `/api/matriz`.
+**Endpoints HTTP:** `/` (sirve la web) · `/api/status` · `/api/chat` (chat en lenguaje natural;
+también resuelve **interconexiones/cadenas**) · `/api/parametros` · `/api/comparar` · `/api/matriz` ·
+`/api/analizar-gas` (valida un gas concreto contra la normativa de cada país) · `/api/exportar-matriz`
+(informe Excel/PDF de la matriz para las jurisdicciones seleccionadas).
 **Despliegue:** `iniciar_chatbot.bat` — lanzador del equipo que se auto-actualiza
-(`git pull --ff-only`), libera el puerto 8000 y arranca `uvicorn`. La web se sirve **sin caché**
-(siempre la última versión tras un `git pull`).
+(`git pull --ff-only`), genera un certificado TLS **autofirmado** si no existe
+(`generar_certificado.py` → `cert.pem`/`key.pem`, no versionados), libera el puerto 8000 y arranca
+`uvicorn` por **HTTPS** (`https://localhost:8000/`). La web se sirve **sin caché** (siempre la última
+versión tras un `git pull`). En la primera visita el navegador pide aceptar el certificado autofirmado.
 
 *(La interfaz es `index.html` servida por FastAPI; el sistema **no** usa Streamlit.)*
 

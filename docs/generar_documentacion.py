@@ -186,8 +186,11 @@ ontología) y un **servicio de inteligencia artificial** externo, invocado de fo
 (`api.py`, FastAPI). Allí, un **router determinista** decide cómo resolverla: si es una
 consulta cuantitativa, la resuelve el propio código leyendo la ontología; si es de texto
 abierto, la deriva al modelo de lenguaje (OpenAI), que a su vez puede consultar la ontología
-y buscar en los documentos (RAG). El servidor expone unos pocos servicios (endpoints):
-interfaz, chat, comparación puntual y matriz comparativa.
+y buscar en los documentos (RAG). El servidor expone varios servicios (endpoints): interfaz,
+chat (con detección de **interconexiones/cadenas**), comparación puntual, matriz comparativa,
+**validación de un gas concreto** y **exportación de informes** (Excel/PDF). La arquitectura de
+cuatro componentes no cambia con estas funciones: son endpoints y vistas nuevos dentro de las
+mismas cajas.
 
 ---
 
@@ -439,6 +442,12 @@ al no depender de servicios externos para localizar la información.
   subconjunto de jurisdicciones y descargar la comparativa completa (países × 10 parámetros) en
   **Excel** (`openpyxl`) o **PDF** (`xhtml2pdf`), con las celdas coloreadas por nivel. Serializa
   los mismos datos que la matriz de la web (no genera cifras nuevas).
+- **Interconexión / cadena (por el chat):** si el usuario pregunta por una interconexión (p. ej.
+  «interconexión España-Francia-Alemania»), el sistema detecta la cadena de países y calcula, por
+  parámetro, la **intersección** de los límites de todos ellos (normalizados a España, ISO 13443):
+  el rango de gas que puede atravesar toda la cadena, **qué país impone la restricción más estricta**
+  (cuello de botella) y una **alerta** si para algún parámetro no queda rango común (incompatibilidad).
+  Es determinista (intercepta antes del LLM) y reutiliza el motor comparativo (`_rango_en_condiciones_es`).
 - **Historial persistente:** cada turno (pregunta + respuesta) se guarda por sesión en el
   navegador (`localStorage`) y se **restaura al recargar la página o tras reiniciar el
   servidor**, de modo que el usuario no pierde sus consultas. «Nueva consulta» abre una sesión
@@ -495,16 +504,19 @@ hay incoherencias.
 
 ## 17. Stack tecnológico y despliegue
 
-**Backend:** Python · FastAPI · uvicorn · OpenAI SDK (GPT-4o-mini, function-calling) · pydantic
-· PyYAML (ontología) · pdfplumber (extracción de PDF) · sqlite3 (índice RAG).
+**Backend:** Python · FastAPI · uvicorn (con TLS) · OpenAI SDK (GPT-4o-mini, function-calling) ·
+pydantic · PyYAML (ontología) · pdfplumber (extracción de PDF) · sqlite3 (índice RAG) ·
+openpyxl + xhtml2pdf (informes Excel/PDF) · cryptography (certificado HTTPS).
 **Frontend:** HTML + JavaScript vanilla (marked, DOMPurify).
-**Endpoints HTTP:** `/` (sirve la web) · `/api/status` · `/api/chat` · `/api/parametros` ·
-`/api/comparar` · `/api/matriz` · `/api/analizar-gas` (valida un gas concreto contra la
-normativa de cada país) · `/api/exportar-matriz` (informe Excel/PDF de la matriz para las
-jurisdicciones seleccionadas).
+**Endpoints HTTP:** `/` (sirve la web) · `/api/status` · `/api/chat` (chat en lenguaje natural;
+también resuelve **interconexiones/cadenas**) · `/api/parametros` · `/api/comparar` · `/api/matriz` ·
+`/api/analizar-gas` (valida un gas concreto contra la normativa de cada país) · `/api/exportar-matriz`
+(informe Excel/PDF de la matriz para las jurisdicciones seleccionadas).
 **Despliegue:** `iniciar_chatbot.bat` — lanzador del equipo que se auto-actualiza
-(`git pull --ff-only`), libera el puerto 8000 y arranca `uvicorn`. La web se sirve **sin caché**
-(siempre la última versión tras un `git pull`).
+(`git pull --ff-only`), genera un certificado TLS **autofirmado** si no existe
+(`generar_certificado.py` → `cert.pem`/`key.pem`, no versionados), libera el puerto 8000 y arranca
+`uvicorn` por **HTTPS** (`https://localhost:8000/`). La web se sirve **sin caché** (siempre la última
+versión tras un `git pull`). En la primera visita el navegador pide aceptar el certificado autofirmado.
 
 *(La interfaz es `index.html` servida por FastAPI; el sistema **no** usa Streamlit.)*
 
