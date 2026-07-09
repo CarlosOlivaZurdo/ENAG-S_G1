@@ -383,6 +383,20 @@ ontologia:
       nota: "Fuente pública SECUNDARIA (recomendaciones técnicas de la industria, no norma vinculante). Se usa para los valores de RED/almacenamiento que las normas de PRODUCTO (EN 16726, ISO 14687) no fijan."
       ambito: "Prácticas y recomendaciones europeas de calidad de biometano/hidrógeno en red y almacenamiento subterráneo (UGS)."
 
+    - id: ISO_8573
+      tipo: norma_tecnica
+      pais: INT
+      nombre: "ISO 8573 (aire/gases comprimidos: aceite y partículas) e ISO 19880-1 (estaciones de repostaje de hidrógeno)"
+      organismo: "ISO"
+      publicacion: "Series ISO 8573 e ISO 19880-1 (vigentes)"
+      pdf: ""
+      url: "https://www.iso.org/standard/46418.html"
+      descarga_auto: false
+      tabla_calidad: "Métodos y clases de pureza para contenido de aceite y partículas (trazas de compresor)."
+      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+      nota: "Normas de PAGO. Referenciadas por ISO 14687 y por los operadores para el aceite/partículas de compresor. Se usan como referencia de método; el umbral numérico lo fija ISO 14687 (partículas 1 mg/kg)."
+      ambito: "Aceite y partículas en gases comprimidos / repostaje de hidrógeno."
+
     - id: UE_2021_C78_05
       tipo: comunicacion_ue
       pais: UE
@@ -3053,15 +3067,42 @@ parametros_biometano:
     definicion: "Fracción molar mínima de CH₄ exigida al biometano de inyección."
     aliases: [metano, ch4, ch₄, methane content, methananteil, teneur en méthane, fraction molaire de méthane, contenido de metano]
     limites:
-      EN16723:
-        fuente: MARCOGAZ_GQ
-        articulo: "EN 16723-1 §4 / EN 16726 (implícito por Wobbe/PCS); práctica de red (EBA, ADBA)"
+      UE:
+        fuente: EN_16723_1
+        articulo: "EN 16723-1:2016 §4 / EN 16726 (implícito por índice de Wobbe y PCS)"
         tipo_limite: minimo
-        valor: 95
+        valor: null
         unidad: pct_mol
-        expresion_original: "CH₄ ≥ 95 % mol (mínimo típico de red; el biometano se enriquece a 95–98 % CH₄ para igualar al gas natural)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "EN 16723-1 NO fija un CH₄ mínimo explícito (regula por impurezas y remite a EN 16726: el CH₄ queda implícito por el índice de Wobbe/PCS). El gestor de red exige tras el upgrading un CH₄ típico ≥ 95 % mol (rango 95–98 %) para igualar el gas natural (European Biogas Association; ADBA). Cifra de práctica de red, no umbral único de norma."
+        expresion_original: "Sin valor numérico normativo. EN 16723-1 no fija un mínimo directo de CH₄; se controla indirectamente vía índice de Wobbe y PCS."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El mínimo de metano rara vez se fija de forma directa: se gobierna por los límites de índice de Wobbe y poder calorífico superior."
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Orden TED/181/2025 (BOE 27/02/2025); control vía Wobbe y PCS"
+        tipo_limite: minimo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Sin mínimo explícito de CH₄. Control vía índice de Wobbe (13,403–16,058 kWh/m³) y PCS."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "España no fija un CH₄ mínimo directo; queda implícito por Wobbe/PCS."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Prescriptions techniques d'injection GRTgaz / GRDF; control vía Wobbe/PCS"
+        tipo_limite: minimo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Sin mínimo explícito de CH₄. Control vía índice de Wobbe / PCS."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Francia no fija un CH₄ mínimo directo en las prescripciones públicas de operador; queda implícito por Wobbe/PCS."
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "RQS — Regulamento n.º 826/2023 (ERSE)"
+        tipo_limite: minimo
+        valor: 90
+        unidad: pct_mol
+        expresion_original: "CH₄ ≥ 90 % (gas renovable asimilable a gas natural)."
+        estado_verificacion: VERIFICADO
+        nota: "Portugal es la ÚNICA de las 4 jurisdicciones que fija un CH₄ mínimo numérico (≥ 90 %) en el RQS."
 
   # --- Impurezas (solapan con gas natural: mismo slug) ---------------------
   O2:
@@ -3102,25 +3143,44 @@ parametros_biometano:
     definicion: "Fracción de CO₂ en el biometano de inyección."
     aliases: [co2, co₂, dióxido de carbono, carbon dioxide, kohlendioxid, dioxyde de carbone, anidride carbonica]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
+        articulo: "EN 16723-1:2016 (remite a la especificación nacional)"
         tipo_limite: maximo
         valor: null
         unidad: pct_mol
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Poblar desde fuente secundaria pública."
-      FR:
-        fuente: FR_GRTGAZ
-        articulo: "Annexe 4, «Teneur en CO2» (pág. 1)"
+        expresion_original: "EN 16723-1 remite a la especificación nacional; no fija un valor único europeo."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El CO₂ máximo del biometano lo fija cada Estado miembro; EN 16723-1 no fija un valor UE único."
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Orden TED/181/2025 (BOE 27/02/2025)"
         tipo_limite: maximo
         valor: 2.5
         unidad: pct_mol
-        expresion_original: "Teneur en CO2 < 2,5 % (molaire)"
+        expresion_original: "CO₂ ≤ 2,5 %mol (ampliable a 4 %mol en redes ≤ 16 bar sin reverse flow, si se demuestra ≤ 2,5 %mol en instalaciones sensibles)."
         condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
         estado_verificacion: VERIFICADO
-        nota: "Requisito de la red de transporte francesa (GRTgaz) para todo gas inyectado, biometano incluido."
+        nota: "Condiciones de referencia: 0 °C, 1,01325 bar. Ampliable a 4 %mol en redes ≤ 16 bar sin reverse flow bajo condiciones."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Prescriptions techniques d'injection GRTgaz (transporte) / GRDF (distribución)"
+        tipo_limite: maximo
+        valor: 2.5
+        unidad: pct_mol
+        expresion_original: "CO₂ ≤ 2,5 % (transporte GRTgaz); 3,5 % Gaz H / 11,7 % Gaz B (distribución GRDF)."
+        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
+        estado_verificacion: VERIFICADO
+        nota: "2,5 % en transporte (GRTgaz). En distribución GRDF: 3,5 % Gaz H / 11,7 % Gaz B. Condiciones 0 °C, 1,01325 bar."
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "RQS — Regulamento n.º 826/2023, Anexo I (remite a ISO 16723-1)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Remite a ISO 16723-1 — valor numérico NO publicado (tras paywall)."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El RQS portugués remite a ISO 16723-1 (norma de pago): el valor no es público. No se sustituye por el de otra jurisdicción."
 
   CO:
     nombre_completo: "Monóxido de carbono"
@@ -3237,25 +3297,42 @@ parametros_biometano:
     definicion: "Contenido de siloxanos expresado como silicio total (base Si)."
     aliases: [siloxanos, siloxanes, siloxane, silicium, silizium, total silicon, silicio total, Si]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1 (silicio volátil total, como Si). Método de medida: ISO 2613-1:2023 (AES) / EN ISO 16017-1"
+        articulo: "EN 16723-1:2016, Tabla 1 (silicio volátil total, como Si). Método: ISO 2613-1:2023 (AES)"
         tipo_limite: maximo
         valor: 1
         unidad: mg_per_nm3           # mg Si/m³ (base silicio): NO convertir a ppm sin masa molar
-        expresion_original: "Silicio volátil total (como Si): 0,3 – 1,0 mg Si/m³ (EN 16723-1:2016 y 16723-2:2017)"
+        expresion_original: "Silicio volátil total (como Si): 0,3 – 1 mg Si/m³ (rango típico)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Uno de los 4 parámetros con límite propio en EN 16723-1. Rango 0,3–1,0 mg Si/m³ (como Si); se fija 1 mg Si/m³ como cota superior. Método de medida: ISO 2613-1:2023 (AES). Base silicio: no convertir a ppm/volumen sin respaldo (riesgo R6). ⚠️ EN 16723-1 en revisión. Fuente secundaria pública: NPL/EMPIR (Culleton et al.), muestra SIST-EN-16723-1:2017."
+        nota: "Rango 0,3–1 mg Si/m³ (como Si); se fija 1 mg Si/m³ como cota superior. Método de medida: ISO 2613-1:2023 (AES). Base silicio: no convertir a ppm/volumen sin respaldo (riesgo R6). ⚠️ EN 16723-1 en revisión."
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Orden TED/181/2025 (remite a UNE-EN 16723-1:2017, Tabla 1)"
+        tipo_limite: maximo
+        valor: 1
+        unidad: mg_per_nm3
+        expresion_original: "Silicio volátil total (como Si): 0,3 – 1 mg Si/m³."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "La NGTS española remite a UNE-EN 16723-1:2017 (Tabla 1): 0,3–1 mg Si/m³ (como Si). Se fija 1 mg Si/m³ como cota superior."
       FR:
         fuente: FR_GRTGAZ
-        articulo: "Annexe 4, «Teneur en siloxanes» (pág. 1)"
+        articulo: "Prescriptions techniques d'injection GRTgaz / GRDF"
         tipo_limite: maximo
-        valor: 5
+        valor: null
         unidad: mg_per_nm3
-        expresion_original: "Teneur en siloxanes < 5 mg/m3 (n)"
-        condiciones_referencia: { temperatura_combustion_C: 0, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@0/0" }
-        estado_verificacion: VERIFICADO
-        nota: "GRTgaz lo expresa como siloxanos totales (mg/m³(n)), NO explícitamente como silicio. Requisito de la red de transporte francesa para todo gas inyectado; límite típico de impurezas de biometano. No convertir a ppm/base Si sin respaldo (riesgo R6)."
+        expresion_original: "No especificado numéricamente en las prescripciones públicas de operador."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Las prescripciones públicas de operador (GRTgaz/GRDF) no fijan un valor numérico de siloxanos. (La annexe de «méthane de synthèse» de GRTgaz menciona < 5 mg/m³ como compuesto, no como Si.)"
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "RQS — Regulamento n.º 826/2023, Anexo I (remite a ISO 16723-1)"
+        tipo_limite: maximo
+        valor: null
+        unidad: mg_per_nm3
+        expresion_original: "Remite a ISO 16723-1 — valor NO publicado."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El RQS portugués remite a ISO 16723-1 (norma de pago): el valor no es público. No se sustituye por el de otra jurisdicción."
 
   COMP_OIL:
     nombre_completo: "Aceite de compresor"
@@ -3377,15 +3454,42 @@ parametros_hidrogeno:
     definicion: "Fracción molar mínima de H₂ (100 % menos los gases no-hidrógeno)."
     aliases: [pureza de h2, pureza de hidrogeno, indice de h2, hydrogen purity, hydrogen fuel index, wasserstoffreinheit, purete de l'hydrogene, fraccion molar de hidrogeno, h2 purity]
     limites:
-      ISO14687:
-        fuente: MARCOGAZ_GQ
-        articulo: "MARCOGAZ (inyección en red) / ENTSOG-DNV «H2 Quality» (clases 98 / 99,5 / 99,97 % mol)"
+      UE:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Type I Grade D); EN 17124"
         tipo_limite: minimo
-        valor: 98
+        valor: 99.97
         unidad: pct_mol
-        expresion_original: "H₂ ≥ 98 % mol para inyección en RED (MARCOGAZ). ENTSOG/DNV evalúa clases 98 / 99,5 / 99,97 % mol. ISO 14687 Grade D = 99,97 % mol (hidrógeno de PRODUCTO para pila PEM)."
+        expresion_original: "99,97 %mol (producto, células PEM)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Contexto de RED (Enagás): MARCOGAZ recomienda pureza mínima 98 % mol antes de inyectar en la red de gas. El 99,97 % de ISO 14687 Grade D es hidrógeno de PRODUCTO para pila de combustible (no red). ⚠️ Aún no hay Network Code de hidrógeno vinculante (ENNOH en desarrollo)."
+        nota: "Especificación armonizada de facto en la UE (ISO 14687 / EN 17124). NO confundir con el contenido de H₂ admisible en blending con gas natural (parámetro distinto, fuera de alcance). ⚠️ ISO 14687:2025 y EN 17124:2026 ya publicadas."
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Orden TED/181/2025 (remite a norma de producto)"
+        tipo_limite: minimo
+        valor: 99.97
+        unidad: pct_mol
+        expresion_original: "Se expresa en %mol base seca; sin valor propio en la NGTS (remite a norma de producto ISO 14687 / EN 17124 → 99,97 %mol)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "España no fija un valor propio de pureza de H₂ en la NGTS: remite a la norma de producto (ISO 14687 / EN 17124 → 99,97 %mol)."
+      FR:
+        fuente: ISO_14687
+        articulo: "ISO 14687 / EN 17124 (aplicables en Francia)"
+        tipo_limite: minimo
+        valor: 99.97
+        unidad: pct_mol
+        expresion_original: "Sin valor propio de pureza como producto; aplica ISO 14687 / EN 17124 (99,97 %mol)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "Francia no fija un valor propio; aplica ISO 14687 / EN 17124."
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "RQS — Regulamento n.º 826/2023 (remite a ISO 14687)"
+        tipo_limite: minimo
+        valor: 99.97
+        unidad: pct_mol
+        expresion_original: "Remite a ISO 14687 (99,97 %mol)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "El RQS portugués remite a ISO 14687 (99,97 %mol)."
 
   NO_H2:
     nombre_completo: "Total de gases no-hidrógeno"
@@ -3472,15 +3576,42 @@ parametros_hidrogeno:
     definicion: "Oxígeno en el hidrógeno. Contaminante crítico para el almacenamiento subterráneo (UGS) y distinto del O₂ del gas natural."
     aliases: [o2, oxigeno, oxygen, sauerstoff, o2 hidrogeno, o2 h2]
     limites:
-      ISO14687:
-        fuente: MARCOGAZ_GQ
-        articulo: "ISO 14687 Grade D (producto: 5 μmol/mol) / MARCOGAZ-UGS (red: 10 ppm DE – 100 ppm FR)"
+      UE:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D); EN 17124"
         tipo_limite: maximo
         valor: 5
         unidad: ppm_vol
-        expresion_original: "O₂ ≤ 5 μmol/mol (ISO 14687 Grade D, producto). En RED/almacenamiento (UGS): 10 ppm (Alemania) a 100 ppm (Francia) — MARCOGAZ."
+        expresion_original: "5 µmol/mol (producto PEM)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "μmol/mol ≡ ppm. El O₂ es el contaminante MÁS crítico del hidrógeno para el almacenamiento subterráneo (UGS): riesgo de black powder y azufre elemental. Producto (pila PEM): ≤ 5 μmol/mol (ISO 14687). Red/UGS: 10 ppm (redes sensibles, DE) a 100 ppm (FR). ⚠️ Sin límite de red UE vinculante aún (ENNOH)."
+        nota: "µmol/mol ≡ ppm. O₂ del H₂ como PRODUCTO (ISO 14687). Es una propiedad DISTINTA del O₂ regulado en la red de gas natural: en la ontología son dos conceptos separados."
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Orden TED/181/2025 (remite a norma de producto)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: ppm_vol
+        expresion_original: "Sin valor de O₂ específico de H₂-producto en la NGTS (remite a norma de producto ISO 14687 → 5 µmol/mol)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "España no fija un O₂ específico de H₂-producto en la NGTS: remite a ISO 14687 (5 µmol/mol)."
+      FR:
+        fuente: ISO_14687
+        articulo: "ISO 14687 / EN 17124 (aplicables en Francia)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: ppm_vol
+        expresion_original: "Aplica ISO 14687 / EN 17124 (5 µmol/mol)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "Francia aplica ISO 14687 / EN 17124 (5 µmol/mol)."
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "RQS — Regulamento n.º 826/2023 (remite a ISO 14687)"
+        tipo_limite: maximo
+        valor: 5
+        unidad: ppm_vol
+        expresion_original: "Remite a ISO 14687 (5 µmol/mol)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "El RQS portugués remite a ISO 14687 (5 µmol/mol)."
 
   HE:
     nombre_completo: "Helio"
@@ -3700,12 +3831,39 @@ parametros_hidrogeno:
     definicion: "Trazas introducidas por los compresores de la cadena de hidrógeno: aceite/lubricante y partículas."
     aliases: [trazas de compresor, trazas de compresores, aceite de compresor, compressor oil, lubricante, compressor traces, particulas]
     limites:
-      ISO14687:
+      UE:
         fuente: ISO_14687
-        articulo: "ISO 14687:2019, Tabla 2 (Grade D): partículas + hidrocarburos totales (excepto CH₄)"
+        articulo: "ISO 14687:2019, notas f–g (remite a ISO 8573 / ISO 19880-1)"
         tipo_limite: maximo
         valor: 1
         unidad: mg_per_kg
-        expresion_original: "Partículas ≤ 1 mg/kg, «sin aceite visible en la boquilla»; hidrocarburos totales excepto CH₄ ≤ 2 μmol/mol (captura vapores de aceite de compresor)."
+        expresion_original: "Partículas 1 mg/kg; sin aceite visible en la boquilla; remite a ISO 8573 / ISO 19880-1."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "No hay un límite numérico ÚNICO de «trazas de compresor». ISO 14687 Grade D las controla vía partículas (≤ 1 mg/kg, sin aceite visible) y THC excepto CH₄ (≤ 2 μmol/mol). El marco de RED (ENNOH Groundwork 2026) lista los «contaminantes de compresor» como parámetro a fijar, aún SIN valor vinculante. VIGILAR."
+        nota: "Único valor numérico: partículas ≤ 1 mg/kg (ISO 14687). El aceite de compresor se trata como restricción CUALITATIVA («sin aceite visible»); método por ISO 8573 / ISO 19880-1."
+      ES:
+        fuente: ORDEN_TED_181_2025
+        articulo: "Orden TED/181/2025 (biometano: «técnicamente puro»)"
+        tipo_limite: cualitativo
+        valor: null
+        unidad: adimensional
+        expresion_original: "En biometano: aceite y partículas «técnicamente puro» (sin valor numérico)."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Restricción CUALITATIVA («técnicamente puro»), sin umbral numérico. No evaluable de forma determinista contra un número."
+      FR:
+        fuente: FR_GRTGAZ
+        articulo: "Prescriptions techniques GRTgaz / GRDF (remite a ISO 8573)"
+        tipo_limite: cualitativo
+        valor: null
+        unidad: adimensional
+        expresion_original: "Remite a ISO 8573 para aceite / partículas."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Francia remite a ISO 8573 para aceite/partículas; sin umbral numérico propio."
+      PT:
+        fuente: REG_PT_826_2023
+        articulo: "RQS — Regulamento n.º 826/2023 (remite a ISO 14687 / ISO 8573)"
+        tipo_limite: cualitativo
+        valor: null
+        unidad: adimensional
+        expresion_original: "Remite a ISO 14687 / ISO 8573."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "Portugal remite a ISO 14687 / ISO 8573; el valor numérico (partículas 1 mg/kg) lo fija ISO 14687."

@@ -199,32 +199,17 @@ def _cond_txt(cr: Optional[Dict[str, Any]]) -> str:
 
 def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Optional[Dict[str, Any]]:
     """Único punto donde se elige el árbol de parámetros y la jurisdicción por tipo de gas.
-    Jurisdicciones comunes a los tres gases: ES, PT, FR, UE.
-
-    - Gas natural (por defecto): `parametros[KEY].limites[país]` (comportamiento actual).
-    - Biometano: los parámetros COMPARTIDOS (O₂, CO₂, azufre, H₂S+COS, rocío de agua) los toma
-      de la spec de GAS NATURAL del país (el biometano inyectado debe cumplirla); los ESPECÍFICOS
-      (siloxanos, CO, NH₃…) de `parametros_biometano` (UE = EN 16723-1, FR = GRTgaz; ES/PT sin
-      límite nacional propio → sin dato).
-    - Hidrógeno: ISO 14687 Grade D es la spec de PRODUCTO aplicable en todas las jurisdicciones
-      (aún no hay spec de calidad de red nacional/UE vinculante → ENNOH en desarrollo)."""
+    Biometano e hidrógeno se leen POR JURISDICCIÓN (ES/PT/FR/UE), igual que el gas natural:
+    cada celda tiene su valor y su fuente propios (corpus jul-2026; ver sección correspondiente)."""
     onto = cargar_ontologia()
     if tipo_gas == "biometano":
-        cod = _PAIS_A_CODIGO.get(_norm(pais), pais)
-        if slug in _SHARED_BIOMETANO:
-            params = onto.get("parametros") or {}
-            key = _PARAM_A_ONTO.get(slug)
-            cod_q = cod
-        else:
-            # Específicos (siloxanos, CH₄ mín): límite ARMONIZADO UE (EN 16723-1),
-            # aplicable por igual en ES/PT/FR/UE.
-            params = onto.get("parametros_biometano") or {}
-            key = _PARAM_A_ONTO_BIOMETANO.get(slug)
-            cod_q = "EN16723"
+        params = onto.get("parametros_biometano") or {}
+        key = _PARAM_A_ONTO_BIOMETANO.get(slug)
+        cod_q = _PAIS_A_CODIGO.get(_norm(pais), pais)
     elif tipo_gas == "hidrogeno":
         params = onto.get("parametros_hidrogeno") or {}
         key = _PARAM_A_ONTO_HIDROGENO.get(slug)
-        cod_q = "ISO14687"                              # misma spec de producto en ES/PT/FR/UE
+        cod_q = _PAIS_A_CODIGO.get(_norm(pais), pais)
     else:
         params = onto.get("parametros") or {}
         key = _PARAM_A_ONTO.get(slug)
