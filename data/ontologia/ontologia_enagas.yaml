@@ -264,16 +264,12 @@ ontologia:
     - id: NC_INT
       tipo: reglamento_europeo
       pais: UE
-      gas: hidrogeno
-      nombre: "Network Code on Interoperability and Data Exchange (NC INT) — Reglamento (UE) 2015/703"
+      nombre: "Network Code on Interoperability and Data Exchange (NC INT)"
       referencia_legal: "Reglamento (UE) 2015/703 de la Comisión"
       publicacion: "DOUE L 113, de 1 de mayo de 2015"
       pdf: "data/raw/CELEX_32015R0703_ES_TXT.pdf"
-      url: "https://www.entsog.eu/network-codes-and-guidelines"
-      tabla_calidad: "Cap. II «Gas quality» (arts. 12-16): gestión de la calidad del gas, monitorización, procedimiento ante restricciones por calidad e intercambio de datos en los puntos de interconexión. NO fija valores límite de calidad (los fijan las normas de producto y los reglamentos nacionales)."
-      estado_verificacion: VERIFICADO
-      nota: "Es uno de los 4 Network Codes vinculantes de la UE gestionados por ENTSOG (junto a CAM 2017/459, BAL 312/2014 y TAR 2017/460). El INT NC arma la GESTIÓN de la calidad del gas y la interoperabilidad transfronteriza, aplicable también a gases renováveis/hidrógeno, PERO no fija umbrales de pureza/O₂ del hidrógeno: NO existe todavía un Network Code de hidrógeno con calidad vinculante (lo desarrolla ENNOH). Los valores de hidrógeno vienen de ISO 14687 (producto) y de los reglamentos nacionales (p. ej. RQS portugués)."
-      ambito: "Marco UE de interoperabilidad y gestión de calidad del gas (Network Codes de ENTSOG). Aplicable a la inyección de gases renováveis/hidrógeno; no fija límites numéricos de calidad."
+      url: "https://publications.europa.eu/resource/celex/32015R0703"
+      ambito: "Armoniza unidades, condiciones de referencia y monitorización de Wobbe/PCS. NO fija límites numéricos de calidad."
 
     - id: NC_CAM
       tipo: reglamento_europeo
@@ -370,7 +366,7 @@ ontologia:
       descarga_auto: false
       tabla_calidad: "NO existe todavía un código de red de hidrógeno con especificación de calidad vinculante a nivel UE (en construcción)."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      nota: "Marco de RED de hidrógeno (distinto de la especificación de PRODUCTO ISO 14687). La responsabilidad pasó de ENTSOG a ENNOH (Reg. UE 2024/1789). El marco vinculante actual de la UE son los Network Codes de ENTSOG (https://www.entsog.eu/network-codes-and-guidelines): el INT NC (Reg. 2015/703) gestiona la calidad e interoperabilidad del gas, pero NINGÚN Network Code fija todavía la calidad del hidrógeno. El ENNOH Groundwork Document (2026) consolida prácticas y alimentará el 1.er Hydrogen Quality Monitoring Report 2026. VIGILAR."
+      nota: "Marco de RED de hidrógeno (distinto de la especificación de PRODUCTO ISO 14687). La responsabilidad pasó de ENTSOG a ENNOH (Reg. UE 2024/1789). Aún SIN límites de calidad de red vinculantes: el ENNOH Groundwork Document (2026) consolida prácticas y alimentará el 1.er Hydrogen Quality Monitoring Report 2026. VIGILAR."
       ambito: "Marco institucional/regulatorio de la calidad del hidrógeno en la red europea (en desarrollo)."
 
     - id: MARCOGAZ_GQ
