@@ -182,11 +182,13 @@ ontologia:
     - codigo: biometano
       nombre: "Biometano para inyección en red"
       seccion_parametros: parametros_biometano  # árbol NUEVO (al final del fichero)
-      # EN16723 = marco UE (EN 16723-1, en gran parte remite a la red). FR = requisito
-      # concreto de la red de transporte francesa (GRTgaz Annexe 4), que todo gas
-      # inyectado —biometano incluido— debe cumplir; aporta los límites de trazas
-      # (siloxanos, NH₃, Cl, F) que no existen en la vista de gas natural.
-      jurisdicciones: [EN16723, FR]
+      # UE = marco europeo: Reglamento (UE) 2024/1789 (sin límites numéricos; art. 23
+      # «Common specifications for biomethane» AÚN NO ejercido) + normas armonizadas
+      # EN 16723-1 (Si total, CO, NH₃, aminas) y EN 16726 (el resto: CO₂, O₂, S…).
+      # ES/PT/FR = specs nacionales. FR = red de transporte francesa (GRTgaz Annexe 4),
+      # que todo gas inyectado —biometano incluido— debe cumplir; aporta límites de
+      # trazas (NH₃, Cl, F) que no existen en la vista de gas natural.
+      jurisdicciones: [UE, ES, FR, PT]
       por_pais: false
     - codigo: hidrogeno
       nombre: "Hidrógeno (pureza y contaminantes)"
@@ -280,6 +282,36 @@ ontologia:
       descarga_auto: false  # EUR-Lex no sirve el PDF ES por API (404); enlace de cita, descarga manual
       ambito: "Asignación de capacidad. No fija calidad."
 
+    - id: REG_UE_2024_1789
+      tipo: reglamento_europeo
+      pais: UE
+      gas: biometano
+      nombre: "Reglamento (UE) 2024/1789 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, relativo a los mercados interiores del gas renovable, del gas natural y del hidrógeno"
+      referencia_legal: "Reglamento (UE) 2024/1789 (deroga el Reglamento (CE) n.º 715/2009)"
+      publicacion: "DO L, 2024/1789, de 15.7.2024. Entrada en vigor 4/08/2024; aplicable desde 5/02/2025"
+      pdf: ""
+      url: "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=OJ:L_202401789"
+      descarga_auto: false
+      tabla_calidad: "NO contiene tabla de calidad. Art. 21 «Cross-border coordination with regard to gas quality in the natural gas system» y art. 23 «Common specifications for biomethane»."
+      estado_verificacion: VERIFICADO
+      nota: "Marco de RED vigente para la inyección de biometano en la UE. NO fija ningún límite numérico de calidad (ni CH₄, ni CO₂, ni O₂, ni siloxanos). El ÚNICO umbral numérico es el del art. 21(1), párr. 2: «This Article shall not apply to hydrogen blends where the hydrogen content blended into the natural gas system exceeds 2 % by volume». El art. 23(1) habilita a la Comisión a adoptar actos de ejecución con «especificaciones comunes» para integrar grandes volúmenes de biometano, o a fijarlas en un código de red (art. 71(2), párr. 1, letra a); es una potestad («may adopt») AÚN NO EJERCIDA a jul-2026: NO existe acto de ejecución ni código de red de la UE con límites numéricos de calidad para el biometano. Mientras tanto, los límites aplicables son los de la norma armonizada EN 16726 (calidad de red, grupo H) y EN 16723-1 (parámetros propios del biometano)."
+      ambito: "Marco jurídico UE de acceso e inyección de gas renovable (biometano) en el sistema de gas natural. Verificado sobre el texto oficial del DOUE (EUR-Lex, ELI: http://data.europa.eu/eli/reg/2024/1789/oj)."
+
+    - id: DIR_UE_2024_1788
+      tipo: directiva_europea
+      pais: UE
+      gas: biometano
+      nombre: "Directiva (UE) 2024/1788 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, relativa a normas comunes para los mercados interiores del gas renovable, del gas natural y del hidrógeno"
+      referencia_legal: "Directiva (UE) 2024/1788 (deroga la Directiva 2009/73/CE)"
+      publicacion: "DO L, 2024/1788, de 15.7.2024"
+      pdf: ""
+      url: "https://www.boe.es/buscar/doc.php?id=DOUE-L-2024-81094"
+      descarga_auto: false
+      tabla_calidad: "NO contiene tabla de calidad. Art. 30 «Access of renewable gas and low-carbon gas to the market»; arts. 41 y 45 (conexión PRIORITARIA de instalaciones de biometano a transporte y a distribución); art. 58 (tasas y costes de conexión del biometano)."
+      estado_verificacion: VERIFICADO
+      nota: "No fija límites numéricos de calidad. Regula el ACCESO y la conexión prioritaria del biometano («Member States may grant production facilities for biomethane priority to connect», arts. 41 y 45). La gestión de la calidad del gas se remite a las reglas técnicas del art. 10 y a las tareas de los gestores (arts. 39, 44 y 50). Verificado sobre el texto oficial del DOUE (ELI: http://data.europa.eu/eli/dir/2024/1788/oj)."
+      ambito: "Marco jurídico UE de acceso, conexión y organización de mercado del biometano. Complementa al Reglamento (UE) 2024/1789."
+
     - id: EN_16726
       tipo: norma_tecnica
       pais: UE
@@ -304,9 +336,10 @@ ontologia:
       url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:38200"
       descarga_auto: false
       tabla_calidad: "§4 y Tabla 1. EN 16723-1 fija valor límite SOLO a 4 parámetros: silicio volátil total (0,3–1 mg Si/m³), CO (≤0,1 % mol), NH₃ (≤10 mg/m³) y aminas. Aceite de compresor y polvo = «técnicamente libre de» (sin umbral numérico). El resto de parámetros de calidad se rigen por EN 16726 (Grupo H) y los halogenados por CEN/TR 17238:2018."
-      estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. Cada valor de biometano se cita a su fuente PROPIA por jurisdicción (EN 16723-1 para UE; Orden TED/181/2025 para España; RQS Anexo XI para Portugal; prescripciones GRTgaz/GRDF para Francia). ⚠️ EN REVISIÓN ACTIVA (CEN/TC 408): la nueva edición armonizará O₂, índice de Wobbe, H₂, azufre y densidad relativa → verificar la fecha de publicación antes de fijar umbrales definitivos."
-      ambito: "Especificación europea de biometano para inyección en la red de gas natural (CEN/TC 408, mandato M/475). Se complementa con EN 16726 (Grupo H) y EN 16723-2:2017 (uso automoción, que sí fija O₂/H₂/azufre)."
+      estado_verificacion: VERIFICADO_SECUNDARIO
+      url_secundaria: "https://www.npl.co.uk/case-studies/enabling-the-injection-of-biomethane-into-the-gas"
+      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. Cada valor de biometano se cita a su fuente PROPIA por jurisdicción (EN 16723-1 para UE; Orden TED/181/2025 para España; RQS Anexo XI para Portugal; prescripciones GRTgaz/GRDF para Francia). El límite de silicio total está confirmado por FUENTE PÚBLICA SECUNDARIA, el NPL (laboratorio nacional de metrología del Reino Unido, participante en CEN/TC 408): «the limit of total silicon which was eventually set at a challenging level of less than 1 mg m-3» → Si total < 1 mg/m³. La cifra 0,3 mg Si/m³ es la cota INFERIOR del rango debatido en la redacción (aparece en catálogos de normalización como rango 0,3–1), NO un segundo límite. Otras fuentes secundarias: Springer AQUA 2023; MARCOGAZ; European Biogas Association. Lo no confirmado queda null/PENDIENTE. ⚠️ EN REVISIÓN ACTIVA (CEN/TC 408): la nueva edición armonizará O₂, índice de Wobbe, H₂, azufre y densidad relativa → verificar la fecha de publicación antes de fijar umbrales definitivos (los de O₂ y Wobbe pueden cambiar)."
+      ambito: "Especificación europea de biometano para inyección en la red de gas natural (CEN/TC 408, mandato M/475). Fija límite numérico SOLO a 4 parámetros (Si total, CO, NH₃ y aminas); el RESTO de parámetros de calidad (CH₄, CO₂, O₂, S, rocío) se rigen por EN 16726 (Grupo H) y los halogenados por CEN/TR 17238:2018. Es la norma armonizada a la que remite el Reglamento (UE) 2024/1789 mientras la Comisión no ejerza el art. 23 (especificaciones comunes). Se complementa con EN 16723-2:2017 (uso automoción, que sí fija O₂/H₂/azufre)."
 
     - id: CEN_TR_17238
       tipo: informe_tecnico
@@ -3055,13 +3088,13 @@ parametros_biometano:
     limites:
       UE:
         fuente: EN_16723_1
-        articulo: "EN 16723-1:2016 §4 / EN 16726 (implícito por índice de Wobbe y PCS)"
+        articulo: "EN 16723-1:2016 §4 y Tabla 1 (no fija CH₄); EN 16726:2025 §5.2 (control vía índice de Wobbe); Reglamento (UE) 2024/1789, art. 23 (especificaciones comunes NO adoptadas)"
         tipo_limite: minimo
         valor: null
         unidad: pct_mol
-        expresion_original: "Sin valor numérico normativo. EN 16723-1 no fija un mínimo directo de CH₄; se controla indirectamente vía índice de Wobbe y PCS."
+        expresion_original: "Sin mínimo de CH₄ en la UE. EN 16723-1 fija valor límite SOLO a 4 parámetros (Si total, CO, NH₃ y aminas) y no incluye un mínimo de metano; el contenido energético se controla vía el índice de Wobbe de EN 16726 (46,44–54,00 MJ/m³ [15/15])."
         estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "El mínimo de metano rara vez se fija de forma directa: se gobierna por los límites de índice de Wobbe y poder calorífico superior."
+        nota: "NO es un dato que falte: es una ausencia NORMATIVA verificada. Ni EN 16723-1, ni EN 16726, ni el Reglamento (UE) 2024/1789 fijan un CH₄ mínimo. El Reglamento 2024/1789 no contiene ningún límite numérico de calidad (su único umbral es el 2 % vol. de H₂ del art. 21) y su art. 23 («Common specifications for biomethane») habilita a la Comisión a fijarlos por acto de ejecución, potestad NO ejercida a jul-2026. El mínimo de metano se gobierna indirectamente por Wobbe y PCS. Portugal es la única jurisdicción del comparador que sí fija un mínimo (≥ 90 %)."
       ES:
         fuente: ORDEN_TED_181_2025
         articulo: "Orden TED/181/2025 (BOE 27/02/2025); control vía Wobbe y PCS"
@@ -3100,7 +3133,7 @@ parametros_biometano:
     definicion: "Fracción de O₂ en el biometano de inyección (depende de la red receptora)."
     aliases: [o2, o₂, oxígeno, oxygen, sauerstoff, oxygène, ossigeno]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16726
         articulo: "EN 16726:2025, §5.4 (O₂); límite de red que admite biometano"
         tipo_limite: maximo
@@ -3130,14 +3163,15 @@ parametros_biometano:
     aliases: [co2, co₂, dióxido de carbono, carbon dioxide, kohlendioxid, dioxyde de carbone, anidride carbonica]
     limites:
       UE:
-        fuente: EN_16723_1
-        articulo: "EN 16723-1:2016 (remite a la especificación nacional)"
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H). EN 16723-1 no fija CO₂: remite a la spec de red (EN 16726)"
         tipo_limite: maximo
-        valor: null
+        valor: 2.5
         unidad: pct_mol
-        expresion_original: "EN 16723-1 remite a la especificación nacional; no fija un valor único europeo."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "El CO₂ máximo del biometano lo fija cada Estado miembro; EN 16723-1 no fija un valor UE único."
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        expresion_original: "CO2: – / 2,5 % mol"
+        estado_verificacion: VERIFICADO
+        nota: "EN 16723-1 fija límite SOLO a 4 parámetros (Si total, CO, NH₃ y aminas); el CO₂ del biometano inyectado se rige por la spec de RED armonizada, EN 16726:2025 (Grupo H) → CO₂ ≤ 2,5 % mol. Es el MISMO límite que aplica al gas natural (ver `parametros.CO2.UE`), porque todo gas inyectado debe cumplir la calidad de la red. El Reglamento (UE) 2024/1789 no fija CO₂ (art. 23 sin ejercer). Coincide con España y con el transporte francés (GRTgaz), ambos 2,5 % mol."
       ES:
         fuente: ORDEN_TED_181_2025
         articulo: "Orden TED/181/2025 (BOE 27/02/2025)"
@@ -3178,7 +3212,7 @@ parametros_biometano:
     definicion: "Fracción de monóxido de carbono en el biometano de inyección."
     aliases: [monoxido de carbono, monóxido de carbono, carbon monoxide, kohlenmonoxid, monoxyde de carbone, co]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
         articulo: "EN 16723-1, Tabla 1 (monóxido de carbono). Serie EN ISO 6974"
         tipo_limite: maximo
@@ -3197,15 +3231,16 @@ parametros_biometano:
     definicion: "Contenido total de azufre en el biometano de inyección, expresado como S."
     aliases: [azufre total, s total, total sulfur, gesamtschwefel, soufre total, zolfo totale, azufre]
     limites:
-      EN16723:
-        fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
+      UE:
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H). EN 16723-1 no fija azufre: remite a la spec de red"
         tipo_limite: maximo
-        valor: null
+        valor: 20.0
         unidad: mg_per_nm3
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Poblar desde fuente secundaria pública."
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        expresion_original: "Total sulphur: – / 20 mg/m³ (sin odorizar; 30 con odorizante)"
+        estado_verificacion: VERIFICADO
+        nota: "EN 16723-1 fija límite SOLO a 4 parámetros (Si total, CO, NH₃ y aminas); el azufre total del biometano inyectado se rige por EN 16726:2025 (Grupo H) → 20 mg/m³ sin odorizante (30 con odorizante). Mismo límite que el gas natural (ver `parametros.S_TOTAL.UE`). ⚠️ La revisión de EN 16723-1 (CEN/TC 408) prevé armonizar el azufre."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, «Teneur en soufre total» (pág. 1)"
@@ -3226,15 +3261,16 @@ parametros_biometano:
     definicion: "Suma de sulfuro de hidrógeno y sulfuro de carbonilo, como azufre."
     aliases: [h2s, h₂s, sulfuro de hidrógeno, hydrogen sulphide, schwefelwasserstoff, cos, sulfuro de carbonilo, carbonyl sulphide, h2s+cos]
     limites:
-      EN16723:
-        fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1"
+      UE:
+        fuente: EN_16726
+        articulo: "EN 16726:2025, §5 / Tabla 1 (Group H). EN 16723-1 no fija H₂S+COS: remite a la spec de red"
         tipo_limite: maximo
-        valor: null
+        valor: 5.0
         unidad: mg_per_nm3
-        expresion_original: ""
-        estado_verificacion: PENDIENTE_EXTRACCION
-        nota: "Poblar desde fuente secundaria pública."
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
+        expresion_original: "H2S + COS (as S): – / 5 mg/m³"
+        estado_verificacion: VERIFICADO
+        nota: "EN 16723-1 fija límite SOLO a 4 parámetros (Si total, CO, NH₃ y aminas); el H₂S+COS del biometano inyectado se rige por EN 16726:2025 (Grupo H) → 5 mg/m³. Mismo límite que el gas natural (ver `parametros.H2S_COS.UE`) y que el transporte francés (GRTgaz)."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, «Teneur en soufre de H2S (+ COS)» (pág. 1)"
@@ -3255,7 +3291,7 @@ parametros_biometano:
     definicion: "Temperatura de rocío del agua a la presión de referencia de la red."
     aliases: [rocío de agua, punto de rocío de agua, water dew point, wassertaupunkt, point de rosée eau, punto di rugiada acqua]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
         articulo: "EN 16723-1, Tabla 1 (remite a límite de red)"
         tipo_limite: maximo
@@ -3286,13 +3322,14 @@ parametros_biometano:
     limites:
       UE:
         fuente: EN_16723_1
-        articulo: "EN 16723-1 (norma de pago; sin fuente pública del valor)"
+        articulo: "EN 16723-1:2016, Tabla 1 (silicio volátil total, como Si). Método EN ISO 16017-1 / TDS-GC-MS"
         tipo_limite: maximo
-        valor: null
+        valor: 1
         unidad: mg_per_nm3
-        expresion_original: "No existe fuente."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "No existe fuente pública para el valor de siloxanos a nivel UE: EN 16723-1 es norma de pago. El rango 0,3–1 mg Si/m³ solo consta de forma pública vía la transposición española (UNE-EN 16723-1:2017, reproducida en la web de calidad del gas de Enagás)."
+        expresion_original: "Silicio total (como Si) < 1 mg Si/m³"
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        url_secundaria: "https://www.npl.co.uk/case-studies/enabling-the-injection-of-biomethane-into-the-gas"
+        nota: "Uno de los 4 parámetros con límite numérico en EN 16723-1 (norma de pago). Valor confirmado por FUENTE PÚBLICA SECUNDARIA: el NPL (National Physical Laboratory, participante en CEN/TC 408) publica literalmente «the limit of total silicon which was eventually set at a challenging level of less than 1 mg m-3». La cifra 0,3 mg Si/m³ es la cota INFERIOR del rango debatido durante la redacción (los catálogos de normalización lo describen como rango 0,3–1 mg Si/m³), no un segundo límite: se toma 1 mg Si/m³ como límite superior normativo. Coincide con el valor de la transposición española (UNE-EN 16723-1:2017) a la que remite la Orden TED/181/2025. ⚠️ EN 16723-1 en revisión (CEN/TC 408)."
       ES:
         fuente: ORDEN_TED_181_2025
         articulo: "Orden TED/181/2025 (remite a UNE-EN 16723-1:2017, Tabla 1)"
@@ -3330,7 +3367,7 @@ parametros_biometano:
     definicion: "Contenido de aceite de compresión arrastrado."
     aliases: [aceite de compresor, compressor oil, verdichteröl, huile de compresseur, olio del compressore]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
         articulo: "EN 16723-1, Tabla 1 (aceite de compresor y polvo). Método serie ISO 8573"
         tipo_limite: cualitativo
@@ -3349,7 +3386,7 @@ parametros_biometano:
     definicion: "Contenido de aminas (arrastre de disolventes de upgrading)."
     aliases: [aminas, amines, amine, ammine]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
         articulo: "EN 16723-1, Tabla 1 (aminas, derivadas del proceso de upgrading)"
         tipo_limite: maximo
@@ -3368,7 +3405,7 @@ parametros_biometano:
     definicion: "Contenido de amoníaco."
     aliases: [amoníaco, amoniaco, nh3, nh₃, ammonia, ammoniak, ammoniac, ammoniaca]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
         articulo: "EN 16723-1, Tabla 1 (amoníaco). Métodos FTIR/CRDS (NEN 2826 / refs. VDI)"
         tipo_limite: maximo
@@ -3397,7 +3434,7 @@ parametros_biometano:
     definicion: "Contenido de compuestos halogenados, como cloro y flúor."
     aliases: [compuestos halogenados, halogenados, halogenated compounds, halogene, composés halogénés, cloro, flúor, chlorine, fluorine]
     limites:
-      EN16723:
+      UE:
         fuente: EN_16723_1
         articulo: "EN 16723-1, Tabla 1"
         tipo_limite: maximo

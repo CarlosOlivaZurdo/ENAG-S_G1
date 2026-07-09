@@ -27,7 +27,7 @@ _PARAM_A_ONTO = {
     "o2": "O2", "co2": "CO2", "h2o(rocío)": "PR_H2O", "hc(rocío)": "PR_HC",
 }
 # slug -> clave en `parametros_biometano` (dominio BIOMETANO; mapa PROPIO para no
-# contaminar el camino de gas natural — riesgo R2). Única jurisdicción: EN16723.
+# contaminar el camino de gas natural — riesgo R2). Jurisdicciones: UE/ES/FR/PT.
 _PARAM_A_ONTO_BIOMETANO = {
     "ch4_min": "CH4_MIN", "o2": "O2", "co2": "CO2", "co": "CO", "s total": "S_TOTAL",
     "h2s+cos": "H2S_COS", "h2o(rocío)": "PR_H2O", "siloxanos": "SILOXANOS",
@@ -206,6 +206,12 @@ def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Op
         params = onto.get("parametros_biometano") or {}
         key = _PARAM_A_ONTO_BIOMETANO.get(slug)
         cod_q = _PAIS_A_CODIGO.get(_norm(pais), pais)
+        # La spec UE del biometano vive bajo la clave `UE`. Los alias legados
+        # ("biometano"/"en16723") se resuelven AQUÍ, no en `_PAIS_A_CODIGO`, que es
+        # un mapa COMPARTIDO: tocarlo haría que gas natural e hidrógeno aceptasen
+        # "biometano" como si fuese "UE".
+        if cod_q == "EN16723":
+            cod_q = "UE"
     elif tipo_gas == "hidrogeno":
         params = onto.get("parametros_hidrogeno") or {}
         key = _PARAM_A_ONTO_HIDROGENO.get(slug)
@@ -282,7 +288,7 @@ def consultar(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Dict[str, 
     """Devuelve {count, matches:[record]} desde la ontología (fuente oficial).
 
     `tipo_gas` por defecto "gas_natural" → comportamiento idéntico al actual.
-    "biometano" consulta la sección `parametros_biometano` (jurisdicción EN16723).
+    "biometano" consulta la sección `parametros_biometano` (jurisdicciones UE/ES/FR/PT).
     """
     lim = _limite_ontologia(slug, pais, tipo_gas)
     if not lim:
