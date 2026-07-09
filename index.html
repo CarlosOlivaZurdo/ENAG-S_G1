@@ -1076,8 +1076,9 @@
       return;
     }
     GAS_DATA[tipo] = d;
-    // Parámetro
-    $(pre+"Param").innerHTML = (d.parametros||[]).map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("");
+    // Parámetro: sin preseleccionar (arranca vacío; el usuario elige y pulsa "Comparar").
+    $(pre+"Param").innerHTML = '<option value="" selected disabled>— Elige un parámetro —</option>' +
+      (d.parametros||[]).map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("");
     // Jurisdicciones: España es la BASE (fija) y el resto seleccionables (igual que el gas natural).
     const nombreDe = c => ((d.jurisdicciones||[]).find(j => j.codigo===c)||{}).nombre || c;
     $(pre+"Paises").innerHTML =
@@ -1092,6 +1093,7 @@
     // "Comparar" usa el MISMO endpoint y el MISMO render que el gas natural.
     const comparar = async () => {
       const parametro = $(pre+"Param").value;
+      if(!parametro){ puntual.innerHTML = '<div class="cmp-empty">Elige un parámetro y pulsa «Comparar».</div>'; return; }
       const unidad = $(pre+"Unidad").value;
       const paises = [...document.querySelectorAll('#'+pre+'Paises input:not([disabled]):checked')].map(x => x.value);
       puntual.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Calculando comparativa…</div></div>';
@@ -1109,7 +1111,8 @@
     $(pre+"Param").onchange = fillUnit;
     $(pre+"Btn").onclick = comparar;
     fillUnit();
-    comparar();
+    // Arranca vacío: no se compara ningún parámetro por defecto.
+    puntual.innerHTML = '<div class="cmp-empty">Elige un parámetro y pulsa «Comparar».</div>';
     initGasMatriz(tipo, pre);
   }
   // Matriz-heatmap de biometano/hidrógeno: MISMO endpoint (/api/matriz?tipo_gas) y MISMO
