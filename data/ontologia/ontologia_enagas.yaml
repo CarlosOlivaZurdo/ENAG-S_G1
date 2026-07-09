@@ -305,7 +305,7 @@ ontologia:
       descarga_auto: false
       tabla_calidad: "§4 y Tabla 1. EN 16723-1 fija valor límite SOLO a 4 parámetros: silicio volátil total (0,3–1 mg Si/m³), CO (≤0,1 % mol), NH₃ (≤10 mg/m³) y aminas. Aceite de compresor y polvo = «técnicamente libre de» (sin umbral numérico). El resto de parámetros de calidad se rigen por EN 16726 (Grupo H) y los halogenados por CEN/TR 17238:2018."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. Valores poblados con FUENTE SECUNDARIA pública (documento de investigación de corpus jul-2026; Springer AQUA 2023; MARCOGAZ; European Biogas Association) → VERIFICADO_SECUNDARIO. Lo no confirmado queda null/PENDIENTE. ⚠️ EN REVISIÓN ACTIVA (CEN/TC 408): la nueva edición armonizará O₂, índice de Wobbe, H₂, azufre y densidad relativa → verificar la fecha de publicación antes de fijar umbrales definitivos (los de O₂ y Wobbe pueden cambiar)."
+      nota: "Norma de PAGO (CEN/AENOR): no se reproduce su texto. Cada valor de biometano se cita a su fuente PROPIA por jurisdicción (EN 16723-1 para UE; Orden TED/181/2025 para España; RQS Anexo XI para Portugal; prescripciones GRTgaz/GRDF para Francia). ⚠️ EN REVISIÓN ACTIVA (CEN/TC 408): la nueva edición armonizará O₂, índice de Wobbe, H₂, azufre y densidad relativa → verificar la fecha de publicación antes de fijar umbrales definitivos."
       ambito: "Especificación europea de biometano para inyección en la red de gas natural (CEN/TC 408, mandato M/475). Se complementa con EN 16726 (Grupo H) y EN 16723-2:2017 (uso automoción, que sí fija O₂/H₂/azufre)."
 
     - id: CEN_TR_17238
@@ -368,20 +368,6 @@ ontologia:
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
       nota: "Marco de RED de hidrógeno (distinto de la especificación de PRODUCTO ISO 14687). La responsabilidad pasó de ENTSOG a ENNOH (Reg. UE 2024/1789). Aún SIN límites de calidad de red vinculantes: el ENNOH Groundwork Document (2026) consolida prácticas y alimentará el 1.er Hydrogen Quality Monitoring Report 2026. VIGILAR."
       ambito: "Marco institucional/regulatorio de la calidad del hidrógeno en la red europea (en desarrollo)."
-
-    - id: MARCOGAZ_GQ
-      tipo: informe_tecnico
-      pais: UE
-      nombre: "MARCOGAZ / ENTSOG — Documentos técnicos de calidad de gas (biometano en almacenamiento subterráneo; hidrógeno para inyección en red y UGS)"
-      organismo: "MARCOGAZ (asociación técnica europea de la industria del gas) / ENTSOG / DNV"
-      publicacion: "MARCOGAZ WG-GQ biometano en UGS (2021-2022); ENTSOG/DNV «H2 Quality project» (2024-2025); ENTSOG Gas Quality Monitoring Report (dic-2024)"
-      pdf: ""
-      url: "https://www.marcogaz.org/publications/"
-      descarga_auto: false
-      tabla_calidad: "Recomendaciones de la industria: H₂ ≥ 98 % mol para inyección en red; O₂ en UGS de 10 ppm (Alemania) a 100 ppm (Francia); CO₂ del biometano < 2 % mol en redes con almacenamiento subterráneo."
-      estado_verificacion: VERIFICADO_SECUNDARIO
-      nota: "Fuente pública SECUNDARIA (recomendaciones técnicas de la industria, no norma vinculante). Se usa para los valores de RED/almacenamiento que las normas de PRODUCTO (EN 16726, ISO 14687) no fijan."
-      ambito: "Prácticas y recomendaciones europeas de calidad de biometano/hidrógeno en red y almacenamiento subterráneo (UGS)."
 
     - id: ISO_8573
       tipo: norma_tecnica
