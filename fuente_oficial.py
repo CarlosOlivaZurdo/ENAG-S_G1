@@ -40,6 +40,7 @@ _PARAM_A_ONTO_HIDROGENO = {
     "ch4": "CH4", "o2": "O2", "he": "HE", "n2": "N2", "ar": "AR", "co2": "CO2",
     "co": "CO", "s total": "S_TOTAL", "hcho": "HCHO", "hcooh": "HCOOH",
     "nh3": "NH3", "halogenados": "HALOGENADOS", "particulas": "PARTICULAS",
+    "comp_trazas": "COMP_TRAZAS",
 }
 # Sección de ontología + mapa slug→clave por tipo de gas (los que NO son gas natural).
 # (Se usa para el NOMBRE del parámetro; el límite se enruta en `_limite_ontologia`.)
@@ -215,9 +216,11 @@ def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Op
             key = _PARAM_A_ONTO.get(slug)
             cod_q = cod
         else:
+            # Específicos (siloxanos, CH₄ mín): límite ARMONIZADO UE (EN 16723-1),
+            # aplicable por igual en ES/PT/FR/UE.
             params = onto.get("parametros_biometano") or {}
             key = _PARAM_A_ONTO_BIOMETANO.get(slug)
-            cod_q = "EN16723" if cod == "UE" else cod   # UE = EN 16723-1
+            cod_q = "EN16723"
     elif tipo_gas == "hidrogeno":
         params = onto.get("parametros_hidrogeno") or {}
         key = _PARAM_A_ONTO_HIDROGENO.get(slug)

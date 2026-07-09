@@ -369,6 +369,20 @@ ontologia:
       nota: "Marco de RED de hidrógeno (distinto de la especificación de PRODUCTO ISO 14687). La responsabilidad pasó de ENTSOG a ENNOH (Reg. UE 2024/1789). Aún SIN límites de calidad de red vinculantes: el ENNOH Groundwork Document (2026) consolida prácticas y alimentará el 1.er Hydrogen Quality Monitoring Report 2026. VIGILAR."
       ambito: "Marco institucional/regulatorio de la calidad del hidrógeno en la red europea (en desarrollo)."
 
+    - id: MARCOGAZ_GQ
+      tipo: informe_tecnico
+      pais: UE
+      nombre: "MARCOGAZ / ENTSOG — Documentos técnicos de calidad de gas (biometano en almacenamiento subterráneo; hidrógeno para inyección en red y UGS)"
+      organismo: "MARCOGAZ (asociación técnica europea de la industria del gas) / ENTSOG / DNV"
+      publicacion: "MARCOGAZ WG-GQ biometano en UGS (2021-2022); ENTSOG/DNV «H2 Quality project» (2024-2025); ENTSOG Gas Quality Monitoring Report (dic-2024)"
+      pdf: ""
+      url: "https://www.marcogaz.org/publications/"
+      descarga_auto: false
+      tabla_calidad: "Recomendaciones de la industria: H₂ ≥ 98 % mol para inyección en red; O₂ en UGS de 10 ppm (Alemania) a 100 ppm (Francia); CO₂ del biometano < 2 % mol en redes con almacenamiento subterráneo."
+      estado_verificacion: VERIFICADO_SECUNDARIO
+      nota: "Fuente pública SECUNDARIA (recomendaciones técnicas de la industria, no norma vinculante). Se usa para los valores de RED/almacenamiento que las normas de PRODUCTO (EN 16726, ISO 14687) no fijan."
+      ambito: "Prácticas y recomendaciones europeas de calidad de biometano/hidrógeno en red y almacenamiento subterráneo (UGS)."
+
     - id: UE_2021_C78_05
       tipo: comunicacion_ue
       pais: UE
@@ -3040,14 +3054,14 @@ parametros_biometano:
     aliases: [metano, ch4, ch₄, methane content, methananteil, teneur en méthane, fraction molaire de méthane, contenido de metano]
     limites:
       EN16723:
-        fuente: EN_16723_1
-        articulo: "EN 16723-1, §4 (composición)"
+        fuente: MARCOGAZ_GQ
+        articulo: "EN 16723-1 §4 / EN 16726 (implícito por Wobbe/PCS); práctica de red (EBA, ADBA)"
         tipo_limite: minimo
-        valor: null
+        valor: 95
         unidad: pct_mol
-        expresion_original: "EN 16723-1 no fija un CH₄ mínimo explícito (regula por impurezas)."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "El CH₄ mínimo lo fijan specs nacionales de inyección (p. ej. GRDF), no EN 16723-1."
+        expresion_original: "CH₄ ≥ 95 % mol (mínimo típico de red; el biometano se enriquece a 95–98 % CH₄ para igualar al gas natural)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "EN 16723-1 NO fija un CH₄ mínimo explícito (regula por impurezas y remite a EN 16726: el CH₄ queda implícito por el índice de Wobbe/PCS). El gestor de red exige tras el upgrading un CH₄ típico ≥ 95 % mol (rango 95–98 %) para igualar el gas natural (European Biogas Association; ADBA). Cifra de práctica de red, no umbral único de norma."
 
   # --- Impurezas (solapan con gas natural: mismo slug) ---------------------
   O2:
@@ -3225,13 +3239,13 @@ parametros_biometano:
     limites:
       EN16723:
         fuente: EN_16723_1
-        articulo: "EN 16723-1, Tabla 1 (silicio volátil total, como Si). Método EN ISO 16017-1 (TDS-GC-MS)"
+        articulo: "EN 16723-1, Tabla 1 (silicio volátil total, como Si). Método de medida: ISO 2613-1:2023 (AES) / EN ISO 16017-1"
         tipo_limite: maximo
         valor: 1
         unidad: mg_per_nm3           # mg Si/m³ (base silicio): NO convertir a ppm sin masa molar
-        expresion_original: "Silicio volátil total (como Si): 0,3 – 1 mg Si/m³ (rango propuesto; foco en siloxanos)"
+        expresion_original: "Silicio volátil total (como Si): 0,3 – 1,0 mg Si/m³ (EN 16723-1:2016 y 16723-2:2017)"
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Uno de los 4 parámetros con límite en EN 16723-1. Valor límite típico/propuesto 0,3–1 mg Si/m³ (como Si); se fija 1 mg Si/m³ como cota superior. Base silicio: no convertir a ppm/volumen sin respaldo (riesgo R6). ⚠️ EN 16723-1 en revisión. Fuente secundaria: documento de corpus jul-2026; Springer AQUA 2023."
+        nota: "Uno de los 4 parámetros con límite propio en EN 16723-1. Rango 0,3–1,0 mg Si/m³ (como Si); se fija 1 mg Si/m³ como cota superior. Método de medida: ISO 2613-1:2023 (AES). Base silicio: no convertir a ppm/volumen sin respaldo (riesgo R6). ⚠️ EN 16723-1 en revisión. Fuente secundaria pública: NPL/EMPIR (Culleton et al.), muestra SIST-EN-16723-1:2017."
       FR:
         fuente: FR_GRTGAZ
         articulo: "Annexe 4, «Teneur en siloxanes» (pág. 1)"
@@ -3364,14 +3378,14 @@ parametros_hidrogeno:
     aliases: [pureza de h2, pureza de hidrogeno, indice de h2, hydrogen purity, hydrogen fuel index, wasserstoffreinheit, purete de l'hydrogene, fraccion molar de hidrogeno, h2 purity]
     limites:
       ISO14687:
-        fuente: ISO_14687
-        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        fuente: MARCOGAZ_GQ
+        articulo: "MARCOGAZ (inyección en red) / ENTSOG-DNV «H2 Quality» (clases 98 / 99,5 / 99,97 % mol)"
         tipo_limite: minimo
-        valor: 99.97
+        valor: 98
         unidad: pct_mol
-        expresion_original: "Índice de combustible hidrógeno mínimo 99,97 % (fracción molar) = 100 % − gases no-H₂"
+        expresion_original: "H₂ ≥ 98 % mol para inyección en RED (MARCOGAZ). ENTSOG/DNV evalúa clases 98 / 99,5 / 99,97 % mol. ISO 14687 Grade D = 99,97 % mol (hidrógeno de PRODUCTO para pila PEM)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Grade D (PEM). Fuente secundaria: documento de corpus jul-2026. ⚠️ ISO 14687 en revisión."
+        nota: "Contexto de RED (Enagás): MARCOGAZ recomienda pureza mínima 98 % mol antes de inyectar en la red de gas. El 99,97 % de ISO 14687 Grade D es hidrógeno de PRODUCTO para pila de combustible (no red). ⚠️ Aún no hay Network Code de hidrógeno vinculante (ENNOH en desarrollo)."
 
   NO_H2:
     nombre_completo: "Total de gases no-hidrógeno"
@@ -3450,23 +3464,23 @@ parametros_hidrogeno:
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
 
   O2:
-    nombre_completo: "Oxígeno (producto PEM)"
+    nombre_completo: "O₂ específico para H₂"
     simbolo: "O₂"
-    nombre_ingles: "Oxygen"
+    nombre_ingles: "Oxygen (hydrogen-specific)"
     grupo: impureza
     tipo: impureza
-    definicion: "Oxígeno en el hidrógeno de producto (PEM). Distinto del O₂ crítico en red/almacenamiento (UGS)."
-    aliases: [o2, oxigeno, oxygen, sauerstoff]
+    definicion: "Oxígeno en el hidrógeno. Contaminante crítico para el almacenamiento subterráneo (UGS) y distinto del O₂ del gas natural."
+    aliases: [o2, oxigeno, oxygen, sauerstoff, o2 hidrogeno, o2 h2]
     limites:
       ISO14687:
-        fuente: ISO_14687
-        articulo: "ISO 14687:2019, Tabla 2 (Grade D)"
+        fuente: MARCOGAZ_GQ
+        articulo: "ISO 14687 Grade D (producto: 5 μmol/mol) / MARCOGAZ-UGS (red: 10 ppm DE – 100 ppm FR)"
         tipo_limite: maximo
         valor: 5
         unidad: ppm_vol
-        expresion_original: "Oxígeno (O₂): 5 μmol/mol (crítico para UGS y redes)"
+        expresion_original: "O₂ ≤ 5 μmol/mol (ISO 14687 Grade D, producto). En RED/almacenamiento (UGS): 10 ppm (Alemania) a 100 ppm (Francia) — MARCOGAZ."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "μmol/mol ≡ ppm. O₂ de PRODUCTO PEM; el O₂ de RED/almacenamiento (UGS) es un contexto distinto. Grade D."
+        nota: "μmol/mol ≡ ppm. El O₂ es el contaminante MÁS crítico del hidrógeno para el almacenamiento subterráneo (UGS): riesgo de black powder y azufre elemental. Producto (pila PEM): ≤ 5 μmol/mol (ISO 14687). Red/UGS: 10 ppm (redes sensibles, DE) a 100 ppm (FR). ⚠️ Sin límite de red UE vinculante aún (ENNOH)."
 
   HE:
     nombre_completo: "Helio"
@@ -3676,3 +3690,22 @@ parametros_hidrogeno:
         expresion_original: "Partículas: 1 mg/kg (sin aceite visible en boquilla)"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "mg/kg (masa). Grade D (PEM)."
+
+  COMP_TRAZAS:
+    nombre_completo: "Trazas de compresores"
+    simbolo: "aceite/part."
+    nombre_ingles: "Compressor-derived traces (oil / particulates)"
+    grupo: impureza_traza
+    tipo: impureza
+    definicion: "Trazas introducidas por los compresores de la cadena de hidrógeno: aceite/lubricante y partículas."
+    aliases: [trazas de compresor, trazas de compresores, aceite de compresor, compressor oil, lubricante, compressor traces, particulas]
+    limites:
+      ISO14687:
+        fuente: ISO_14687
+        articulo: "ISO 14687:2019, Tabla 2 (Grade D): partículas + hidrocarburos totales (excepto CH₄)"
+        tipo_limite: maximo
+        valor: 1
+        unidad: mg_per_kg
+        expresion_original: "Partículas ≤ 1 mg/kg, «sin aceite visible en la boquilla»; hidrocarburos totales excepto CH₄ ≤ 2 μmol/mol (captura vapores de aceite de compresor)."
+        estado_verificacion: VERIFICADO_SECUNDARIO
+        nota: "No hay un límite numérico ÚNICO de «trazas de compresor». ISO 14687 Grade D las controla vía partículas (≤ 1 mg/kg, sin aceite visible) y THC excepto CH₄ (≤ 2 μmol/mol). El marco de RED (ENNOH Groundwork 2026) lista los «contaminantes de compresor» como parámetro a fijar, aún SIN valor vinculante. VIGILAR."

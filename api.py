@@ -544,7 +544,7 @@ def _normalize_parameter_biometano(text: str) -> Optional[str]:
 
 # Slugs y alias del HIDRÓGENO (ISO 14687 Grade D). El desplegable envía el slug exacto.
 _SLUGS_HIDROGENO = {"h2_pureza", "no_h2", "h2o", "thc", "ch4", "o2", "he", "n2", "ar", "co2",
-                    "co", "s total", "hcho", "hcooh", "nh3", "halogenados", "particulas"}
+                    "co", "s total", "hcho", "hcooh", "nh3", "halogenados", "particulas", "comp_trazas"}
 _ALIASES_HIDROGENO = {
     "pureza": "h2_pureza", "purity": "h2_pureza", "reinheit": "h2_pureza", "purete": "h2_pureza",
     "gases no hidrogeno": "no_h2", "non-hydrogen": "no_h2",
@@ -1195,43 +1195,20 @@ PARAMETROS_UI = [
     {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"]},
     {"slug": "hc(rocío)", "label": "Punto de rocío de HC", "unidades": ["°C", "K", "°F"]},
 ]
-# Catálogo de parámetros del BIOMETANO (dominio nuevo; NO altera el de gas natural).
-# Cada entrada lleva su clave en la ontología (`onto`) para no tocar los mapas
-# _PARAM_A_ONTO del gas natural (riesgo R2). Jurisdicción única: EN 16723-1.
+# Catálogo del BIOMETANO — SOLO los 3 parámetros de alcance (corpus + ontología):
+# CH₄ mínimo, CO₂ máximo y siloxanos. (La ontología conserva más parámetros, pero la
+# comparativa muestra solo estos tres.)
 PARAMETROS_UI_BIOMETANO = [
     {"slug": "ch4_min", "label": "CH₄ (metano) mínimo", "unidades": ["% molar"], "onto": "CH4_MIN"},
-    {"slug": "o2", "label": "O₂ (oxígeno)", "unidades": ["% molar", "ppm"], "onto": "O2"},
-    {"slug": "co2", "label": "CO₂", "unidades": ["% molar", "ppm"], "onto": "CO2"},
-    {"slug": "co", "label": "CO (monóxido de carbono)", "unidades": ["% molar", "ppm"], "onto": "CO"},
-    {"slug": "s total", "label": "Azufre total (S)", "unidades": ["mg/m³", "mg/Nm³", "ppm"], "onto": "S_TOTAL"},
-    {"slug": "h2s+cos", "label": "H₂S + COS", "unidades": ["mg/m³", "mg/Nm³", "ppm"], "onto": "H2S_COS"},
-    {"slug": "h2o(rocío)", "label": "Punto de rocío del agua (H₂O)", "unidades": ["°C", "K", "°F"], "onto": "PR_H2O"},
+    {"slug": "co2", "label": "CO₂ (máximo)", "unidades": ["% molar", "ppm"], "onto": "CO2"},
     {"slug": "siloxanos", "label": "Siloxanos (Si total)", "unidades": ["mg/m³"], "onto": "SILOXANOS"},
-    {"slug": "comp_oil", "label": "Aceite de compresor", "unidades": ["mg/m³"], "onto": "COMP_OIL"},
-    {"slug": "aminas", "label": "Aminas", "unidades": ["mg/m³", "ppm"], "onto": "AMINAS"},
-    {"slug": "nh3", "label": "Amoníaco (NH₃)", "unidades": ["mg/m³", "ppm"], "onto": "NH3"},
-    {"slug": "halogenados", "label": "Compuestos halogenados (Cl+F)", "unidades": ["mg/m³", "ppm"], "onto": "HALOGENADOS"},
 ]
-# Catálogo del HIDRÓGENO (ISO 14687:2019 Grade D / EN 17124). Trazas en ppm (≡ μmol/mol);
-# pureza en % molar; partículas en mg/kg. Jurisdicción única: ISO 14687 Grade D.
+# Catálogo del HIDRÓGENO — SOLO los 3 parámetros de alcance: pureza de H₂, O₂ específico
+# para H₂ y trazas de compresores.
 PARAMETROS_UI_HIDROGENO = [
-    {"slug": "h2_pureza", "label": "Pureza H₂ (mínimo)", "unidades": ["% molar"], "onto": "H2_PUREZA"},
-    {"slug": "no_h2", "label": "Total gases no-H₂", "unidades": ["ppm"], "onto": "NO_H2"},
-    {"slug": "h2o", "label": "Agua (H₂O)", "unidades": ["ppm"], "onto": "H2O"},
-    {"slug": "thc", "label": "Hidrocarburos (excepto CH₄)", "unidades": ["ppm"], "onto": "THC"},
-    {"slug": "ch4", "label": "Metano (CH₄)", "unidades": ["ppm"], "onto": "CH4"},
-    {"slug": "o2", "label": "O₂ (oxígeno)", "unidades": ["ppm"], "onto": "O2"},
-    {"slug": "he", "label": "Helio (He)", "unidades": ["ppm"], "onto": "HE"},
-    {"slug": "n2", "label": "Nitrógeno (N₂)", "unidades": ["ppm"], "onto": "N2"},
-    {"slug": "ar", "label": "Argón (Ar)", "unidades": ["ppm"], "onto": "AR"},
-    {"slug": "co2", "label": "CO₂", "unidades": ["ppm"], "onto": "CO2"},
-    {"slug": "co", "label": "CO (monóxido de carbono)", "unidades": ["ppm"], "onto": "CO"},
-    {"slug": "s total", "label": "Azufre total (S)", "unidades": ["ppm"], "onto": "S_TOTAL"},
-    {"slug": "hcho", "label": "Formaldehído (HCHO)", "unidades": ["ppm"], "onto": "HCHO"},
-    {"slug": "hcooh", "label": "Ácido fórmico (HCOOH)", "unidades": ["ppm"], "onto": "HCOOH"},
-    {"slug": "nh3", "label": "Amoníaco (NH₃)", "unidades": ["ppm"], "onto": "NH3"},
-    {"slug": "halogenados", "label": "Compuestos halogenados", "unidades": ["ppm"], "onto": "HALOGENADOS"},
-    {"slug": "particulas", "label": "Partículas", "unidades": ["mg/kg"], "onto": "PARTICULAS"},
+    {"slug": "h2_pureza", "label": "Pureza de H₂ (mínimo)", "unidades": ["% molar"], "onto": "H2_PUREZA"},
+    {"slug": "o2", "label": "O₂ específico para H₂", "unidades": ["ppm"], "onto": "O2"},
+    {"slug": "comp_trazas", "label": "Trazas de compresores", "unidades": ["mg/kg"], "onto": "COMP_TRAZAS"},
 ]
 PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]  # España es siempre la base de referencia
 
