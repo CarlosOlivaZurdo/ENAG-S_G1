@@ -2956,6 +2956,52 @@ async def analizar_gas_endpoint(req: PeticionAnalisisGas) -> Dict[str, Any]:
     )
 
 
+# ---------------------------------------------------------------------------
+# Comparativa de límites por gas (secciones "Biometano" e "Hidrógeno")
+# ---------------------------------------------------------------------------
+def tabla_limites_gas(tipo_gas: str) -> Dict[str, Any]:
+    """Tabla de límites de la especificación de biometano o hidrógeno: parámetros ×
+    jurisdicciones, cada celda con su límite y cita. Es la sección "Comparativa" dedicada
+    a cada gas. NO toca la comparativa/matriz del gas natural (reutiliza sus helpers)."""
+    catalogo = CATALOGO_POR_GAS.get(tipo_gas, [])
+    codigos = list(JURISDICCIONES_POR_GAS.get(tipo_gas, []))
+    jurisdicciones = [{"codigo": c, "nombre": JURISDICCION_DISPLAY.get(c, c)} for c in codigos]
+    parametros: List[Dict[str, Any]] = []
+    for p in catalogo:
+        celdas: List[Dict[str, Any]] = []
+        for c in codigos:
+            resp = _consultar_norma(p["slug"], c, tipo_gas)
+            m = resp["matches"][0] if resp.get("matches") else None
+            celdas.append({
+                "jurisdiccion": c,
+                "limite": _fmt_limite_pais(m) if m else "—",
+                "unidad": (_txt(m.get("unidad")) if m else ""),
+                "estado": (m.get("estado") if m else "") or "",
+                "fuente": (m.get("documento") if m else "") or "",
+                "articulo": (m.get("articulo") if m else "") or "",
+                "url": ((m.get("url") or m.get("pdf")) if m else "") or "",
+                "expresion": (m.get("expresion_original") if m else "") or "",
+                "nota": (m.get("nota") if m else "") or "",
+            })
+        parametros.append({"slug": p["slug"], "label": p["label"], "celdas": celdas})
+    return {"tipo_gas": tipo_gas, "jurisdicciones": jurisdicciones, "parametros": parametros}
+
+
+@app.get(
+    "/api/tabla-limites",
+    tags=["Comparativa"],
+    summary="Tabla de límites de una especificación de gas (biometano o hidrógeno)",
+    response_description="Parámetros × jurisdicciones con el límite y la cita de cada celda.",
+)
+@gestionar_errores
+@medir_tiempo
+async def tabla_limites_endpoint(tipo_gas: str = "biometano") -> Dict[str, Any]:
+    """Devuelve la tabla de límites de la spec de **biometano** (EN 16723-1 + red GRTgaz)
+    o **hidrógeno** (ISO 14687 Grade D). Alimenta las secciones dedicadas de la web."""
+    tg = tipo_gas if tipo_gas in ("biometano", "hidrogeno") else "biometano"
+    return tabla_limites_gas(tg)
+
+
 # ============================================================================
 # EXPORTACIÓN DE INFORMES COMPARATIVOS (Excel / PDF)
 # ---------------------------------------------------------------------------

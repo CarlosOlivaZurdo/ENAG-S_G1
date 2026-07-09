@@ -299,6 +299,14 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3s6 5.5 6 10a6 6 0 0 1-12 0c0-1.6.7-3.2 1.6-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Analizar gas
       </button>
+      <button class="nav-item" data-view="biometano">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3v4M8 21h8M7 11a5 5 0 0 0 10 0c0-2-1-3.5-2.5-5C13 6.5 12 5 12 3 11 6 7 7 7 11Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Biometano
+      </button>
+      <button class="nav-item" data-view="hidrogeno">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M7 4v16M17 4v16M7 12h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Hidrógeno
+      </button>
     </nav>
 
     <div class="side-scroll">
@@ -431,14 +439,6 @@
         </div>
         <div class="cmp-inner">
           <div class="cmp-card-main">
-            <div class="gas-base-block" style="margin-top:0;margin-bottom:18px">
-              <label for="gasTipo">Tipo de gas a analizar</label>
-              <select id="gasTipo">
-                <option value="gas_natural">Gas natural (grupo H) — 21 jurisdicciones</option>
-                <option value="biometano">Biometano — EN 16723-1 (inyección en red)</option>
-                <option value="hidrogeno">Hidrógeno — ISO 14687 Grade D (pureza PEM)</option>
-              </select>
-            </div>
             <h2 class="cmp-card-h2">Composición del gas</h2>
             <div class="gas-head"><span>Parámetro</span><span>Valor</span><span>Unidad</span><span></span></div>
             <div class="gas-rows" id="gasFilas"></div>
@@ -446,7 +446,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Añadir componente
             </button>
-            <div class="gas-base-block" id="gasBaseBlock">
+            <div class="gas-base-block">
               <label for="gasBase">Indica en qué base están medidos el PCS y el Índice de Wobbe — incluye si el m³ es Nm³ (volumen a 0 °C) o Sm³ (a 15 °C)</label>
               <select id="gasBase">
                 <option value="España">España — comb. 0 °C · Nm³ (vol. 0 °C)</option>
@@ -464,6 +464,32 @@
             </div>
           </div>
           <div class="cmp-result" id="gasResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewBiometano" class="view">
+      <div class="cmp-wrap">
+        <div class="cmp-hero">
+          <div class="cmp-bc">Inicio <span>›</span> <b>Biometano</b></div>
+          <h1>Comparativa de biometano</h1>
+          <p class="cmp-hero-sub">Límites de calidad del biometano para inyección en red (EN 16723-1 + requisito de red francesa GRTgaz), parámetro a parámetro.</p>
+        </div>
+        <div class="cmp-inner">
+          <div class="cmp-result" id="bioResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewHidrogeno" class="view">
+      <div class="cmp-wrap">
+        <div class="cmp-hero">
+          <div class="cmp-bc">Inicio <span>›</span> <b>Hidrógeno</b></div>
+          <h1>Comparativa de hidrógeno</h1>
+          <p class="cmp-hero-sub">Especificación de calidad del hidrógeno (ISO 14687:2019 Grade D / EN 17124), parámetro a parámetro.</p>
+        </div>
+        <div class="cmp-inner">
+          <div class="cmp-result" id="h2Result"></div>
         </div>
       </div>
     </div>
@@ -521,17 +547,23 @@
   const TITLES = {
     chat: 'Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span>',
     compare: 'Comparativa',
-    gas: 'Analizar un gas <span class="sub">· validación de calidad por jurisdicción</span>'
+    gas: 'Analizar un gas <span class="sub">· validación de calidad por jurisdicción</span>',
+    biometano: 'Biometano <span class="sub">· EN 16723-1 (inyección en red)</span>',
+    hidrogeno: 'Hidrógeno <span class="sub">· ISO 14687 Grade D (pureza PEM)</span>'
   };
   function setView(view){
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view===view));
     $("viewChat").classList.toggle("active", view==="chat");
     $("viewCompare").classList.toggle("active", view==="compare");
     $("viewGas").classList.toggle("active", view==="gas");
+    $("viewBiometano").classList.toggle("active", view==="biometano");
+    $("viewHidrogeno").classList.toggle("active", view==="hidrogeno");
     $("chatSide").style.display = view==="chat" ? "" : "none";
     $("topTitle").innerHTML = TITLES[view];
     if(view==="compare" && !cmpReady) initCompare();
     if(view==="gas" && !gasReady) initGas();
+    if(view==="biometano" && !bioReady) cargarTablaLimites("biometano", "bioResult", () => bioReady=true);
+    if(view==="hidrogeno" && !h2Ready) cargarTablaLimites("hidrogeno", "h2Result", () => h2Ready=true);
     if(view==="chat") $("input").focus();
   }
   document.querySelectorAll(".nav-item").forEach(b => b.onclick = () => setView(b.dataset.view));
@@ -678,43 +710,6 @@
     {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
     {slug:"hc(rocío)", label:"Punto de rocío de HC", unidades:["°C","K","°F"]},
   ];
-  // Catálogo de biometano (EN 16723-1). Debe reflejar PARAMETROS_UI_BIOMETANO del backend.
-  const PARAMS_BIOMETANO = [
-    {slug:"ch4_min", label:"CH₄ (metano) mínimo", unidades:["% molar"]},
-    {slug:"o2", label:"O₂ (oxígeno)", unidades:["% molar","ppm"]},
-    {slug:"co2", label:"CO₂", unidades:["% molar","ppm"]},
-    {slug:"co", label:"CO (monóxido de carbono)", unidades:["% molar","ppm"]},
-    {slug:"s total", label:"Azufre total (S)", unidades:["mg/m³","mg/Nm³","ppm"]},
-    {slug:"h2s+cos", label:"H₂S + COS", unidades:["mg/m³","mg/Nm³","ppm"]},
-    {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
-    {slug:"siloxanos", label:"Siloxanos (Si total)", unidades:["mg/m³"]},
-    {slug:"comp_oil", label:"Aceite de compresor", unidades:["mg/m³"]},
-    {slug:"aminas", label:"Aminas", unidades:["mg/m³","ppm"]},
-    {slug:"nh3", label:"Amoníaco (NH₃)", unidades:["mg/m³","ppm"]},
-    {slug:"halogenados", label:"Compuestos halogenados (Cl+F)", unidades:["mg/m³","ppm"]},
-  ];
-  // Catálogo de hidrógeno (ISO 14687:2019 Grade D / EN 17124). Trazas en ppm (≡ μmol/mol).
-  const PARAMS_HIDROGENO = [
-    {slug:"h2_pureza", label:"Pureza H₂ (mínimo)", unidades:["% molar"]},
-    {slug:"no_h2", label:"Total gases no-H₂", unidades:["ppm"]},
-    {slug:"h2o", label:"Agua (H₂O)", unidades:["ppm"]},
-    {slug:"thc", label:"Hidrocarburos (excepto CH₄)", unidades:["ppm"]},
-    {slug:"ch4", label:"Metano (CH₄)", unidades:["ppm"]},
-    {slug:"o2", label:"O₂ (oxígeno)", unidades:["ppm"]},
-    {slug:"he", label:"Helio (He)", unidades:["ppm"]},
-    {slug:"n2", label:"Nitrógeno (N₂)", unidades:["ppm"]},
-    {slug:"ar", label:"Argón (Ar)", unidades:["ppm"]},
-    {slug:"co2", label:"CO₂", unidades:["ppm"]},
-    {slug:"co", label:"CO (monóxido de carbono)", unidades:["ppm"]},
-    {slug:"s total", label:"Azufre total (S)", unidades:["ppm"]},
-    {slug:"hcho", label:"Formaldehído (HCHO)", unidades:["ppm"]},
-    {slug:"hcooh", label:"Ácido fórmico (HCOOH)", unidades:["ppm"]},
-    {slug:"nh3", label:"Amoníaco (NH₃)", unidades:["ppm"]},
-    {slug:"halogenados", label:"Compuestos halogenados", unidades:["ppm"]},
-    {slug:"particulas", label:"Partículas", unidades:["mg/kg"]},
-  ];
-  // Parámetros de "Analizar gas" según el tipo de gas elegido en #gasTipo.
-  const CATALOGO = { gas_natural: PARAMS, biometano: PARAMS_BIOMETANO, hidrogeno: PARAMS_HIDROGENO };
   const PAISES_OPC = ["Portugal","Francia","Italia","Alemania","Países Bajos","Bélgica","Noruega","Polonia","Dinamarca","Hungría","Austria","Suiza","Chequia","Grecia","Irlanda","Rumanía","Eslovaquia","Turquía","Reino Unido","UE"];
   function initCompare(){
     const selP = $("cmpParam");
@@ -829,29 +824,19 @@
     {slug:"n2",  label:"N₂ (nitrógeno) — informativo", unidades:["% molar","ppm"]},
     {slug:"c2h6",label:"C₂H₆ (etano) — informativo", unidades:["% molar","ppm"]},
   ];
-  // Composición informativa según el tipo de gas (en biometano, CH₄ es normativo → no informativo).
-  const GAS_INFO_BIO = [{slug:"n2", label:"N₂ (nitrógeno) — informativo", unidades:["% molar","ppm"]}];
-  function gasTipoActual(){ return ($("gasTipo") && $("gasTipo").value) || "gas_natural"; }
-  function gasCatalogo(){ return CATALOGO[gasTipoActual()] || PARAMS; }
-  function gasInfoActual(){
-    const t = gasTipoActual();
-    if(t === "hidrogeno") return [];      // en H₂ todos los constituyentes son normativos
-    if(t === "biometano") return GAS_INFO_BIO;
-    return GAS_INFO;
-  }
-  function gasAll(){ return gasCatalogo().concat(gasInfoActual()); }
+  const GAS_ALL = PARAMS.concat(GAS_INFO);
   let gasReady = false;
   function gasParamOptions(){
     return '<option value="" disabled selected>— Elige un parámetro —</option>'+
       '<optgroup label="Parámetros normativos">'+
-      gasCatalogo().map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
+      PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
       '</optgroup><optgroup label="Composición (informativo)">'+
-      gasInfoActual().map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
+      GAS_INFO.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
       '</optgroup>';
   }
   function fillUnidadesGas(sel){
     const row = sel.closest(".gas-row");
-    const p = gasAll().find(x => x.slug === sel.value);
+    const p = GAS_ALL.find(x => x.slug === sel.value);
     const u = (p && p.unidades) || ["—"];
     row.querySelector(".gas-unidad").innerHTML = u.map(x => '<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
   }
@@ -873,19 +858,11 @@
     if(valor!=null) row.querySelector(".gas-valor").value = valor;
     row.querySelector(".gas-del").onclick = () => { row.remove(); if(!cont.children.length) addFilaGas(); };
   }
-  function resetFilasGas(){
+  function initGas(){
     $("gasFilas").innerHTML = "";
     // Dos filas en blanco (sin parámetro ni valor) para empezar de cero.
     addFilaGas();
     addFilaGas();
-    // El biometano (EN 16723-1) no valida PCS/Wobbe → oculta el selector de base.
-    const bb = $("gasBaseBlock");
-    if(bb) bb.style.display = (gasTipoActual() === "biometano") ? "none" : "";
-  }
-  function initGas(){
-    resetFilasGas();
-    // Al cambiar el tipo de gas, el catálogo de parámetros cambia → reiniciar filas.
-    $("gasTipo").onchange = resetFilasGas;
     gasReady = true;
   }
   const VEREDICTO_TXT = {cumple:"Cumple", alerta:"Zona de alerta", no_cumple:"No cumple", sin_datos:"Sin datos"};
@@ -908,7 +885,7 @@
     try{
       const r = await fetch(api("/api/analizar-gas"),{
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ componentes, base_pcs: $("gasBase").value, tipo_gas: gasTipoActual() })
+        body: JSON.stringify({ componentes, base_pcs: $("gasBase").value })
       });
       if(r.status===404){
         res.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar el análisis de gas.<br>'+
@@ -972,6 +949,56 @@
   }
   $("gasAddBtn").onclick = () => addFilaGas();
   $("gasBtn").onclick = analizarGas;
+
+  /* ===== Comparativa de biometano / hidrógeno (tabla de límites) ===== */
+  let bioReady = false, h2Ready = false;
+  const ESTADO_BADGE = {
+    VERIFICADO: {t:"Verificado", c:"cumple"},
+    VERIFICADO_SECUNDARIO: {t:"Fuente secundaria", c:"alerta"},
+    NO_VERIFICABLE_SIN_FUENTE: {t:"No verificable", c:"sin_datos"},
+    PENDIENTE_EXTRACCION: {t:"Pendiente", c:"sin_datos"}
+  };
+  async function cargarTablaLimites(tipo, targetId, onDone){
+    const cont = $(targetId);
+    cont.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Cargando límites…</div></div>';
+    try{
+      const r = await fetch(api("/api/tabla-limites?tipo_gas="+encodeURIComponent(tipo)));
+      if(r.status===404){
+        cont.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar esta sección.<br>Cierra la ventana del servidor y vuelve a ejecutar <code>iniciar_chatbot.bat</code> (haz antes <code>git pull</code>).</div>';
+        return;
+      }
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      cont.innerHTML = renderTablaLimites(await r.json());
+      if(onDone) onDone();
+    }catch(e){
+      cont.innerHTML = '<div class="cmp-empty">No se pudo cargar la tabla.<br>Detalle: '+esc(e.message)+'</div>';
+    }
+  }
+  function renderTablaLimites(d){
+    const jur = d.jurisdicciones || [];
+    const params = d.parametros || [];
+    if(!params.length) return '<div class="cmp-empty">No hay datos.</div>';
+    let h = '<div class="cmp-card"><div style="overflow-x:auto"><table class="cmp-table"><thead><tr><th style="text-align:left">Parámetro</th>';
+    jur.forEach(j => { h += '<th>'+esc(j.nombre)+'</th>'; });
+    h += '</tr></thead><tbody>';
+    params.forEach(p => {
+      h += '<tr><td style="font-weight:600;text-align:left">'+esc(p.label)+'</td>';
+      p.celdas.forEach(c => {
+        const b = ESTADO_BADGE[c.estado];
+        const hasLim = c.limite && c.limite!=="—" && c.limite!=="sin límite";
+        const val = hasLim ? (esc(c.limite)+' '+esc(c.unidad||"")) : '<span style="color:#9aa7b2">'+esc(c.limite||"—")+'</span>';
+        const src = (c.url && /^https?:/i.test(c.url))
+          ? ' · <a href="'+esc(c.url)+'" target="_blank" rel="noopener" class="gas-src">fuente</a>' : '';
+        const badge = b ? ' <span class="badge '+b.c+'" style="font-size:10px;vertical-align:middle">'+b.t+'</span>' : '';
+        const tip = [c.expresion, c.nota].filter(Boolean).join(' — ');
+        h += '<td'+(tip?' title="'+esc(tip)+'"':'')+'>'+val+badge+src+'</td>';
+      });
+      h += '</tr>';
+    });
+    h += '</tbody></table></div>';
+    h += '<p class="csub" style="margin-top:12px">Pasa el ratón sobre cada celda para ver la expresión original y las notas. Los valores de normas de pago (EN 16723-1, ISO 14687) provienen de fuentes públicas secundarias (marcadas «Fuente secundaria»). ⚠️ EN 16723-1 e ISO 14687 están en revisión activa: verificar la edición vigente.</p>';
+    return h;
+  }
 
   /* ===== Sub-tabs Comparativa: puntual / matriz ===== */
   let matrizCargada = false;
