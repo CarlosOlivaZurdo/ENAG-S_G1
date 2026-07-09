@@ -504,9 +504,24 @@
           <div id="bioMatriz" style="display:none">
             <div class="cmp-card-main">
               <h2 class="cmp-card-h2">Matriz general</h2>
-              <p class="cmp-intro"><b>Parámetros × jurisdicciones</b> de la especificación de biometano, con el límite y la cita de cada celda.</p>
+              <p class="cmp-intro"><b>Jurisdicciones × parámetros</b>, normalizado a España. Color = más restrictivo / más amplio que España; ⚠ = unidad o condiciones distintas.</p>
+              <div class="mtz-bar">
+                <p class="mtz-bar-h">Jurisdicciones del informe</p>
+                <div class="cmp-paises" id="bioMtzPaises"></div>
+                <div class="mtz-exp-group">
+                  <span class="mtz-exp-lbl">Exportar informe:</span>
+                  <button class="mtz-exp" id="bioMtzExpXlsx">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l3 4m0-4l-3 4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    Excel
+                  </button>
+                  <button class="mtz-exp pdf" id="bioMtzExpPdf">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 13h5M9.5 16h5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    PDF
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="cmp-result" id="bioMatrizResult"></div>
+            <div id="bioMatrizResult"></div>
           </div>
         </div>
       </div>
@@ -548,9 +563,24 @@
           <div id="h2Matriz" style="display:none">
             <div class="cmp-card-main">
               <h2 class="cmp-card-h2">Matriz general</h2>
-              <p class="cmp-intro"><b>Parámetros × jurisdicción</b> de la especificación de hidrógeno (ISO 14687 Grade D), con el límite y la cita de cada celda.</p>
+              <p class="cmp-intro"><b>Jurisdicciones × parámetros</b>, normalizado a España. Color = más restrictivo / más amplio que España; ⚠ = unidad o condiciones distintas.</p>
+              <div class="mtz-bar">
+                <p class="mtz-bar-h">Jurisdicciones del informe</p>
+                <div class="cmp-paises" id="h2MtzPaises"></div>
+                <div class="mtz-exp-group">
+                  <span class="mtz-exp-lbl">Exportar informe:</span>
+                  <button class="mtz-exp" id="h2MtzExpXlsx">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l3 4m0-4l-3 4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    Excel
+                  </button>
+                  <button class="mtz-exp pdf" id="h2MtzExpPdf">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 13h5M9.5 16h5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    PDF
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="cmp-result" id="h2MatrizResult"></div>
+            <div id="h2MatrizResult"></div>
           </div>
         </div>
       </div>
@@ -1080,32 +1110,58 @@
     $(pre+"Btn").onclick = comparar;
     fillUnit();
     comparar();
-    matriz.innerHTML = renderTablaLimites(d);
+    initGasMatriz(tipo, pre);
   }
-  function renderTablaLimites(d){
-    const jur = d.jurisdicciones || [];
-    const params = d.parametros || [];
-    if(!params.length) return '<div class="cmp-empty">No hay datos.</div>';
-    let h = '<div class="cmp-card"><div style="overflow-x:auto"><table class="cmp-table"><thead><tr><th style="text-align:left">Parámetro</th>';
-    jur.forEach(j => { h += '<th>'+esc(j.nombre)+'</th>'; });
-    h += '</tr></thead><tbody>';
-    params.forEach(p => {
-      h += '<tr><td style="font-weight:600;text-align:left">'+esc(p.label)+'</td>';
-      p.celdas.forEach(c => {
-        const b = ESTADO_BADGE[c.estado];
-        const hasLim = c.limite && c.limite!=="—" && c.limite!=="sin límite";
-        const val = hasLim ? (esc(c.limite)+' '+esc(c.unidad||"")) : '<span style="color:#9aa7b2">'+esc(c.limite||"—")+'</span>';
-        const src = (c.url && /^https?:/i.test(c.url))
-          ? ' · <a href="'+esc(c.url)+'" target="_blank" rel="noopener" class="gas-src">fuente</a>' : '';
-        const badge = b ? ' <span class="badge '+b.c+'" style="font-size:10px;vertical-align:middle">'+b.t+'</span>' : '';
-        const tip = [c.expresion, c.nota].filter(Boolean).join(' — ');
-        h += '<td'+(tip?' title="'+esc(tip)+'"':'')+'>'+val+badge+src+'</td>';
+  // Matriz-heatmap de biometano/hidrógeno: MISMO endpoint (/api/matriz?tipo_gas) y MISMO
+  // render (renderMatriz) que el gas natural, con casillas de jurisdicción y export Excel/PDF.
+  const GAS_MATRIZ = {};
+  async function initGasMatriz(tipo, pre){
+    const cont = $(pre+"MatrizResult");
+    cont.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Cargando matriz…</div></div>';
+    let d;
+    try{
+      const r = await fetch(api("/api/matriz?tipo_gas="+encodeURIComponent(tipo)));
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      d = await r.json();
+    }catch(e){
+      cont.innerHTML = '<div class="cmp-empty">No se pudo cargar la matriz.<br>Detalle: '+esc(e.message)+'</div>';
+      return;
+    }
+    GAS_MATRIZ[tipo] = d;
+    const box = $(pre+"MtzPaises");
+    box.innerHTML =
+      '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
+      (d.paises||[]).filter(p => p!=="España").map(p => '<label class="chk"><input type="checkbox" value="'+esc(p)+'" checked> '+esc(p)+'</label>').join("");
+    const rerender = () => { cont.innerHTML = renderMatriz(d, gasMatrizSel(pre)); };
+    box.querySelectorAll('input:not([disabled])').forEach(c => c.onchange = rerender);
+    rerender();
+    $(pre+"MtzExpXlsx").onclick = () => exportarGasMatriz(tipo, pre, "xlsx");
+    $(pre+"MtzExpPdf").onclick  = () => exportarGasMatriz(tipo, pre, "pdf");
+  }
+  function gasMatrizSel(pre){
+    const box = $(pre+"MtzPaises");
+    return ["España"].concat([...box.querySelectorAll('input:not([disabled]):checked')].map(c => c.value));
+  }
+  async function exportarGasMatriz(tipo, pre, formato){
+    const btn = formato==="pdf" ? $(pre+"MtzExpPdf") : $(pre+"MtzExpXlsx");
+    const prev = btn.innerHTML; btn.disabled = true; btn.textContent = "Generando…";
+    try{
+      const r = await fetch(api("/api/exportar-matriz"),{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ paises: gasMatrizSel(pre), formato, tipo_gas: tipo })
       });
-      h += '</tr>';
-    });
-    h += '</tbody></table></div>';
-    h += '<p class="csub" style="margin-top:12px">Pasa el ratón sobre cada celda para ver la expresión original y las notas. Los valores de normas de pago (EN 16723-1, ISO 14687) provienen de fuentes públicas secundarias (marcadas «Fuente secundaria»). ⚠️ EN 16723-1 e ISO 14687 están en revisión activa: verificar la edición vigente.</p>';
-    return h;
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "comparativa_"+tipo+(formato==="pdf"?".pdf":".xlsx");
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }catch(e){
+      alert("No se pudo exportar el informe.\n"+e.message);
+    }finally{
+      btn.disabled = false; btn.innerHTML = prev;
+    }
   }
 
   /* ===== Sub-tabs Comparativa: puntual / matriz ===== */
@@ -1154,9 +1210,9 @@
     return ["España"].concat(Array.from(box.querySelectorAll('input:not([disabled]):checked')).map(c => c.value));
   }
 
-  function renderMatriz(d){
+  function renderMatriz(d, selPaises){
     const params = d.parametros||[];
-    const sel = new Set(paisesMatrizSel());
+    const sel = new Set(selPaises || paisesMatrizSel());
     const filas = (d.filas||[]).filter(f => sel.has(f.pais));
     if(!params.length || !filas.length) return '<div class="cmp-empty">Selecciona al menos una jurisdicción para ver la matriz.</div>';
     let head = '<tr><th class="hm-corner">País \\ Parámetro</th>';

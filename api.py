@@ -1366,9 +1366,9 @@ JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ,
 JURISDICCION_DISPLAY = {"España": "España", "Portugal": "Portugal", "Francia": "Francia", "UE": "UE"}
 
 
-def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
+def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es, tipo_gas="gas_natural"):
     es_base = _norm_pais(pais) == _norm_pais(PAIS_BASE)
-    resp = fuente_oficial.consultar(slug, pais)
+    resp = fuente_oficial.consultar(slug, pais, tipo_gas)
     if not resp.get("matches"):
         return {"valor": "—", "nivel": "sin_dato", "flag": False, "flag_desc": ""}
     m = resp["matches"][0]
@@ -1416,13 +1416,17 @@ def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es)
     return {"valor": fr(r["lo"], r["hi"]), "nivel": nivel, "flag": flag, "flag_desc": flag_desc}
 
 
-def matriz_comparativa() -> Dict[str, Any]:
-    """Heatmap: filas=países, columnas=parámetros, celdas con nivel (color) y flag."""
+def matriz_comparativa(tipo_gas: str = "gas_natural") -> Dict[str, Any]:
+    """Heatmap: filas=jurisdicciones, columnas=parámetros, celdas con nivel (color) y flag.
+    `tipo_gas` por defecto "gas_natural" (21 países × 10 params). "biometano"/"hidrogeno"
+    usan su catálogo y sus 4 jurisdicciones (ES/PT/FR/UE), con España como base."""
+    catalogo = CATALOGO_POR_GAS.get(tipo_gas, PARAMETROS_UI)
+    jurisdicciones = list(JURISDICCIONES_POR_GAS.get(tipo_gas, PAISES_MATRIZ))
     cols = []
-    filas = {p: {} for p in PAISES_MATRIZ}
-    for pinfo in PARAMETROS_UI:
+    filas = {p: {} for p in jurisdicciones}
+    for pinfo in catalogo:
         slug = pinfo["slug"]
-        es = fuente_oficial.consultar(slug, PAIS_BASE)
+        es = fuente_oficial.consultar(slug, PAIS_BASE, tipo_gas)
         esm = es["matches"][0] if es.get("matches") else None
         unidad_es = (esm.get("unidad") if esm else "") or ""
         # La unidad (la de España, a la que se normaliza todo) se muestra en la cabecera.
@@ -1435,12 +1439,12 @@ def matriz_comparativa() -> Dict[str, Any]:
             lo = es_rng["lo"] if es_rng["lo"] is not None else float("-inf")
             hi = es_rng["hi"] if es_rng["hi"] is not None else float("inf")
             ancho_es = hi - lo
-        for pais in PAISES_MATRIZ:
-            filas[pais][slug] = _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es)
+        for pais in jurisdicciones:
+            filas[pais][slug] = _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es, tipo_gas)
     return {
-        "paises": PAISES_MATRIZ,
+        "paises": jurisdicciones,
         "parametros": cols,
-        "filas": [{"pais": p, "celdas": filas[p]} for p in PAISES_MATRIZ],
+        "filas": [{"pais": p, "celdas": filas[p]} for p in jurisdicciones],
         "unidad_nota": "Valores normalizados a unidad y condiciones de España (ISO 13443 para PCS/Wobbe).",
     }
 
@@ -2612,9 +2616,10 @@ async def comparar_endpoint(req: PeticionComparar) -> Dict[str, Any]:
     responses={200: {"content": {"application/json": {"example": _EJEMPLO_MATRIZ}}}},
 )
 @gestionar_errores
-async def matriz_endpoint() -> Dict[str, Any]:
-    """Matriz comparativa completa (heatmap): filas = países, columnas = los 10 parámetros,
-    todo normalizado a la unidad y condiciones de España.
+async def matriz_endpoint(tipo_gas: str = "gas_natural") -> Dict[str, Any]:
+    """Matriz comparativa completa (heatmap): filas = jurisdicciones, columnas = parámetros,
+    todo normalizado a la unidad y condiciones de España. `tipo_gas`: `gas_natural` (por
+    defecto), `biometano` o `hidrogeno`.
 
     - **`parametros`**: cabeceras `{slug, label, unidad}` (la unidad es la de España).
     - **`filas`**: una por país, con `celdas[slug]` = `{valor, nivel, flag, flag_desc}`:
@@ -2625,9 +2630,10 @@ async def matriz_endpoint() -> Dict[str, Any]:
           distintas) que obligó a convertir; el texto explica qué se convirtió.
     - **`unidad_nota`**: aclaración sobre la normalización aplicada.
 
-    No recibe parámetros: recalcula la matriz completa a partir de la ontología.
+    Recalcula la matriz completa a partir de la ontología para el gas indicado.
     """
-    return matriz_comparativa()
+    tg = tipo_gas if tipo_gas in ("gas_natural", "biometano", "hidrogeno") else "gas_natural"
+    return matriz_comparativa(tg)
 
 
 # ============================================================================
@@ -3029,6 +3035,11 @@ class PeticionExportar(BaseModel):
     formato: str = Field(
         "xlsx", description="Formato del informe: `xlsx` (Excel) o `pdf`.", examples=["xlsx"]
     )
+    tipo_gas: Optional[str] = Field(
+        "gas_natural",
+        description="`gas_natural` (por defecto), `biometano` o `hidrogeno`.",
+        examples=["gas_natural", "biometano", "hidrogeno"],
+    )
 
 
 def _esc_html(v: Any) -> str:
@@ -3036,9 +3047,9 @@ def _esc_html(v: Any) -> str:
     return (_txt(v).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
 
 
-def _matriz_para_exportar(paises: Optional[List[str]] = None) -> Dict[str, Any]:
+def _matriz_para_exportar(paises: Optional[List[str]] = None, tipo_gas: str = "gas_natural") -> Dict[str, Any]:
     """Matriz comparativa filtrada a las jurisdicciones pedidas (España siempre incluida)."""
-    data = matriz_comparativa()
+    data = matriz_comparativa(tipo_gas)
     if paises:
         seleccion = {_norm_pais(p) for p in paises}
         seleccion.add(_norm_pais(PAIS_BASE))  # España es la base: siempre presente
@@ -3183,14 +3194,16 @@ async def exportar_matriz_endpoint(req: PeticionExportar) -> Response:
     """Genera un informe descargable con la matriz comparativa (países × parámetros) de las
     jurisdicciones seleccionadas. `formato`: `xlsx` (Excel) o `pdf`. España se incluye siempre
     como base. No genera cifras nuevas: serializa los mismos datos que la matriz de la web."""
-    data = _matriz_para_exportar(req.paises)
+    tg = req.tipo_gas if req.tipo_gas in ("gas_natural", "biometano", "hidrogeno") else "gas_natural"
+    data = _matriz_para_exportar(req.paises, tg)
+    sufijo = {"gas_natural": "gas", "biometano": "biometano", "hidrogeno": "hidrogeno"}[tg]
     if (req.formato or "").lower() == "pdf":
         contenido = _matriz_a_pdf(data)
-        media, nombre = "application/pdf", "comparativa_gas.pdf"
+        media, nombre = "application/pdf", f"comparativa_{sufijo}.pdf"
     else:
         contenido = _matriz_a_xlsx(data)
         media = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        nombre = "comparativa_gas.xlsx"
+        nombre = f"comparativa_{sufijo}.xlsx"
     return Response(
         content=contenido, media_type=media,
         headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
