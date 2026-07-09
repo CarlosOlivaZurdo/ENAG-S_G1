@@ -1314,7 +1314,10 @@ def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str
             filas.append({
                 "pais": pais,
                 "parametro": nombre,
-                "limite": rng(vi, vs, 2 if hubo_conversion else 4),
+                # Sin valor numérico: en biometano/hidrógeno se muestra el motivo del documento
+                # (no publicado / no especificado / no existe fuente…); gas natural, como hasta ahora.
+                "limite": (_resumen_sin_valor(m) if (sin_lim and tipo_gas != "gas_natural")
+                           else rng(vi, vs, 2 if hubo_conversion else 4)),
                 "unidad": "—" if sin_lim else unidad_out,
                 "condiciones": cond_txt,
                 "es_base": es_base,
@@ -1366,6 +1369,26 @@ JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ,
 JURISDICCION_DISPLAY = {"España": "España", "Portugal": "Portugal", "Francia": "Francia", "UE": "UE"}
 
 
+def _resumen_sin_valor(m) -> str:
+    """Texto corto para una celda SIN valor numérico, tomado de la expresión de la norma:
+    distingue «no publicado» / «no especificado» / «no existe fuente» / «sin mínimo» /
+    «remite a nacional» en lugar de un genérico «sin límite» (biometano/hidrógeno)."""
+    e = (m.get("expresion_original") or "").lower().translate(str.maketrans("áéíóúü", "aeiouu"))
+    if "no existe fuente" in e:
+        return "No existe fuente"
+    if "no publicado" in e or "no publico" in e:
+        return "Valor no publicado"
+    if "no especificado" in e:
+        return "No especificado"
+    if "sin minimo" in e:
+        return "Sin mínimo (Wobbe/PCS)"
+    if "sin valor" in e or "no fija" in e:
+        return "Sin valor normativo"
+    if "remite" in e:
+        return "Remite a norma nacional"
+    return "Sin límite"
+
+
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es, tipo_gas="gas_natural"):
     es_base = _norm_pais(pais) == _norm_pais(PAIS_BASE)
     resp = fuente_oficial.consultar(slug, pais, tipo_gas)
@@ -1383,7 +1406,11 @@ def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es,
     if est == "incomparable":
         return {"valor": "≠ unidades", "nivel": "incomparable", "flag": True, "flag_desc": "No comparable de forma determinista"}
     if est == "sin_limite":
-        return {"valor": "Sin límite", "nivel": "sin_limite", "flag": False, "flag_desc": ""}
+        # Biometano/hidrógeno: muestra el motivo del documento (no publicado / no especificado…);
+        # gas natural: "Sin límite" como hasta ahora.
+        val = _resumen_sin_valor(m) if tipo_gas != "gas_natural" else "Sin límite"
+        desc = _txt(m.get("nota")) if tipo_gas != "gas_natural" else ""
+        return {"valor": val, "nivel": "sin_limite", "flag": False, "flag_desc": desc}
 
     # Flag metodológico: solo si hay límite real con unidad o condiciones RELEVANTES
     # distintas a España (la combustión solo cuenta para PCS/Wobbe).
