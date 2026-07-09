@@ -232,7 +232,7 @@ ontologia:
       publicacion: "Diário da República, 2.ª série, N.º 146, de 28 de julho de 2023"
       pdf: "data/raw/regulacion_portugal_826-2023.pdf"
       url: "https://www.erse.pt/media/ws0j5wzg/rqs_regulamento-da-qualidade-de-servi%C3%A7o_consolidado.pdf"
-      tabla_calidad: "Anexo I «Características do gás» (art. 39.º): valores en pág. 144 del PDF consolidado de ERSE (pág. 371 del Diário da República original N.º 146)"
+      tabla_calidad: "Art. 39.º y anexos del RQS consolidado (ERSE): Anexo I (gas natural, pág. 144); Anexo XI «Características dos gases renováveis ou de baixo teor de carbono» (biometano, pág. 145: CH₄ ≥90 %, CO₂ ≤4 %, Si total 0,3–1 mg/m³, etc.); Anexo XII «Características do hidrogénio» (pág. 146: H₂ ≥98 %, H₂O+O₂+N₂+Ar ≤1,9 %)."
       condiciones_referencia: "0 ºC, 1,01325 bar, combustión inicial 25 ºC (ISO 13443/96); volumen en m³(n)"
       nota: "Deroga el RQS n.º 406/2021. PCS, mercaptanos RSH, CO₂ y rocío de HC del gas natural NO se fijan numéricamente."
 
@@ -3174,13 +3174,14 @@ parametros_biometano:
         nota: "2,5 % en transporte (GRTgaz). En distribución GRDF: 3,5 % Gaz H / 11,7 % Gaz B. Condiciones 0 °C, 1,01325 bar."
       PT:
         fuente: REG_PT_826_2023
-        articulo: "RQS — Regulamento n.º 826/2023, Anexo I (remite a ISO 16723-1)"
+        articulo: "RQS consolidado (ERSE), Anexo XI «Características dos gases renováveis…» (art. 39.º, pág. 145)"
         tipo_limite: maximo
-        valor: null
+        valor: 4
         unidad: pct_mol
-        expresion_original: "Remite a ISO 16723-1 — valor numérico NO publicado (tras paywall)."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "El RQS portugués remite a ISO 16723-1 (norma de pago): el valor no es público. No se sustituye por el de otra jurisdicción."
+        expresion_original: "CO₂ ≤ 4 % mol (gases renováveis exceto hidrogénio, injetados na RPG)."
+        condiciones_referencia: { temperatura_combustion_C: 25, temperatura_volumen_C: 0, presion_bar: 1.01325, notacion: "@25/0" }
+        estado_verificacion: VERIFICADO
+        nota: "RQS Anexo XI (art. 39.º): CO₂ ≤ 4 % mol para gases renováveis (biometano) inyectados en la RPG. m³(n) a 0 ºC."
 
   CO:
     nombre_completo: "Monóxido de carbono"
@@ -3326,13 +3327,13 @@ parametros_biometano:
         nota: "Las prescripciones públicas de operador (GRTgaz/GRDF) no fijan un valor numérico de siloxanos. (La annexe de «méthane de synthèse» de GRTgaz menciona < 5 mg/m³ como compuesto, no como Si.)"
       PT:
         fuente: REG_PT_826_2023
-        articulo: "RQS — Regulamento n.º 826/2023, Anexo I (remite a ISO 16723-1)"
+        articulo: "RQS consolidado (ERSE), Anexo XI «Características dos gases renováveis…» (art. 39.º, pág. 145)"
         tipo_limite: maximo
-        valor: null
+        valor: 1
         unidad: mg_per_nm3
-        expresion_original: "Remite a ISO 16723-1 — valor NO publicado."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "El RQS portugués remite a ISO 16723-1 (norma de pago): el valor no es público. No se sustituye por el de otra jurisdicción."
+        expresion_original: "Si total: 0,3 – 1 mg/m³(n) (gases renováveis exceto hidrogénio, injetados na RPG)."
+        estado_verificacion: VERIFICADO
+        nota: "RQS Anexo XI (art. 39.º): «Si total» 0,3–1 mg/m³(n). Se fija 1 mg/m³ como cota superior."
 
   COMP_OIL:
     nombre_completo: "Aceite de compresor"
@@ -3483,13 +3484,13 @@ parametros_hidrogeno:
         nota: "Francia no fija un valor propio; aplica ISO 14687 / EN 17124."
       PT:
         fuente: REG_PT_826_2023
-        articulo: "RQS — Regulamento n.º 826/2023 (remite a ISO 14687)"
+        articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146)"
         tipo_limite: minimo
-        valor: 99.97
+        valor: 98
         unidad: pct_mol
-        expresion_original: "Remite a ISO 14687 (99,97 %mol)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "El RQS portugués remite a ISO 14687 (99,97 %mol)."
+        expresion_original: "H₂ ≥ 98 % mol (hidrogénio injetado na RPG)."
+        estado_verificacion: VERIFICADO
+        nota: "RQS Anexo XII (art. 39.º): el hidrógeno inyectado en la RPG debe tener H₂ ≥ 98 % mol. Es el valor de RED portugués (distinto del 99,97 % de ISO 14687, que es hidrógeno de PRODUCTO para pila PEM; el RQS también exige respetar ISO 14687 como norma de producto)."
 
   NO_H2:
     nombre_completo: "Total de gases no-hidrógeno"
@@ -3605,13 +3606,13 @@ parametros_hidrogeno:
         nota: "Francia aplica ISO 14687 / EN 17124 (5 µmol/mol)."
       PT:
         fuente: REG_PT_826_2023
-        articulo: "RQS — Regulamento n.º 826/2023 (remite a ISO 14687)"
+        articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146) + ISO 14687"
         tipo_limite: maximo
         valor: 5
         unidad: ppm_vol
-        expresion_original: "Remite a ISO 14687 (5 µmol/mol)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "El RQS portugués remite a ISO 14687 (5 µmol/mol)."
+        expresion_original: "O₂ ≤ 5 µmol/mol (ISO 14687, que el RQS exige respetar). Además, RQS Anexo XII: H₂O + O₂ + N₂ + Ar (en conjunto) ≤ 1,9 % mol."
+        estado_verificacion: VERIFICADO
+        nota: "El RQS Anexo XII fija H₂O+O₂+N₂+Ar ≤ 1,9 % mol EN CONJUNTO (no un O₂ individual) y exige respetar ISO 14687 (O₂ ≤ 5 µmol/mol como producto). Se toma 5 µmol/mol como límite individual de O₂."
 
   HE:
     nombre_completo: "Helio"
@@ -3860,10 +3861,10 @@ parametros_hidrogeno:
         nota: "Francia remite a ISO 8573 para aceite/partículas; sin umbral numérico propio."
       PT:
         fuente: REG_PT_826_2023
-        articulo: "RQS — Regulamento n.º 826/2023 (remite a ISO 14687 / ISO 8573)"
+        articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146)"
         tipo_limite: cualitativo
         valor: null
         unidad: adimensional
-        expresion_original: "Remite a ISO 14687 / ISO 8573."
-        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-        nota: "Portugal remite a ISO 14687 / ISO 8573; el valor numérico (partículas 1 mg/kg) lo fija ISO 14687."
+        expresion_original: "Óleo do compressor: «Tecnicamente isento» (monitorizado por amostragem periódica)."
+        estado_verificacion: VERIFICADO
+        nota: "RQS Anexo XII (art. 39.º): el aceite de compresor debe ser «tecnicamente isento» (restricción cualitativa), monitorizado por muestreo periódico."
