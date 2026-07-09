@@ -1036,7 +1036,7 @@
       const r = await fetch(api("/api/tabla-limites?tipo_gas="+encodeURIComponent(tipo)));
       if(r.status===404){
         puntual.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar esta sección.<br>Cierra la ventana del servidor y vuelve a ejecutar <code>iniciar_chatbot.bat</code>.</div>';
-        bioReady = tipo==="biometano" ? false : bioReady; h2Ready = tipo==="hidrogeno" ? false : h2Ready;
+        if(tipo==="biometano") bioReady=false; else h2Ready=false;
         return;
       }
       if(!r.ok) throw new Error("HTTP "+r.status);
@@ -1048,46 +1048,39 @@
     GAS_DATA[tipo] = d;
     // Parámetro
     $(pre+"Param").innerHTML = (d.parametros||[]).map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("");
-    // Jurisdicciones (todas marcadas por defecto)
-    $(pre+"Paises").innerHTML = (d.jurisdicciones||[]).map(j =>
-      '<label class="chk"><input type="checkbox" value="'+esc(j.codigo)+'" checked> '+esc(j.nombre)+'</label>').join("");
+    // Jurisdicciones: España es la BASE (fija) y el resto seleccionables (igual que el gas natural).
+    const nombreDe = c => ((d.jurisdicciones||[]).find(j => j.codigo===c)||{}).nombre || c;
+    $(pre+"Paises").innerHTML =
+      '<span class="chk base"><input type="checkbox" checked disabled> España (base)</span>' +
+      (d.jurisdicciones||[]).map(j => j.codigo).filter(c => c!=="España").map(c =>
+        '<label class="chk"><input type="checkbox" value="'+esc(c)+'" checked> '+esc(nombreDe(c))+'</label>').join("");
     const fillUnit = () => {
       const p = (d.parametros||[]).find(x => x.slug === $(pre+"Param").value);
       const units = p ? [...new Set(p.celdas.map(c => c.unidad).filter(Boolean))] : [];
       $(pre+"Unidad").innerHTML = (units.length ? units : ["—"]).map(u => '<option value="'+esc(u)+'">'+esc(u)+'</option>').join("");
     };
-    const comparar = () => {
-      const p = (d.parametros||[]).find(x => x.slug === $(pre+"Param").value);
-      const sel = new Set([...document.querySelectorAll('#'+pre+'Paises input:checked')].map(x => x.value));
-      $(pre+"Result").innerHTML = renderComparaGas(p, (p ? p.celdas.filter(c => sel.has(c.jurisdiccion)) : []), d);
+    // "Comparar" usa el MISMO endpoint y el MISMO render que el gas natural.
+    const comparar = async () => {
+      const parametro = $(pre+"Param").value;
+      const unidad = $(pre+"Unidad").value;
+      const paises = [...document.querySelectorAll('#'+pre+'Paises input:not([disabled]):checked')].map(x => x.value);
+      puntual.innerHTML = '<div class="cmp-card"><div class="rec-loading"><span class="spin"></span> Calculando comparativa…</div></div>';
+      try{
+        const r = await fetch(api("/api/comparar"),{
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ parametro, paises, unidad, tipo_gas: tipo })
+        });
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        puntual.innerHTML = renderComparativa(await r.json());
+      }catch(e){
+        puntual.innerHTML = '<div class="cmp-empty">No se pudo realizar la comparativa.<br>Detalle: '+esc(e.message)+'</div>';
+      }
     };
     $(pre+"Param").onchange = fillUnit;
     $(pre+"Btn").onclick = comparar;
     fillUnit();
     comparar();
     matriz.innerHTML = renderTablaLimites(d);
-  }
-  function renderComparaGas(param, celdas, d){
-    if(!param) return '<div class="cmp-empty">Elige un parámetro.</div>';
-    if(!celdas.length) return '<div class="cmp-empty">Selecciona al menos una jurisdicción.</div>';
-    const jname = {}; (d.jurisdicciones||[]).forEach(j => jname[j.codigo] = j.nombre);
-    let h = '<div class="cmp-card"><h2>'+esc(param.label)+'</h2>'+
-      '<table class="cmp-table"><thead><tr><th style="text-align:left">Jurisdicción</th><th>Límite</th><th>Estado</th><th>Fuente</th></tr></thead><tbody>';
-    celdas.forEach(c => {
-      const b = ESTADO_BADGE[c.estado];
-      const hasLim = c.limite && c.limite!=="—" && c.limite!=="sin límite";
-      const val = hasLim ? (esc(c.limite)+' '+esc(c.unidad||"")) : '<span style="color:#9aa7b2">'+esc(c.limite||"—")+'</span>';
-      const badge = b ? '<span class="badge '+b.c+'" style="font-size:10px">'+b.t+'</span>' : '';
-      const src = (c.url && /^https?:/i.test(c.url))
-        ? '<a href="'+esc(c.url)+'" target="_blank" rel="noopener" class="gas-src">'+esc(c.fuente||"fuente")+'</a>' : esc(c.fuente||"");
-      const tip = [c.expresion, c.nota].filter(Boolean).join(' — ');
-      h += '<tr'+(tip?' title="'+esc(tip)+'"':'')+'><td style="text-align:left;font-weight:600">'+esc(jname[c.jurisdiccion]||c.jurisdiccion)+
-        '</td><td>'+val+'</td><td>'+badge+'</td><td style="font-size:12px">'+src+'</td></tr>';
-    });
-    h += '</tbody></table>';
-    h += '<p class="csub" style="margin-top:10px">Valores de normas de pago (EN 16723-1, ISO 14687) de fuentes públicas secundarias (⚠ en revisión activa). Pasa el ratón por cada fila para ver la expresión original y notas.</p>';
-    h += '</div>';
-    return h;
   }
   function renderTablaLimites(d){
     const jur = d.jurisdicciones || [];

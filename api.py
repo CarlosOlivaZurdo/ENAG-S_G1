@@ -1223,18 +1223,26 @@ def _es_mg_por_volumen(unidad: str) -> bool:
     return "mg" in s and ("m³" in s or "m3" in s or "nm" in s or "sm" in s)
 
 
-def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str = "") -> Dict[str, Any]:
+def comparar_estructurado(parametro_slug: str, paises: list, unidad_destino: str = "",
+                          tipo_gas: str = "gas_natural") -> Dict[str, Any]:
     """Comparativa para la sección con desplegables. Devuelve filas estructuradas y,
     para PCS/Wobbe de países con distinta temperatura de combustión, el equivalente
-    en condiciones de España (ISO 13443, Tabla A.1)."""
+    en condiciones de España (ISO 13443, Tabla A.1).
+
+    `tipo_gas` por defecto "gas_natural" (comportamiento actual). Con "biometano"/"hidrogeno"
+    usa el catálogo y el enrutado de ese gas, con España como base igual que el gas natural."""
     orden = [PAIS_BASE] + [p for p in (paises or []) if _norm_pais(p) != _norm_pais(PAIS_BASE)]
-    display = DISPLAY_MAP.get(parametro_slug, parametro_slug)
+    if tipo_gas != "gas_natural":
+        _labels = {p["slug"]: p["label"] for p in CATALOGO_POR_GAS.get(tipo_gas, [])}
+        display = _labels.get(parametro_slug, parametro_slug)
+    else:
+        display = DISPLAY_MAP.get(parametro_slug, parametro_slug)
     es_combustion = _slug_param_comb(parametro_slug) in {"pcs", "wobbe"}
     filas: list = []
     notas: list = []
     for pais in orden:
         try:
-            matches = _consultar_norma(parametro_slug, pais).get("matches", [])
+            matches = _consultar_norma(parametro_slug, pais, tipo_gas).get("matches", [])
         except Exception:
             matches = []
         for m in matches:
@@ -2486,6 +2494,11 @@ class PeticionComparar(BaseModel):
         ),
         examples=["kWh/m³"],
     )
+    tipo_gas: Optional[str] = Field(
+        default="gas_natural",
+        description="`gas_natural` (por defecto), `biometano` o `hidrogeno`.",
+        examples=["gas_natural", "biometano", "hidrogeno"],
+    )
 
 
 _EJEMPLO_PARAMETROS = {
@@ -2583,8 +2596,12 @@ async def comparar_endpoint(req: PeticionComparar) -> Dict[str, Any]:
 
     **`notas_iso`** recoge las conversiones realizadas (mensajes legibles).
     """
-    slug = _normalize_parameter((req.parametro or "").lower()) or (req.parametro or "").lower()
-    return comparar_estructurado(slug, req.paises, req.unidad or "")
+    tg = req.tipo_gas or "gas_natural"
+    if tg == "gas_natural":
+        slug = _normalize_parameter((req.parametro or "").lower()) or (req.parametro or "").lower()
+    else:
+        slug = (req.parametro or "").strip().lower()   # el desplegable envía el slug exacto
+    return comparar_estructurado(slug, req.paises, req.unidad or "", tg)
 
 
 @app.get(
