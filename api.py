@@ -1207,8 +1207,8 @@ PARAMETROS_UI_BIOMETANO = [
 # para H₂ y trazas de compresores.
 PARAMETROS_UI_HIDROGENO = [
     {"slug": "h2_pureza", "label": "Pureza de H₂ (mínimo)", "unidades": ["% molar"], "onto": "H2_PUREZA"},
-    {"slug": "o2", "label": "O₂ específico para H₂", "unidades": ["ppm"], "onto": "O2"},
-    {"slug": "comp_trazas", "label": "Trazas de compresores", "unidades": ["mg/kg"], "onto": "COMP_TRAZAS"},
+    {"slug": "o2", "label": "O₂ específico para H₂", "unidades": ["% molar", "ppm"], "onto": "O2"},
+    {"slug": "comp_trazas", "label": "Trazas de compresores", "unidades": ["mg/m³"], "onto": "COMP_TRAZAS"},
 ]
 PAISES_UI = ["Portugal", "Francia", "Italia", "Alemania", "Países Bajos", "Bélgica", "Noruega", "Polonia", "Dinamarca", "Hungría", "Austria", "Suiza", "Chequia", "Grecia", "Irlanda", "Rumanía", "Eslovaquia", "Turquía", "Reino Unido", "UE"]  # España es siempre la base de referencia
 
@@ -1380,8 +1380,12 @@ def _resumen_sin_valor(m) -> str:
         return "Valor no publicado"
     if "no especificado" in e:
         return "No especificado"
+    if "tecnicamente" in e or "isento" in e or "libre de" in e:
+        return "Técnicamente libre"
     if "sin minimo" in e:
         return "Sin mínimo (Wobbe/PCS)"
+    if "conjunto" in e:
+        return "En conjunto ≤1,9 %"
     if "sin valor" in e or "no fija" in e:
         return "Sin valor normativo"
     if "remite" in e:

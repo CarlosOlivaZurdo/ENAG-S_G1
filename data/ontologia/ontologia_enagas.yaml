@@ -336,8 +336,23 @@ ontologia:
       descarga_auto: false
       tabla_calidad: "Tabla 2 — Grade D (pilas PEM de vehículos de carretera): pureza H₂ ≥ 99,97 % y 15 contaminantes en μmol/mol."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      nota: "Norma de PAGO (ISO). Valores del Grade D tomados de fuente pública secundaria (documento de corpus jul-2026; muestra oficial iTeh/ISO; Anal. Chem. 2026) → VERIFICADO_SECUNDARIO. En Europa se transpone como EN 17124 (PEM). ⚠️ En revisión (ISO 14687:2025 ya citada)."
-      ambito: "Especificación de calidad de PRODUCTO del hidrógeno combustible. Grade D = pilas PEM de automoción (la más exigente y citada)."
+      nota: "⚠️ DOMINIO DISTINTO: ISO 14687 es calidad del hidrógeno como COMBUSTIBLE DE VEHÍCULO (repostaje, pila PEM), NO la calidad del H₂ para transporte/distribución por RED de gasoducto (dominio de un TSO como Enagás). Para la RED, ver GIE_H2_PURITY (≥98 % mol, O₂ ≤0,1 % mol) y las specs nacionales de red (RQS Anexo XII). Norma de PAGO (ISO), en revisión (2025)."
+      ambito: "Especificación de calidad de PRODUCTO del hidrógeno como combustible de VEHÍCULO (pila PEM de automoción). NO aplica a la calidad del hidrógeno de RED."
+
+    - id: GIE_H2_PURITY
+      tipo: informe_tecnico
+      pais: UE
+      gas: hidrogeno
+      nombre: "GIE — Position Paper on Hydrogen Quality Specifications (Hydrogen Purity Task Force)"
+      organismo: "GIE — Gas Infrastructure Europe (asociación europea de operadores de transporte, distribución y almacenamiento de gas)"
+      publicacion: "2024 (Hydrogen Purity Task Force; cuestionario a 23 de 70 miembros GIE, jul-2024)"
+      pdf: ""
+      url: "https://www.gie.eu/wp-content/uploads/filr/12630/GIE-Position-Paper-on-H2-Purity.pdf"
+      descarga_auto: false
+      tabla_calidad: "Spec de calidad del H₂ para RED (gasoducto): H₂ ≥ 98 % mol (alternativa 99,5 %); inertes ≤ 2 % mol; hidrocarburos ≤ 2 % mol; H₂O rocío < −8 ºC @ 70 bar(a); O₂ ≤ 0,1 % mol; CO₂ ≤ 20 µmol/mol. Alineado con EASEE-gas CBP 2022/001/01 y CEN/TS."
+      estado_verificacion: VERIFICADO_SECUNDARIO
+      nota: "Posición de la industria europea de INFRAESTRUCTURA de gas (TSOs/DSOs/almacenamiento — el dominio de Enagás), para el transporte y distribución de H₂ por RED. Es el dominio CORRECTO frente a ISO 14687/EN 17124 (que son de vehículo/pila PEM). Aún no vinculante a nivel UE (lo formalizará ENNOH), pero es el consenso de red más concreto. 2024."
+      ambito: "Calidad del hidrógeno para transporte y distribución por RED de gasoductos (dominio TSO/DSO/almacenamiento)."
 
     - id: EN_17124
       tipo: norma_tecnica
@@ -351,8 +366,8 @@ ontologia:
       descarga_auto: false
       tabla_calidad: "Equivalente a ISO 14687 Grade D (PEM)."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
-      nota: "Transposición europea de ISO 14687 Grade D (mismos límites)."
-      ambito: "Calidad del hidrógeno para hidrogeneras PEM en Europa."
+      nota: "⚠️ Dominio de VEHÍCULO (pila PEM), NO de red. Transposición europea de ISO 14687 Grade D. Para la RED, ver GIE_H2_PURITY."
+      ambito: "Calidad del hidrógeno para hidrogeneras PEM en Europa (dominio de vehículo, NO de red)."
 
     - id: ENNOH_REG_2024_1789
       tipo: marco_regulatorio
@@ -3440,34 +3455,35 @@ parametros_hidrogeno:
     tipo: pureza
     definicion: "Fracción molar mínima de H₂ (100 % menos los gases no-hidrógeno)."
     aliases: [pureza de h2, pureza de hidrogeno, indice de h2, hydrogen purity, hydrogen fuel index, wasserstoffreinheit, purete de l'hydrogene, fraccion molar de hidrogeno, h2 purity]
+    definicion_extra: "Fracción molar mínima de H₂ para transporte/distribución por RED (dominio TSO), NO como combustible de vehículo."
     limites:
       UE:
-        fuente: ISO_14687
-        articulo: "ISO 14687:2019, Tabla 2 (Type I Grade D); EN 17124"
+        fuente: GIE_H2_PURITY
+        articulo: "GIE Position Paper on Hydrogen Quality (Hydrogen Purity Task Force, 2024)"
         tipo_limite: minimo
-        valor: 99.97
+        valor: 98
         unidad: pct_mol
-        expresion_original: "99,97 %mol (producto, células PEM)."
+        expresion_original: "H₂ ≥ 98 % mol para la red (mayoría de operadores de infraestructura GIE; alternativa 99,5 % para redes exigentes)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Especificación armonizada de facto en la UE (ISO 14687 / EN 17124). NO confundir con el contenido de H₂ admisible en blending con gas natural (parámetro distinto, fuera de alcance). ⚠️ ISO 14687:2025 y EN 17124:2026 ya publicadas."
+        nota: "Dominio de RED (gasoducto), NO de vehículo. Consenso de la industria europea de infraestructura (GIE): H₂ ≥ 98 % mol; algunos países/redes optan por 99,5 %. Aún no vinculante a nivel UE (lo formalizará ENNOH). NO usar el 99,97 % de ISO 14687 (que es de pila PEM/vehículo)."
       ES:
-        fuente: ORDEN_TED_181_2025
-        articulo: "Orden TED/181/2025 (remite a norma de producto)"
+        fuente: GIE_H2_PURITY
+        articulo: "Marco UE de red (GIE); España regula el BLENDING (CNMC: H₂ hasta 2 %, 5 % por protocolo NGTS)"
         tipo_limite: minimo
-        valor: 99.97
+        valor: 98
         unidad: pct_mol
-        expresion_original: "Se expresa en %mol base seca; sin valor propio en la NGTS (remite a norma de producto ISO 14687 / EN 17124 → 99,97 %mol)."
+        expresion_original: "España no fija aún una pureza de H₂ PURO de red propia; regula la incorporación (blending) de H₂ en el gas natural (CNMC: ~2 %, ampliable a 5 %). Para H₂ puro sigue el marco UE de red (GIE: ≥98 %)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "España no fija un valor propio de pureza de H₂ en la NGTS: remite a la norma de producto (ISO 14687 / EN 17124 → 99,97 %mol)."
+        nota: "El marco español (CNMC/Enagás) regula el BLENDING de H₂ en la red de gas natural (hasta 2 %, 5 % por el protocolo de la NGTS), no una calidad de hidrógeno PURO. Para red de H₂ puro rige el marco UE/GIE (≥98 %)."
       FR:
-        fuente: ISO_14687
-        articulo: "ISO 14687 / EN 17124 (aplicables en Francia)"
+        fuente: GIE_H2_PURITY
+        articulo: "Marco UE de red (GIE); Francia regula el blending (objetivo 6→10→20 % vol., GRTgaz/GRDF)"
         tipo_limite: minimo
-        valor: 99.97
+        valor: 98
         unidad: pct_mol
-        expresion_original: "Sin valor propio de pureza como producto; aplica ISO 14687 / EN 17124 (99,97 %mol)."
+        expresion_original: "Francia no fija una pureza de H₂ puro de red propia; regula la incorporación (blending) de H₂ (6 % a corto plazo, 10 % a 2030, 20 % después). Para H₂ puro sigue el marco UE de red (GIE: ≥98 %)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Francia no fija un valor propio; aplica ISO 14687 / EN 17124."
+        nota: "El marco francés (GRTgaz/GRDF) regula el BLENDING de H₂ (6→20 % vol.), no una calidad de hidrógeno PURO. Para red de H₂ puro rige el marco UE/GIE (≥98 %)."
       PT:
         fuente: REG_PT_826_2023
         articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146)"
@@ -3476,7 +3492,7 @@ parametros_hidrogeno:
         unidad: pct_mol
         expresion_original: "H₂ ≥ 98 % mol (hidrogénio injetado na RPG)."
         estado_verificacion: VERIFICADO
-        nota: "RQS Anexo XII (art. 39.º): el hidrógeno inyectado en la RPG debe tener H₂ ≥ 98 % mol. Es el valor de RED portugués (distinto del 99,97 % de ISO 14687, que es hidrógeno de PRODUCTO para pila PEM; el RQS también exige respetar ISO 14687 como norma de producto)."
+        nota: "RQS Anexo XII (art. 39.º): el hidrógeno inyectado en la RPG debe tener H₂ ≥ 98 % mol. Es una spec de RED nacional (coincide con el consenso UE/GIE de ≥98 %; NO es el 99,97 % de producto de ISO 14687)."
 
   NO_H2:
     nombre_completo: "Total de gases no-hidrógeno"
@@ -3560,45 +3576,45 @@ parametros_hidrogeno:
     nombre_ingles: "Oxygen (hydrogen-specific)"
     grupo: impureza
     tipo: impureza
-    definicion: "Oxígeno en el hidrógeno. Contaminante crítico para el almacenamiento subterráneo (UGS) y distinto del O₂ del gas natural."
+    definicion: "Oxígeno en el hidrógeno de RED (transporte/distribución). Contaminante crítico para el almacenamiento subterráneo (UGS). Dominio de RED, no de vehículo (donde ISO 14687 fija 5 µmol/mol)."
     aliases: [o2, oxigeno, oxygen, sauerstoff, o2 hidrogeno, o2 h2]
     limites:
       UE:
-        fuente: ISO_14687
-        articulo: "ISO 14687:2019, Tabla 2 (Grade D); EN 17124"
+        fuente: GIE_H2_PURITY
+        articulo: "GIE Position Paper on Hydrogen Quality (2024)"
         tipo_limite: maximo
-        valor: 5
-        unidad: ppm_vol
-        expresion_original: "5 µmol/mol (producto PEM)."
+        valor: 0.1
+        unidad: pct_mol
+        expresion_original: "O₂ ≤ 0,1 % mol (red de hidrógeno)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "µmol/mol ≡ ppm. O₂ del H₂ como PRODUCTO (ISO 14687). Es una propiedad DISTINTA del O₂ regulado en la red de gas natural: en la ontología son dos conceptos separados."
+        nota: "Dominio de RED: la infraestructura europea (GIE) admite O₂ ≤ 0,1 % mol (= 1000 µmol/mol). Es ~200× más permisivo que el 5 µmol/mol de ISO 14687 (vehículo/pila PEM), que NO aplica a la red. En redes con almacenamiento subterráneo (UGS) puede exigirse más estricto."
       ES:
-        fuente: ORDEN_TED_181_2025
-        articulo: "Orden TED/181/2025 (remite a norma de producto)"
+        fuente: GIE_H2_PURITY
+        articulo: "Marco UE de red (GIE); España regula el blending, no un O₂ de H₂ puro propio"
         tipo_limite: maximo
-        valor: 5
-        unidad: ppm_vol
-        expresion_original: "Sin valor de O₂ específico de H₂-producto en la NGTS (remite a norma de producto ISO 14687 → 5 µmol/mol)."
+        valor: 0.1
+        unidad: pct_mol
+        expresion_original: "España no fija un O₂ de H₂ puro de red propio; sigue el marco UE de red (GIE: O₂ ≤ 0,1 % mol)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "España no fija un O₂ específico de H₂-producto en la NGTS: remite a ISO 14687 (5 µmol/mol)."
+        nota: "El marco español regula el blending de H₂; para H₂ puro de red rige el marco UE/GIE (O₂ ≤ 0,1 % mol)."
       FR:
-        fuente: ISO_14687
-        articulo: "ISO 14687 / EN 17124 (aplicables en Francia)"
+        fuente: GIE_H2_PURITY
+        articulo: "Marco UE de red (GIE)"
         tipo_limite: maximo
-        valor: 5
-        unidad: ppm_vol
-        expresion_original: "Aplica ISO 14687 / EN 17124 (5 µmol/mol)."
+        valor: 0.1
+        unidad: pct_mol
+        expresion_original: "Francia sigue el marco UE de red (GIE: O₂ ≤ 0,1 % mol)."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Francia aplica ISO 14687 / EN 17124 (5 µmol/mol)."
+        nota: "Para H₂ puro de red rige el marco UE/GIE (O₂ ≤ 0,1 % mol)."
       PT:
         fuente: REG_PT_826_2023
-        articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146) + ISO 14687"
+        articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146)"
         tipo_limite: maximo
-        valor: 5
-        unidad: ppm_vol
-        expresion_original: "O₂ ≤ 5 µmol/mol (ISO 14687, que el RQS exige respetar). Además, RQS Anexo XII: H₂O + O₂ + N₂ + Ar (en conjunto) ≤ 1,9 % mol."
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Sin O₂ individual: RQS Anexo XII fija H₂O + O₂ + N₂ + Ar (en conjunto) ≤ 1,9 % mol."
         estado_verificacion: VERIFICADO
-        nota: "El RQS Anexo XII fija H₂O+O₂+N₂+Ar ≤ 1,9 % mol EN CONJUNTO (no un O₂ individual) y exige respetar ISO 14687 (O₂ ≤ 5 µmol/mol como producto). Se toma 5 µmol/mol como límite individual de O₂."
+        nota: "El RQS portugués NO fija un O₂ individual para el hidrógeno de red: lo limita dentro del conjunto H₂O+O₂+N₂+Ar ≤ 1,9 % mol (Anexo XII)."
 
   HE:
     nombre_completo: "Helio"
@@ -3819,14 +3835,14 @@ parametros_hidrogeno:
     aliases: [trazas de compresor, trazas de compresores, aceite de compresor, compressor oil, lubricante, compressor traces, particulas]
     limites:
       UE:
-        fuente: ISO_14687
-        articulo: "ISO 14687:2019, notas f–g (remite a ISO 8573 / ISO 19880-1)"
-        tipo_limite: maximo
-        valor: 1
-        unidad: mg_per_kg
-        expresion_original: "Partículas 1 mg/kg; sin aceite visible en la boquilla; remite a ISO 8573 / ISO 19880-1."
+        fuente: GIE_H2_PURITY
+        articulo: "GIE / EASEE-gas CBP 2022/001/01 (calidad de gas de red); método ISO 8573 / ISO 19880-1"
+        tipo_limite: cualitativo
+        valor: null
+        unidad: adimensional
+        expresion_original: "Aceite y partículas: «técnicamente libre» (restricción cualitativa de red); sin umbral numérico de red específico."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Único valor numérico: partículas ≤ 1 mg/kg (ISO 14687). El aceite de compresor se trata como restricción CUALITATIVA («sin aceite visible»); método por ISO 8573 / ISO 19880-1."
+        nota: "Dominio de RED: GIE se alinea con EASEE-gas (calidad de gas) — aceite/partículas como restricción CUALITATIVA («técnicamente libre»). El 1 mg/kg de ISO 14687 es de vehículo (repostaje), NO de red. Método por ISO 8573 / ISO 19880-1."
       ES:
         fuente: ORDEN_TED_181_2025
         articulo: "Orden TED/181/2025 (biometano: «técnicamente puro»)"
