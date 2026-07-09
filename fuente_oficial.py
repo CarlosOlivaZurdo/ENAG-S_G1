@@ -42,10 +42,14 @@ _PARAM_A_ONTO_HIDROGENO = {
     "nh3": "NH3", "halogenados": "HALOGENADOS", "particulas": "PARTICULAS",
 }
 # Sección de ontología + mapa slug→clave por tipo de gas (los que NO son gas natural).
+# (Se usa para el NOMBRE del parámetro; el límite se enruta en `_limite_ontologia`.)
 _SECCION_POR_GAS = {
     "biometano": ("parametros_biometano", _PARAM_A_ONTO_BIOMETANO),
     "hidrogeno": ("parametros_hidrogeno", _PARAM_A_ONTO_HIDROGENO),
 }
+# Parámetros de biometano que NO son propios: el biometano inyectado debe cumplir la spec
+# de GAS NATURAL del país (se leen de `parametros`, con jurisdicción ES/PT/FR/UE).
+_SHARED_BIOMETANO = {"o2", "co2", "s total", "h2s+cos", "h2o(rocío)"}
 _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "fr": "FR", "ue": "UE", "europa": "UE",
                   "italia": "IT", "italy": "IT", "alemania": "DE", "germany": "DE",
                   "deutschland": "DE", "germania": "DE",
@@ -193,22 +197,38 @@ def _cond_txt(cr: Optional[Dict[str, Any]]) -> str:
 
 
 def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Optional[Dict[str, Any]]:
-    # Único punto donde se elige el árbol de parámetros según el tipo de gas.
-    # Gas natural (por defecto): `parametros` + jurisdicción por país (comportamiento actual).
-    # Biometano: `parametros_biometano` + jurisdicción única EN16723.
+    """Único punto donde se elige el árbol de parámetros y la jurisdicción por tipo de gas.
+    Jurisdicciones comunes a los tres gases: ES, PT, FR, UE.
+
+    - Gas natural (por defecto): `parametros[KEY].limites[país]` (comportamiento actual).
+    - Biometano: los parámetros COMPARTIDOS (O₂, CO₂, azufre, H₂S+COS, rocío de agua) los toma
+      de la spec de GAS NATURAL del país (el biometano inyectado debe cumplirla); los ESPECÍFICOS
+      (siloxanos, CO, NH₃…) de `parametros_biometano` (UE = EN 16723-1, FR = GRTgaz; ES/PT sin
+      límite nacional propio → sin dato).
+    - Hidrógeno: ISO 14687 Grade D es la spec de PRODUCTO aplicable en todas las jurisdicciones
+      (aún no hay spec de calidad de red nacional/UE vinculante → ENNOH en desarrollo)."""
     onto = cargar_ontologia()
-    seccion = _SECCION_POR_GAS.get(tipo_gas)
-    if seccion:  # biometano / hidrógeno: sección propia y jurisdicción por código (EN16723, FR, ISO14687)
-        params = onto.get(seccion[0]) or {}
-        key = seccion[1].get(slug)
+    if tipo_gas == "biometano":
         cod = _PAIS_A_CODIGO.get(_norm(pais), pais)
-    else:  # gas natural: comportamiento actual
+        if slug in _SHARED_BIOMETANO:
+            params = onto.get("parametros") or {}
+            key = _PARAM_A_ONTO.get(slug)
+            cod_q = cod
+        else:
+            params = onto.get("parametros_biometano") or {}
+            key = _PARAM_A_ONTO_BIOMETANO.get(slug)
+            cod_q = "EN16723" if cod == "UE" else cod   # UE = EN 16723-1
+    elif tipo_gas == "hidrogeno":
+        params = onto.get("parametros_hidrogeno") or {}
+        key = _PARAM_A_ONTO_HIDROGENO.get(slug)
+        cod_q = "ISO14687"                              # misma spec de producto en ES/PT/FR/UE
+    else:
         params = onto.get("parametros") or {}
         key = _PARAM_A_ONTO.get(slug)
-        cod = _PAIS_A_CODIGO.get(_norm(pais))
-    if not key or key not in params or not cod:
+        cod_q = _PAIS_A_CODIGO.get(_norm(pais))
+    if not key or key not in params or not cod_q:
         return None
-    return (params[key].get("limites") or {}).get(cod)
+    return (params[key].get("limites") or {}).get(cod_q)
 
 
 def _nombre_param(slug: str, tipo_gas: str = "gas_natural") -> str:

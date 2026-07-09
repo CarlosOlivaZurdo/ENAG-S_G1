@@ -1371,13 +1371,14 @@ PAISES_MATRIZ = ["España", "Portugal", "Francia", "Italia", "Alemania", "Paíse
 # mezcla con la matriz de 21 países del gas natural (riesgos R4/R5).
 CATALOGO_POR_GAS = {"gas_natural": PARAMETROS_UI, "biometano": PARAMETROS_UI_BIOMETANO,
                     "hidrogeno": PARAMETROS_UI_HIDROGENO}
-# Biometano: EN16723 (marco UE) + FR (requisito de red GRTgaz, con valores reales).
-# Hidrógeno: ISO14687 (especificación de producto ISO 14687 Grade D / EN 17124).
-JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ, "biometano": ["EN16723", "FR"],
-                          "hidrogeno": ["ISO14687"]}
-# Nombre legible de cada jurisdicción cuyo código no es ya un nombre de país.
-JURISDICCION_DISPLAY = {"EN16723": "EN 16723-1 (marco UE)", "FR": "Francia (red GRTgaz)",
-                        "ISO14687": "ISO 14687 Grade D (PEM)"}
+# Las tres comparativas usan las MISMAS 4 jurisdicciones base (como empezó el gas natural).
+# Biometano: compartidos = spec nacional de gas; específicos = EN 16723-1 (UE) / GRTgaz (FR).
+# Hidrógeno: ISO 14687 (producto) aplicable en las 4 (aún no hay spec nacional/UE de red).
+JURISDICCIONES_POR_GAS = {"gas_natural": PAISES_MATRIZ,
+                          "biometano": ["España", "Portugal", "Francia", "UE"],
+                          "hidrogeno": ["España", "Portugal", "Francia", "UE"]}
+# Nombre legible de cada código de jurisdicción para la cabecera de la tabla.
+JURISDICCION_DISPLAY = {"España": "España", "Portugal": "Portugal", "Francia": "Francia", "UE": "UE"}
 
 
 def _celda_heatmap(slug, pais, unidad_es, notac_es, es_rng, es_maximo, ancho_es):
