@@ -20,13 +20,33 @@ from conversor_unidades import convertir_unidades, _normalizar_unidad
 
 _CACHE: Dict[str, Any] = {}
 
-# slug del chatbot -> clave de parámetro en la ontología
+# slug del chatbot -> clave de parámetro en la ontología (GAS NATURAL)
 _PARAM_A_ONTO = {
     "wobbe": "WOBBE", "pcs": "PCS", "densidad relativa": "DENS_REL",
     "s total": "S_TOTAL", "h2s+cos": "H2S_COS", "rsh": "RSH",
     "o2": "O2", "co2": "CO2", "h2o(rocío)": "PR_H2O", "hc(rocío)": "PR_HC",
 }
-_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE", "europa": "UE",
+# slug -> clave en `parametros_biometano` (dominio BIOMETANO; mapa PROPIO para no
+# contaminar el camino de gas natural — riesgo R2). Única jurisdicción: EN16723.
+_PARAM_A_ONTO_BIOMETANO = {
+    "ch4_min": "CH4_MIN", "o2": "O2", "co2": "CO2", "co": "CO", "s total": "S_TOTAL",
+    "h2s+cos": "H2S_COS", "h2o(rocío)": "PR_H2O", "siloxanos": "SILOXANOS",
+    "comp_oil": "COMP_OIL", "aminas": "AMINAS", "nh3": "NH3", "halogenados": "HALOGENADOS",
+}
+# slug -> clave en `parametros_hidrogeno` (dominio HIDRÓGENO; ISO 14687 Grade D).
+# Jurisdicción única: ISO14687.
+_PARAM_A_ONTO_HIDROGENO = {
+    "h2_pureza": "H2_PUREZA", "no_h2": "NO_H2", "h2o": "H2O", "thc": "THC",
+    "ch4": "CH4", "o2": "O2", "he": "HE", "n2": "N2", "ar": "AR", "co2": "CO2",
+    "co": "CO", "s total": "S_TOTAL", "hcho": "HCHO", "hcooh": "HCOOH",
+    "nh3": "NH3", "halogenados": "HALOGENADOS", "particulas": "PARTICULAS",
+}
+# Sección de ontología + mapa slug→clave por tipo de gas (los que NO son gas natural).
+_SECCION_POR_GAS = {
+    "biometano": ("parametros_biometano", _PARAM_A_ONTO_BIOMETANO),
+    "hidrogeno": ("parametros_hidrogeno", _PARAM_A_ONTO_HIDROGENO),
+}
+_PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "fr": "FR", "ue": "UE", "europa": "UE",
                   "italia": "IT", "italy": "IT", "alemania": "DE", "germany": "DE",
                   "deutschland": "DE", "germania": "DE",
                   "paises bajos": "NL", "holanda": "NL", "netherlands": "NL", "nederland": "NL",
@@ -43,8 +63,11 @@ _PAIS_A_CODIGO = {"espana": "ES", "portugal": "PT", "francia": "FR", "ue": "UE",
                   "rumania": "RO", "romania": "RO",
                   "eslovaquia": "SK", "slovakia": "SK", "slovensko": "SK",
                   "turquia": "TR", "turkey": "TR", "turkiye": "TR",
-                  "reino unido": "GB", "united kingdom": "GB", "gran bretana": "GB", "britain": "GB"}
+                  "reino unido": "GB", "united kingdom": "GB", "gran bretana": "GB", "britain": "GB",
+                  "en16723": "EN16723", "biometano": "EN16723",
+                  "iso14687": "ISO14687", "hidrogeno": "ISO14687"}
 _CODIGO_A_PAIS = {"ES": "España", "PT": "Portugal", "FR": "Francia", "UE": "UE",
+                  "EN16723": "EN 16723-1", "ISO14687": "ISO 14687 Grade D",
                   "IT": "Italia", "DE": "Alemania", "NL": "Países Bajos", "BE": "Bélgica",
                   "NOR": "Noruega", "PL": "Polonia", "DK": "Dinamarca", "HU": "Hungría", "AT": "Austria", "CH": "Suiza", "CZ": "Chequia", "GR": "Grecia",
                   "IE": "Irlanda", "RO": "Rumanía", "SK": "Eslovaquia", "TR": "Turquía", "GB": "Reino Unido"}
@@ -62,6 +85,7 @@ _UNIDAD_DISPLAY = {
     "kWh_per_nm3": "kWh/m³", "MJ_per_nm3": "MJ/m³", "kcal_per_nm3": "kcal/m³",
     "mg_per_nm3": "mg/Nm³", "mg_per_sm3": "mg/sm³", "g_per_nm3": "g/Nm³",
     "pct_mol": "% molar", "pct_vol": "% vol", "ppm_vol": "ppm",
+    "umol_per_mol": "μmol/mol", "mg_per_kg": "mg/kg",
     "grados_C": "°C", "adimensional": "",
 }
 
@@ -168,25 +192,40 @@ def _cond_txt(cr: Optional[Dict[str, Any]]) -> str:
     return base
 
 
-def _limite_ontologia(slug: str, pais: str) -> Optional[Dict[str, Any]]:
+def _limite_ontologia(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Optional[Dict[str, Any]]:
+    # Único punto donde se elige el árbol de parámetros según el tipo de gas.
+    # Gas natural (por defecto): `parametros` + jurisdicción por país (comportamiento actual).
+    # Biometano: `parametros_biometano` + jurisdicción única EN16723.
     onto = cargar_ontologia()
-    params = onto.get("parametros") or {}
-    key = _PARAM_A_ONTO.get(slug)
-    cod = _PAIS_A_CODIGO.get(_norm(pais))
+    seccion = _SECCION_POR_GAS.get(tipo_gas)
+    if seccion:  # biometano / hidrógeno: sección propia y jurisdicción por código (EN16723, FR, ISO14687)
+        params = onto.get(seccion[0]) or {}
+        key = seccion[1].get(slug)
+        cod = _PAIS_A_CODIGO.get(_norm(pais), pais)
+    else:  # gas natural: comportamiento actual
+        params = onto.get("parametros") or {}
+        key = _PARAM_A_ONTO.get(slug)
+        cod = _PAIS_A_CODIGO.get(_norm(pais))
     if not key or key not in params or not cod:
         return None
     return (params[key].get("limites") or {}).get(cod)
 
 
-def _nombre_param(slug: str) -> str:
+def _nombre_param(slug: str, tipo_gas: str = "gas_natural") -> str:
     onto = cargar_ontologia()
-    key = _PARAM_A_ONTO.get(slug)
-    if key and key in (onto.get("parametros") or {}):
-        return onto["parametros"][key].get("nombre_completo") or key
+    seccion = _SECCION_POR_GAS.get(tipo_gas)
+    if seccion:
+        params = onto.get(seccion[0]) or {}
+        key = seccion[1].get(slug)
+    else:
+        params = onto.get("parametros") or {}
+        key = _PARAM_A_ONTO.get(slug)
+    if key and key in params:
+        return params[key].get("nombre_completo") or key
     return slug
 
 
-def _record(slug: str, pais: str, lim: Dict[str, Any]) -> Dict[str, Any]:
+def _record(slug: str, pais: str, lim: Dict[str, Any], tipo_gas: str = "gas_natural") -> Dict[str, Any]:
     tipo = lim.get("tipo_limite")
     if tipo == "maximo":
         inf, sup = None, lim.get("valor")
@@ -209,7 +248,7 @@ def _record(slug: str, pais: str, lim: Dict[str, Any]) -> Dict[str, Any]:
     else:
         notacion = _NOTACION_PAIS.get(_PAIS_A_CODIGO.get(_norm(pais)), "(0/0)")
     return {
-        "parametro": _nombre_param(slug),
+        "parametro": _nombre_param(slug, tipo_gas),
         "pais": _CODIGO_A_PAIS.get(_PAIS_A_CODIGO.get(_norm(pais)), pais),
         "limite_inferior": _fmt(inf) if inf is not None else "-",
         "limite_superior": _fmt(sup) if sup is not None else "-",
@@ -231,17 +270,22 @@ def _record(slug: str, pais: str, lim: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def consultar(slug: str, pais: str) -> Dict[str, Any]:
-    """Devuelve {count, matches:[record]} desde la ontología (fuente oficial)."""
-    lim = _limite_ontologia(slug, pais)
+def consultar(slug: str, pais: str, tipo_gas: str = "gas_natural") -> Dict[str, Any]:
+    """Devuelve {count, matches:[record]} desde la ontología (fuente oficial).
+
+    `tipo_gas` por defecto "gas_natural" → comportamiento idéntico al actual.
+    "biometano" consulta la sección `parametros_biometano` (jurisdicción EN16723).
+    """
+    lim = _limite_ontologia(slug, pais, tipo_gas)
     if not lim:
         return {"count": 0, "matches": [], "origen": "oficial"}
-    return {"count": 1, "matches": [_record(slug, pais, lim)], "origen": "oficial"}
+    return {"count": 1, "matches": [_record(slug, pais, lim, tipo_gas)], "origen": "oficial"}
 
 
-def evaluar(slug: str, pais: str, valor: float, unidad: Optional[str] = None) -> Dict[str, Any]:
+def evaluar(slug: str, pais: str, valor: float, unidad: Optional[str] = None,
+            tipo_gas: str = "gas_natural") -> Dict[str, Any]:
     """Evalúa cumplimiento contra el límite OFICIAL (ontología), con cita completa."""
-    base = consultar(slug, pais)
+    base = consultar(slug, pais, tipo_gas)
     if base["count"] == 0:
         return {"count": 0, "matches": [], "error": "Sin límite oficial para ese parámetro y país."}
     rec = dict(base["matches"][0])

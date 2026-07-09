@@ -431,6 +431,14 @@
         </div>
         <div class="cmp-inner">
           <div class="cmp-card-main">
+            <div class="gas-base-block" style="margin-top:0;margin-bottom:18px">
+              <label for="gasTipo">Tipo de gas a analizar</label>
+              <select id="gasTipo">
+                <option value="gas_natural">Gas natural (grupo H) — 21 jurisdicciones</option>
+                <option value="biometano">Biometano — EN 16723-1 (inyección en red)</option>
+                <option value="hidrogeno">Hidrógeno — ISO 14687 Grade D (pureza PEM)</option>
+              </select>
+            </div>
             <h2 class="cmp-card-h2">Composición del gas</h2>
             <div class="gas-head"><span>Parámetro</span><span>Valor</span><span>Unidad</span><span></span></div>
             <div class="gas-rows" id="gasFilas"></div>
@@ -438,7 +446,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Añadir componente
             </button>
-            <div class="gas-base-block">
+            <div class="gas-base-block" id="gasBaseBlock">
               <label for="gasBase">Indica en qué base están medidos el PCS y el Índice de Wobbe — incluye si el m³ es Nm³ (volumen a 0 °C) o Sm³ (a 15 °C)</label>
               <select id="gasBase">
                 <option value="España">España — comb. 0 °C · Nm³ (vol. 0 °C)</option>
@@ -670,6 +678,43 @@
     {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
     {slug:"hc(rocío)", label:"Punto de rocío de HC", unidades:["°C","K","°F"]},
   ];
+  // Catálogo de biometano (EN 16723-1). Debe reflejar PARAMETROS_UI_BIOMETANO del backend.
+  const PARAMS_BIOMETANO = [
+    {slug:"ch4_min", label:"CH₄ (metano) mínimo", unidades:["% molar"]},
+    {slug:"o2", label:"O₂ (oxígeno)", unidades:["% molar","ppm"]},
+    {slug:"co2", label:"CO₂", unidades:["% molar","ppm"]},
+    {slug:"co", label:"CO (monóxido de carbono)", unidades:["% molar","ppm"]},
+    {slug:"s total", label:"Azufre total (S)", unidades:["mg/m³","mg/Nm³","ppm"]},
+    {slug:"h2s+cos", label:"H₂S + COS", unidades:["mg/m³","mg/Nm³","ppm"]},
+    {slug:"h2o(rocío)", label:"Punto de rocío del agua (H₂O)", unidades:["°C","K","°F"]},
+    {slug:"siloxanos", label:"Siloxanos (Si total)", unidades:["mg/m³"]},
+    {slug:"comp_oil", label:"Aceite de compresor", unidades:["mg/m³"]},
+    {slug:"aminas", label:"Aminas", unidades:["mg/m³","ppm"]},
+    {slug:"nh3", label:"Amoníaco (NH₃)", unidades:["mg/m³","ppm"]},
+    {slug:"halogenados", label:"Compuestos halogenados (Cl+F)", unidades:["mg/m³","ppm"]},
+  ];
+  // Catálogo de hidrógeno (ISO 14687:2019 Grade D / EN 17124). Trazas en ppm (≡ μmol/mol).
+  const PARAMS_HIDROGENO = [
+    {slug:"h2_pureza", label:"Pureza H₂ (mínimo)", unidades:["% molar"]},
+    {slug:"no_h2", label:"Total gases no-H₂", unidades:["ppm"]},
+    {slug:"h2o", label:"Agua (H₂O)", unidades:["ppm"]},
+    {slug:"thc", label:"Hidrocarburos (excepto CH₄)", unidades:["ppm"]},
+    {slug:"ch4", label:"Metano (CH₄)", unidades:["ppm"]},
+    {slug:"o2", label:"O₂ (oxígeno)", unidades:["ppm"]},
+    {slug:"he", label:"Helio (He)", unidades:["ppm"]},
+    {slug:"n2", label:"Nitrógeno (N₂)", unidades:["ppm"]},
+    {slug:"ar", label:"Argón (Ar)", unidades:["ppm"]},
+    {slug:"co2", label:"CO₂", unidades:["ppm"]},
+    {slug:"co", label:"CO (monóxido de carbono)", unidades:["ppm"]},
+    {slug:"s total", label:"Azufre total (S)", unidades:["ppm"]},
+    {slug:"hcho", label:"Formaldehído (HCHO)", unidades:["ppm"]},
+    {slug:"hcooh", label:"Ácido fórmico (HCOOH)", unidades:["ppm"]},
+    {slug:"nh3", label:"Amoníaco (NH₃)", unidades:["ppm"]},
+    {slug:"halogenados", label:"Compuestos halogenados", unidades:["ppm"]},
+    {slug:"particulas", label:"Partículas", unidades:["mg/kg"]},
+  ];
+  // Parámetros de "Analizar gas" según el tipo de gas elegido en #gasTipo.
+  const CATALOGO = { gas_natural: PARAMS, biometano: PARAMS_BIOMETANO, hidrogeno: PARAMS_HIDROGENO };
   const PAISES_OPC = ["Portugal","Francia","Italia","Alemania","Países Bajos","Bélgica","Noruega","Polonia","Dinamarca","Hungría","Austria","Suiza","Chequia","Grecia","Irlanda","Rumanía","Eslovaquia","Turquía","Reino Unido","UE"];
   function initCompare(){
     const selP = $("cmpParam");
@@ -784,19 +829,29 @@
     {slug:"n2",  label:"N₂ (nitrógeno) — informativo", unidades:["% molar","ppm"]},
     {slug:"c2h6",label:"C₂H₆ (etano) — informativo", unidades:["% molar","ppm"]},
   ];
-  const GAS_ALL = PARAMS.concat(GAS_INFO);
+  // Composición informativa según el tipo de gas (en biometano, CH₄ es normativo → no informativo).
+  const GAS_INFO_BIO = [{slug:"n2", label:"N₂ (nitrógeno) — informativo", unidades:["% molar","ppm"]}];
+  function gasTipoActual(){ return ($("gasTipo") && $("gasTipo").value) || "gas_natural"; }
+  function gasCatalogo(){ return CATALOGO[gasTipoActual()] || PARAMS; }
+  function gasInfoActual(){
+    const t = gasTipoActual();
+    if(t === "hidrogeno") return [];      // en H₂ todos los constituyentes son normativos
+    if(t === "biometano") return GAS_INFO_BIO;
+    return GAS_INFO;
+  }
+  function gasAll(){ return gasCatalogo().concat(gasInfoActual()); }
   let gasReady = false;
   function gasParamOptions(){
     return '<option value="" disabled selected>— Elige un parámetro —</option>'+
       '<optgroup label="Parámetros normativos">'+
-      PARAMS.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
+      gasCatalogo().map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
       '</optgroup><optgroup label="Composición (informativo)">'+
-      GAS_INFO.map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
+      gasInfoActual().map(p => '<option value="'+esc(p.slug)+'">'+esc(p.label)+'</option>').join("")+
       '</optgroup>';
   }
   function fillUnidadesGas(sel){
     const row = sel.closest(".gas-row");
-    const p = GAS_ALL.find(x => x.slug === sel.value);
+    const p = gasAll().find(x => x.slug === sel.value);
     const u = (p && p.unidades) || ["—"];
     row.querySelector(".gas-unidad").innerHTML = u.map(x => '<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
   }
@@ -818,11 +873,19 @@
     if(valor!=null) row.querySelector(".gas-valor").value = valor;
     row.querySelector(".gas-del").onclick = () => { row.remove(); if(!cont.children.length) addFilaGas(); };
   }
-  function initGas(){
+  function resetFilasGas(){
     $("gasFilas").innerHTML = "";
     // Dos filas en blanco (sin parámetro ni valor) para empezar de cero.
     addFilaGas();
     addFilaGas();
+    // El biometano (EN 16723-1) no valida PCS/Wobbe → oculta el selector de base.
+    const bb = $("gasBaseBlock");
+    if(bb) bb.style.display = (gasTipoActual() === "biometano") ? "none" : "";
+  }
+  function initGas(){
+    resetFilasGas();
+    // Al cambiar el tipo de gas, el catálogo de parámetros cambia → reiniciar filas.
+    $("gasTipo").onchange = resetFilasGas;
     gasReady = true;
   }
   const VEREDICTO_TXT = {cumple:"Cumple", alerta:"Zona de alerta", no_cumple:"No cumple", sin_datos:"Sin datos"};
@@ -845,7 +908,7 @@
     try{
       const r = await fetch(api("/api/analizar-gas"),{
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ componentes, base_pcs: $("gasBase").value })
+        body: JSON.stringify({ componentes, base_pcs: $("gasBase").value, tipo_gas: gasTipoActual() })
       });
       if(r.status===404){
         res.innerHTML = '<div class="cmp-empty"><b>El servidor necesita reiniciarse</b> para activar el análisis de gas.<br>'+

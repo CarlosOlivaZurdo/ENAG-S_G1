@@ -94,6 +94,14 @@ class LLMProvider(abc.ABC):
     def display_name(self) -> str:
         """Descripción legible para mostrar en /api/status (p. ej. 'OpenAI gpt-4o-mini')."""
 
+    def embed(self, textos: List[str]) -> Optional[List[List[float]]]:
+        """Devuelve el vector (embedding) de cada texto, o None si el proveedor no
+        soporta embeddings. Por defecto NO soportado → la búsqueda cae al modo léxico.
+
+        Se añade aquí (y no como método abstracto) para no romper proveedores que
+        solo hacen chat: quien no lo implemente hereda este `None`."""
+        return None
+
     @abc.abstractmethod
     def chat(
         self,
@@ -210,6 +218,22 @@ class _OpenAIStyleProvider(LLMProvider):
                     "content": json.dumps(resultado, ensure_ascii=False, default=str),
                 })
         return texto_final
+
+
+    def embed(self, textos: List[str]) -> Optional[List[List[float]]]:
+        """Embeddings vía el mismo cliente estilo OpenAI (`.embeddings.create`).
+
+        Modelo por defecto: `text-embedding-3-small` (barato, multilingüe), configurable
+        con OPENAI_EMBED_MODEL. Devuelve None ante cualquier fallo → fallback léxico."""
+        if self._client is None or not textos:
+            return None
+        modelo = os.environ.get("OPENAI_EMBED_MODEL", "text-embedding-3-small")
+        try:
+            resp = self._client.embeddings.create(model=modelo, input=list(textos))
+            return [item.embedding for item in resp.data]
+        except Exception as exc:  # noqa: BLE001
+            print(f"[llm_interface] embeddings no disponibles: {exc}")
+            return None
 
 
 class OpenAIProvider(_OpenAIStyleProvider):

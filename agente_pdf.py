@@ -357,8 +357,33 @@ def _search_chunks(conn: sqlite3.Connection, tokens: List[str], limit: int) -> L
     return results
 
 
+def _fusionar_semantico(matches: List[Dict[str, Any]], query: str, limit: int) -> List[Dict[str, Any]]:
+    """Añade resultados SEMÁNTICOS (si la capa vectorial está activa) a los léxicos,
+    sin duplicar chunks y respetando `limit`. Si la capa no está lista o falla, no
+    cambia nada (devuelve los léxicos tal cual) — la ruta actual queda intacta."""
+    try:
+        from busqueda_semantica import hay_embeddings, buscar_semantico
+        if not hay_embeddings():
+            return matches
+        vistos = {(m.get("name"), m.get("page"), m.get("chunk")) for m in matches}
+        for sm in buscar_semantico(query, limit=limit):
+            if len(matches) >= limit:
+                break
+            clave = (sm.get("name"), sm.get("page"), sm.get("chunk"))
+            if clave not in vistos:
+                vistos.add(clave)
+                matches.append(sm)
+    except Exception:  # noqa: BLE001
+        pass  # cualquier problema → nos quedamos con lo léxico (sin romper nada)
+    return matches
+
+
 def buscar_pdfs(query: str, limit: int = 5) -> Dict[str, Any]:
-    """Busca información relevante en los PDF ya indexados en SQLite."""
+    """Busca información relevante en los PDF ya indexados en SQLite.
+
+    Recuperación HÍBRIDA: primero léxica (SQLite LIKE, suelo de recall) y, SI está
+    activa la capa vectorial (embeddings construidos), completa con resultados
+    semánticos. Sin embeddings, el comportamiento es idéntico al histórico."""
     if not query or not query.strip():
         return {"count": 0, "matches": [], "database": str(PDF_DB_PATH)}
 
@@ -368,6 +393,8 @@ def buscar_pdfs(query: str, limit: int = 5) -> Dict[str, Any]:
     with _connect() as conn:
         _ensure_schema(conn)
         matches = _search_chunks(conn, tokens, limit=limit)
+
+    matches = _fusionar_semantico(matches, query, limit=limit)
 
     for index, match in enumerate(matches, start=1):
         match["indice"] = index
