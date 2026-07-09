@@ -1382,6 +1382,8 @@ def _resumen_sin_valor(m) -> str:
         return "No especificado"
     if "tecnicamente" in e or "isento" in e or "libre de" in e:
         return "Técnicamente libre"
+    if "blending" in e or "incorporacion" in e:
+        return "Regula blending"
     if "sin minimo" in e:
         return "Sin mínimo (Wobbe/PCS)"
     if "conjunto" in e:

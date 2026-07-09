@@ -333,7 +333,12 @@ ontologia:
       organismo: "CEN — Comité Europeo de Normalización (TC 408)"
       publicacion: "2016 (vigente; en España UNE-EN 16723-1:2017)"
       pdf: ""                                    # Norma de PAGO: no se descarga texto CEN
-      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:38200"
+      # Se cita la ficha de UNE (UNE-EN 16723-1:2017, transposición IDÉNTICA, y la que
+      # invoca la Orden TED/181/2025). El portal de CEN ya NO ofrece URL estable por
+      # norma: sirve las fichas vía Oracle APEX con token de sesión (`cs=`), y la
+      # antigua `f?p=205:110:0::::FSP_PROJECT:38200` devuelve HTTP 500.
+      url: "https://www.une.org/encuentra-tu-norma/busca-tu-norma/norma?c=N0058455"
+      url_cen: "https://standards.cencenelec.eu/"   # buscador CEN (buscar «16723-1»); sin enlace directo estable
       descarga_auto: false
       tabla_calidad: "§4 y Tabla 1. EN 16723-1 fija valor límite SOLO a 4 parámetros: silicio volátil total (0,3–1 mg Si/m³), CO (≤0,1 % mol), NH₃ (≤10 mg/m³) y aminas. Aceite de compresor y polvo = «técnicamente libre de» (sin umbral numérico). El resto de parámetros de calidad se rigen por EN 16726 (Grupo H) y los halogenados por CEN/TR 17238:2018."
       estado_verificacion: VERIFICADO_SECUNDARIO
@@ -349,7 +354,9 @@ ontologia:
       organismo: "CEN — Comité Europeo de Normalización (TC 408)"
       publicacion: "2018"
       pdf: ""
-      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:64637"
+      # Ficha de UNE (UNE-CEN/TR 17238:2018, ratificada). La URL de CEN devolvía HTTP 500.
+      url: "https://www.une.org/encuentra-tu-norma/busca-tu-norma/norma?c=N0060195"
+      url_cen: "https://standards.cencenelec.eu/"   # buscador CEN (buscar «17238»); sin enlace directo estable
       descarga_auto: false
       tabla_calidad: "Metodología de evaluación basada en salud para compuestos clorados/fluorados (halogenados)."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
@@ -3524,27 +3531,27 @@ parametros_hidrogeno:
         tipo_limite: minimo
         valor: 98
         unidad: pct_mol
-        expresion_original: "H₂ ≥ 98 % mol para la red (mayoría de operadores de infraestructura GIE; alternativa 99,5 % para redes exigentes)."
+        expresion_original: "H₂ ≥ 98 % mol — RECOMENDACIÓN de la industria de infraestructura (GIE); no vinculante. Alternativa 99,5 % para redes exigentes."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Dominio de RED (gasoducto), NO de vehículo. Consenso de la industria europea de infraestructura (GIE): H₂ ≥ 98 % mol; algunos países/redes optan por 99,5 %. Aún no vinculante a nivel UE (lo formalizará ENNOH). NO usar el 99,97 % de ISO 14687 (que es de pila PEM/vehículo)."
+        nota: "Dominio de RED (gasoducto), NO de vehículo. Es una RECOMENDACIÓN de consenso de la industria europea de infraestructura (GIE): H₂ ≥ 98 % mol; algunos países/redes optan por 99,5 %. NO es vinculante a nivel UE (lo formalizará ENNOH). El único valor VINCULANTE de las 4 jurisdicciones es el de Portugal (RQS, 98 %). NO usar el 99,97 % de ISO 14687 (pila PEM/vehículo)."
       ES:
         fuente: GIE_H2_PURITY
-        articulo: "Marco UE de red (GIE); España regula el BLENDING (CNMC: H₂ hasta 2 %, 5 % por protocolo NGTS)"
+        articulo: "España regula el BLENDING (CNMC: H₂ ≤2 %, 5 % por protocolo NGTS); no fija H₂ puro"
         tipo_limite: minimo
-        valor: 98
+        valor: null
         unidad: pct_mol
-        expresion_original: "España no fija aún una pureza de H₂ PURO de red propia; regula la incorporación (blending) de H₂ en el gas natural (CNMC: ~2 %, ampliable a 5 %). Para H₂ puro sigue el marco UE de red (GIE: ≥98 %)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "El marco español (CNMC/Enagás) regula el BLENDING de H₂ en la red de gas natural (hasta 2 %, 5 % por el protocolo de la NGTS), no una calidad de hidrógeno PURO. Para red de H₂ puro rige el marco UE/GIE (≥98 %)."
+        expresion_original: "España NO fija una pureza de H₂ puro de red; regula el blending (incorporación de H₂ en el gas natural: CNMC ≤2 %, ampliable a 5 %). Marco UE de red de referencia: GIE ≥98 %."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El marco español (CNMC/Enagás) regula el BLENDING de H₂ en la red de gas natural (≤2 %, 5 % por el protocolo de la NGTS), NO una pureza de hidrógeno PURO. El único valor vinculante de pureza de red entre las 4 jurisdicciones es el de Portugal (RQS, 98 %)."
       FR:
         fuente: GIE_H2_PURITY
-        articulo: "Marco UE de red (GIE); Francia regula el blending (objetivo 6→10→20 % vol., GRTgaz/GRDF)"
+        articulo: "Francia regula el blending (objetivo 6→10→20 % vol., GRTgaz/GRDF); no fija H₂ puro"
         tipo_limite: minimo
-        valor: 98
+        valor: null
         unidad: pct_mol
-        expresion_original: "Francia no fija una pureza de H₂ puro de red propia; regula la incorporación (blending) de H₂ (6 % a corto plazo, 10 % a 2030, 20 % después). Para H₂ puro sigue el marco UE de red (GIE: ≥98 %)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "El marco francés (GRTgaz/GRDF) regula el BLENDING de H₂ (6→20 % vol.), no una calidad de hidrógeno PURO. Para red de H₂ puro rige el marco UE/GIE (≥98 %)."
+        expresion_original: "Francia NO fija una pureza de H₂ puro de red; regula el blending (6 % corto plazo, 10 % a 2030, 20 % después). Marco UE de red de referencia: GIE ≥98 %."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El marco francés (GRTgaz/GRDF) regula el BLENDING de H₂ (6→20 % vol.), NO una pureza de hidrógeno PURO."
       PT:
         fuente: REG_PT_826_2023
         articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146)"
@@ -3669,31 +3676,31 @@ parametros_hidrogeno:
         nota: "Dominio de RED. Coincide con GIE (≤ 0,1 % mol = 1000 µmol/mol) y lo respalda normativamente (CEN). Nota d/c de la Tabla 1: máx. 0,1 mol-% en redes SIN salida a almacenamiento subterráneo (UGS) ni a clientes sensibles; en caso contrario ≤ 10 µmol/mol (media móvil 24 h). ~200× más permisivo que el 5 µmol/mol de ISO 14687 (vehículo). Fuente PRIMARIA."
       UE:
         fuente: GIE_H2_PURITY
-        articulo: "GIE Position Paper on Hydrogen Quality (2024)"
+        articulo: "GIE Position Paper on Hydrogen Quality (2024) — recomendación, no vinculante"
         tipo_limite: maximo
         valor: 0.1
         unidad: pct_mol
-        expresion_original: "O₂ ≤ 0,1 % mol (red de hidrógeno)."
+        expresion_original: "O₂ ≤ 0,1 % mol — RECOMENDACIÓN de la industria de infraestructura (GIE), no vinculante."
         estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Dominio de RED: la infraestructura europea (GIE) admite O₂ ≤ 0,1 % mol (= 1000 µmol/mol). Es ~200× más permisivo que el 5 µmol/mol de ISO 14687 (vehículo/pila PEM), que NO aplica a la red. En redes con almacenamiento subterráneo (UGS) puede exigirse más estricto."
+        nota: "Dominio de RED: la infraestructura europea (GIE) RECOMIENDA O₂ ≤ 0,1 % mol (= 1000 µmol/mol), ~200× más permisivo que el 5 µmol/mol de ISO 14687 (vehículo, que NO aplica a la red). No vinculante (ENNOH lo formalizará). En redes con almacenamiento subterráneo (UGS) puede exigirse más estricto."
       ES:
         fuente: GIE_H2_PURITY
-        articulo: "Marco UE de red (GIE); España regula el blending, no un O₂ de H₂ puro propio"
+        articulo: "España regula el blending; no fija un O₂ de H₂ puro"
         tipo_limite: maximo
-        valor: 0.1
+        valor: null
         unidad: pct_mol
-        expresion_original: "España no fija un O₂ de H₂ puro de red propio; sigue el marco UE de red (GIE: O₂ ≤ 0,1 % mol)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "El marco español regula el blending de H₂; para H₂ puro de red rige el marco UE/GIE (O₂ ≤ 0,1 % mol)."
+        expresion_original: "España NO fija un O₂ de H₂ puro de red; regula el blending. Marco UE de red de referencia: GIE ≤ 0,1 % mol."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El marco español regula el blending de H₂, no una calidad de H₂ puro. Referencia UE de red: GIE (O₂ ≤ 0,1 % mol)."
       FR:
         fuente: GIE_H2_PURITY
-        articulo: "Marco UE de red (GIE)"
+        articulo: "Francia regula el blending; no fija un O₂ de H₂ puro"
         tipo_limite: maximo
-        valor: 0.1
+        valor: null
         unidad: pct_mol
-        expresion_original: "Francia sigue el marco UE de red (GIE: O₂ ≤ 0,1 % mol)."
-        estado_verificacion: VERIFICADO_SECUNDARIO
-        nota: "Para H₂ puro de red rige el marco UE/GIE (O₂ ≤ 0,1 % mol)."
+        expresion_original: "Francia NO fija un O₂ de H₂ puro de red; regula el blending. Marco UE de red de referencia: GIE ≤ 0,1 % mol."
+        estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
+        nota: "El marco francés regula el blending de H₂, no una calidad de H₂ puro. Referencia UE de red: GIE (O₂ ≤ 0,1 % mol)."
       PT:
         fuente: REG_PT_826_2023
         articulo: "RQS consolidado (ERSE), Anexo XII «Características do hidrogénio» (art. 39.º, pág. 146)"
