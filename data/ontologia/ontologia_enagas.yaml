@@ -333,7 +333,12 @@ ontologia:
       organismo: "CEN — Comité Europeo de Normalización (TC 408)"
       publicacion: "2016 (vigente; en España UNE-EN 16723-1:2017)"
       pdf: ""                                    # Norma de PAGO: no se descarga texto CEN
-      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:38200"
+      # Se cita la ficha de UNE (UNE-EN 16723-1:2017, transposición IDÉNTICA, y la que
+      # invoca la Orden TED/181/2025). El portal de CEN ya NO ofrece URL estable por
+      # norma: sirve las fichas vía Oracle APEX con token de sesión (`cs=`), y la
+      # antigua `f?p=205:110:0::::FSP_PROJECT:38200` devuelve HTTP 500.
+      url: "https://www.une.org/encuentra-tu-norma/busca-tu-norma/norma?c=N0058455"
+      url_cen: "https://standards.cencenelec.eu/"   # buscador CEN (buscar «16723-1»); sin enlace directo estable
       descarga_auto: false
       tabla_calidad: "§4 y Tabla 1. EN 16723-1 fija valor límite SOLO a 4 parámetros: silicio volátil total (0,3–1 mg Si/m³), CO (≤0,1 % mol), NH₃ (≤10 mg/m³) y aminas. Aceite de compresor y polvo = «técnicamente libre de» (sin umbral numérico). El resto de parámetros de calidad se rigen por EN 16726 (Grupo H) y los halogenados por CEN/TR 17238:2018."
       estado_verificacion: VERIFICADO_SECUNDARIO
@@ -349,7 +354,9 @@ ontologia:
       organismo: "CEN — Comité Europeo de Normalización (TC 408)"
       publicacion: "2018"
       pdf: ""
-      url: "https://standards.cencenelec.eu/dyn/www/f?p=205:110:0::::FSP_PROJECT:64637"
+      # Ficha de UNE (UNE-CEN/TR 17238:2018, ratificada). La URL de CEN devolvía HTTP 500.
+      url: "https://www.une.org/encuentra-tu-norma/busca-tu-norma/norma?c=N0060195"
+      url_cen: "https://standards.cencenelec.eu/"   # buscador CEN (buscar «17238»); sin enlace directo estable
       descarga_auto: false
       tabla_calidad: "Metodología de evaluación basada en salud para compuestos clorados/fluorados (halogenados)."
       estado_verificacion: NO_VERIFICABLE_SIN_FUENTE
