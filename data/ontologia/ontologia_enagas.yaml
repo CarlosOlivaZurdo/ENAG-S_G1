@@ -387,6 +387,21 @@ ontologia:
       nota: "Posición de la industria europea de INFRAESTRUCTURA de gas (TSOs/DSOs/almacenamiento — el dominio de Enagás), para el transporte y distribución de H₂ por RED. Es el dominio CORRECTO frente a ISO 14687/EN 17124 (que son de vehículo/pila PEM). Aún no vinculante a nivel UE (lo formalizará ENNOH), pero es el consenso de red más concreto. 2024."
       ambito: "Calidad del hidrógeno para transporte y distribución por RED de gasoductos (dominio TSO/DSO/almacenamiento)."
 
+    - id: CEN_TS_17977
+      tipo: norma_tecnica
+      pais: UE
+      gas: hidrogeno
+      nombre: "CEN/TS 17977:2023 — Gas infrastructure - Quality of gas - Hydrogen used in rededicated gas systems (ratificada como UNE-CEN/TS 17977:2023, dic-2023)"
+      organismo: "CEN — Comité Europeo de Normalización (TC 234 «Gas infrastructure»; secretaría DIN). Ratificada por UNE."
+      publicacion: "Noviembre 2023 (aprobada por CEN 28-ago-2023 para aplicación provisional; validez inicial 3 años). Ratificada como UNE-CEN/TS 17977:2023 en diciembre de 2023 (fecha de disponibilidad 2023-11-15)."
+      pdf: "data/raw/UNE-CEN_TS_17977=2023.pdf"
+      url: "https://www.une.org/encuentra-tu-norma/busca-tu-norma?q=CEN%2FTS%2017977"
+      descarga_auto: false  # Norma de PAGO (CEN/AENOR): PDF adquirido vía suscripción AENORmás (Comillas), no descargable por API
+      tabla_calidad: "Tabla 1 — Calidad del H₂ en redes reconvertidas (dominio de RED): H₂ ≥ 98 mol-%; Wobbe 42,0–46,0 MJ/m³ (15 ºC/15 ºC); agua ≤ 250 µmol/mol (≤ 60 si MOP > 10 bar); rocío de HC < −2 ºC (1 < p < 70 bar); Σ inertes (N₂+He+Ar) ≤ 2 mol-%; hidrocarburos gaseosos ≤ 2 mol-%; O₂ ≤ 0,1 mol-% (≤ 10 µmol/mol en redes con salida a UGS o clientes sensibles, media móvil 24 h); CO ≤ 20 µmol/mol; CO₂ ≤ 20 µmol/mol; azufre total ≤ 7 µmol/mol (H₂ no odorizado); NH₃ ≤ 13 µmol/mol; halogenados ≤ 0,05 µmol/mol; partículas «técnicamente libre». Condiciones de referencia ISO 13443 (15 ºC/15 ºC, 1013,25 mbar; presiones absolutas). Métodos (informativos): DIN 51894 (H₂), EN ISO 6976 (Wobbe), ISO 21087 (resto). Anexo D = misma tabla en unidades alternativas (mg/m³)."
+      estado_verificacion: VERIFICADO
+      nota: "Especificación técnica CEN de calidad del hidrógeno para redes de gas RECONVERTIDAS (rededicated) — dominio de RED (transporte/distribución por gasoducto, el de Enagás), NO de vehículo/pila PEM (eso es ISO 14687/EN 17124). Es el respaldo normativo CEN del consenso GIE (≥ 98 % mol): la GIE se declara «alineada con CEN/TS». Muchos parámetros derivan de EN 16726. Al ser una CEN/TS (aplicación provisional, revisable a 3 años) aún no es una EN plena; podría convertirse en norma europea. PDF PRIMARIO disponible (adquirido vía AENORmás) → VERIFICADO. Varios parámetros (rocío de HC, hidrocarburos, azufre, partículas) proceden del uso previo de la tubería y decrecen con el tiempo de operación (Anexo B)."
+      ambito: "Calidad del hidrógeno gaseoso transmitido, inyectado/extraído de almacenamiento, distribuido y utilizado en infraestructura de gas total o parcialmente RECONVERTIDA y aplicaciones conectadas (dominio de RED, CEN/TC 234). Aplica a cada punto de salida del sistema."
+
     - id: EN_17124
       tipo: norma_tecnica
       pais: UE
@@ -3494,6 +3509,15 @@ parametros_hidrogeno:
     aliases: [pureza de h2, pureza de hidrogeno, indice de h2, hydrogen purity, hydrogen fuel index, wasserstoffreinheit, purete de l'hydrogene, fraccion molar de hidrogeno, h2 purity]
     definicion_extra: "Fracción molar mínima de H₂ para transporte/distribución por RED (dominio TSO), NO como combustible de vehículo."
     limites:
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Hidrógeno)"
+        tipo_limite: minimo
+        valor: 98
+        unidad: pct_mol
+        expresion_original: "Hydrogen ≥ 98 mol-% (véase Anexo A). Método de ensayo: DIN 51894."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas, CEN/TC 234). Es el respaldo normativo CEN del consenso GIE (≥ 98 % mol). Fuente PRIMARIA (PDF UNE-CEN/TS 17977:2023). NO es el 99,97 % de ISO 14687 (vehículo/PEM)."
       UE:
         fuente: GIE_H2_PURITY
         articulo: "GIE Position Paper on Hydrogen Quality (Hydrogen Purity Task Force, 2024)"
@@ -3568,6 +3592,15 @@ parametros_hidrogeno:
         expresion_original: "Agua (H₂O): 5 μmol/mol"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Water)"
+        tipo_limite: maximo
+        valor: 250
+        unidad: ppm_vol
+        expresion_original: "Water ≤ 250 µmol/mol (≤ 60 µmol/mol si MOP > 10 bar). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). Límite mucho más permisivo que el 5 µmol/mol de ISO 14687 (vehículo). Depende de la presión: ≤ 250 µmol/mol a MOP ≤ 10 bar; ≤ 60 µmol/mol a MOP > 10 bar (nota a de la Tabla 1). En unidades alternativas (Anexo D): ≤ 200 mg/m³ (≤ 50 mg/m³ si MOP > 10 bar). Fuente PRIMARIA."
 
   THC:
     nombre_completo: "Hidrocarburos totales excepto CH₄ (equiv. C1)"
@@ -3587,6 +3620,15 @@ parametros_hidrogeno:
         expresion_original: "Hidrocarburos totales excepto CH₄ (eq. C1): 2 μmol/mol (incluye especies oxigenadas)"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Gaseous hydrocarbons)"
+        tipo_limite: maximo
+        valor: 2
+        unidad: pct_mol
+        expresion_original: "Gaseous hydrocarbons ≤ 2 mol-%. Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "⚠️ DEFINICIÓN DISTINTA de la de ISO 14687: CEN/TS 17977 limita los «hidrocarburos gaseosos» totales a ≤ 2 mol-% (dominio de RED, redes reconvertidas), no los 2 µmol/mol en base C1 de la pila PEM. En CEN/TS estos HC proceden del uso previo de la tubería (nota b). Fuente PRIMARIA."
 
   CH4:
     nombre_completo: "Metano"
@@ -3616,6 +3658,15 @@ parametros_hidrogeno:
     definicion: "Oxígeno en el hidrógeno de RED (transporte/distribución). Contaminante crítico para el almacenamiento subterráneo (UGS). Dominio de RED, no de vehículo (donde ISO 14687 fija 5 µmol/mol)."
     aliases: [o2, oxigeno, oxygen, sauerstoff, o2 hidrogeno, o2 h2]
     limites:
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Oxygen O₂)"
+        tipo_limite: maximo
+        valor: 0.1
+        unidad: pct_mol
+        expresion_original: "Oxygen (O₂) ≤ 0,1 mol-% (≤ 10 µmol/mol en redes con salida a UGS o clientes sensibles; media móvil 24 h). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED. Coincide con GIE (≤ 0,1 % mol = 1000 µmol/mol) y lo respalda normativamente (CEN). Nota d/c de la Tabla 1: máx. 0,1 mol-% en redes SIN salida a almacenamiento subterráneo (UGS) ni a clientes sensibles; en caso contrario ≤ 10 µmol/mol (media móvil 24 h). ~200× más permisivo que el 5 µmol/mol de ISO 14687 (vehículo). Fuente PRIMARIA."
       UE:
         fuente: GIE_H2_PURITY
         articulo: "GIE Position Paper on Hydrogen Quality (2024)"
@@ -3671,6 +3722,15 @@ parametros_hidrogeno:
         expresion_original: "Helio (He): 300 μmol/mol"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Sum of inerts N₂, He, Ar)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Sum of inerts (N₂, He, Ar) ≤ 2 mol-% (límite COLECTIVO, no individual). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED. CEN/TS 17977 NO fija un límite individual de He: lo limita dentro de la suma de inertes N₂+He+Ar ≤ 2 mol-%. valor null (colectivo, no comparable como número individual). Fuente PRIMARIA."
 
   N2:
     nombre_completo: "Nitrógeno"
@@ -3690,6 +3750,15 @@ parametros_hidrogeno:
         expresion_original: "Nitrógeno (N₂): 300 μmol/mol"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Sum of inerts N₂, He, Ar)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Sum of inerts (N₂, He, Ar) ≤ 2 mol-% (límite COLECTIVO, no individual). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED. CEN/TS 17977 NO fija un límite individual de N₂: lo limita dentro de la suma de inertes N₂+He+Ar ≤ 2 mol-%. valor null (colectivo, no comparable como número individual). Fuente PRIMARIA."
 
   AR:
     nombre_completo: "Argón"
@@ -3709,6 +3778,15 @@ parametros_hidrogeno:
         expresion_original: "Argón (Ar): 300 μmol/mol"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Sum of inerts N₂, He, Ar)"
+        tipo_limite: maximo
+        valor: null
+        unidad: pct_mol
+        expresion_original: "Sum of inerts (N₂, He, Ar) ≤ 2 mol-% (límite COLECTIVO, no individual). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED. CEN/TS 17977 NO fija un límite individual de Ar: lo limita dentro de la suma de inertes N₂+He+Ar ≤ 2 mol-%. valor null (colectivo, no comparable como número individual). Fuente PRIMARIA."
 
   CO2:
     nombre_completo: "Dióxido de carbono"
@@ -3728,6 +3806,15 @@ parametros_hidrogeno:
         expresion_original: "Dióxido de carbono (CO₂): 2 μmol/mol"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Carbon dioxide)"
+        tipo_limite: maximo
+        valor: 20
+        unidad: ppm_vol
+        expresion_original: "Carbon dioxide ≤ 20 µmol/mol. Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). ≤ 20 µmol/mol, más permisivo que los 2 µmol/mol de ISO 14687 (vehículo). Fuente PRIMARIA."
 
   CO:
     nombre_completo: "Monóxido de carbono"
@@ -3747,6 +3834,15 @@ parametros_hidrogeno:
         expresion_original: "Monóxido de carbono (CO): 0,2 μmol/mol; Σ(CO+HCHO+HCOOH) ≤ 0,2"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Además del límite individual, CO+HCHO+HCOOH ≤ 0,2 μmol/mol (restricción de suma NO modelada como número único). Grade D."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Carbon monoxide)"
+        tipo_limite: maximo
+        valor: 20
+        unidad: ppm_vol
+        expresion_original: "Carbon monoxide ≤ 20 µmol/mol. Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). ≤ 20 µmol/mol individual; CEN/TS 17977 NO impone la restricción de suma CO+HCHO+HCOOH de ISO 14687 (vehículo). Fuente PRIMARIA."
 
   S_TOTAL:
     nombre_completo: "Azufre total (equiv. S1)"
@@ -3766,6 +3862,15 @@ parametros_hidrogeno:
         expresion_original: "Azufre total (eq. S1): 0,004 μmol/mol (incl. H₂S, COS, CS₂, mercaptanos)"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Parámetro ADITIVO (suma), como en gas natural, pero ~3 órdenes de magnitud menor. Grade D."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Total sulfur)"
+        tipo_limite: maximo
+        valor: 7
+        unidad: ppm_vol
+        expresion_original: "Total sulfur ≤ 7 µmol/mol (H₂ no odorizado). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). ≤ 7 µmol/mol para H₂ NO odorizado (nota e). ~1750× más permisivo que los 0,004 µmol/mol de ISO 14687 (vehículo): el azufre procede de odorantes del uso previo de la tubería (Anexo B). En unidades alternativas (Anexo D): ≤ 10 mg/m³. Fuente PRIMARIA."
 
   HCHO:
     nombre_completo: "Formaldehído"
@@ -3823,6 +3928,15 @@ parametros_hidrogeno:
         expresion_original: "Amoníaco (NH₃): 0,1 μmol/mol"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Ammonia)"
+        tipo_limite: maximo
+        valor: 13
+        unidad: ppm_vol
+        expresion_original: "Ammonia ≤ 13 µmol/mol. Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). ≤ 13 µmol/mol, más permisivo que los 0,1 µmol/mol de ISO 14687 (vehículo). En unidades alternativas (Anexo D): ≤ 10 mg/m³. Fuente PRIMARIA."
 
   HALOGENADOS:
     nombre_completo: "Compuestos halogenados (equiv. ión halógeno)"
@@ -3842,6 +3956,15 @@ parametros_hidrogeno:
         expresion_original: "Compuestos halogenados (eq. ión halógeno): 0,05 μmol/mol (HCl, R-Cl)"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "μmol/mol ≡ ppm. Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (Halogenated compounds)"
+        tipo_limite: maximo
+        valor: 0.05
+        unidad: ppm_vol
+        expresion_original: "Halogenated compounds ≤ 0,05 µmol/mol. Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). ≤ 0,05 µmol/mol, coincide con el valor de ISO 14687 (vehículo). En unidades alternativas (Anexo D): ≤ 0,08 mg/m³. Fuente PRIMARIA."
 
   PARTICULAS:
     nombre_completo: "Partículas"
@@ -3861,6 +3984,15 @@ parametros_hidrogeno:
         expresion_original: "Partículas: 1 mg/kg (sin aceite visible en boquilla)"
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "mg/kg (masa). Grade D (PEM)."
+      CEN:
+        fuente: CEN_TS_17977
+        articulo: "CEN/TS 17977:2023, Tabla 1 (max. particulate concentration)"
+        tipo_limite: cualitativo
+        valor: null
+        unidad: adimensional
+        expresion_original: "Máxima concentración de partículas: «technically free» (técnicamente libre). Método: ISO 21087."
+        estado_verificacion: VERIFICADO
+        nota: "Dominio de RED (redes reconvertidas). Restricción CUALITATIVA («técnicamente libre», sin umbral numérico), a diferencia del 1 mg/kg de ISO 14687 (vehículo). Las partículas proceden del uso previo de la tubería (nota b). Fuente PRIMARIA."
 
   COMP_TRAZAS:
     nombre_completo: "Trazas de compresores"
