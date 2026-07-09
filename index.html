@@ -186,10 +186,10 @@
   .cmp-ev a{color:var(--accent-d);word-break:break-all}
   .cmp-ev code{background:#eef2f6;padding:1px 5px;border-radius:4px;font-size:11px}
   .cmp-subnav{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--line);justify-content:center}
-  .sub-item{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--muted);
+  .sub-item,.gsub-item{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--muted);
     padding:9px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:-1px}
-  .sub-item:hover{color:var(--ink)}
-  .sub-item.active{color:var(--accent-d);border-bottom-color:var(--accent)}
+  .sub-item:hover,.gsub-item:hover{color:var(--ink)}
+  .sub-item.active,.gsub-item.active{color:var(--accent-d);border-bottom-color:var(--accent)}
 
   /* Heatmap */
   .hm-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
@@ -318,19 +318,6 @@
         <div class="side-label">Consultas recientes</div>
         <ul id="history"><li class="empty">Sin consultas todavía</li></ul>
       </div>
-      <div class="side-label">Parámetros a analizar</div>
-      <ul class="side-params">
-        <li>Índice de Wobbe</li>
-        <li>Poder calorífico superior (PCS)</li>
-        <li>Densidad relativa</li>
-        <li>Azufre total</li>
-        <li>H₂S + COS</li>
-        <li>Mercaptanos (RSH)</li>
-        <li>Oxígeno (O₂)</li>
-        <li>Dióxido de carbono (CO₂)</li>
-        <li>Punto de rocío de agua (H₂O)</li>
-        <li>Punto de rocío de hidrocarburos (HC)</li>
-      </ul>
     </div>
     <div class="side-foot"><span>v1.6</span><span id="footStatus">—</span></div>
   </aside>
