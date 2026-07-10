@@ -3539,6 +3539,7 @@ parametros_hidrogeno:
         tipo_limite: minimo
         valor: 98
         unidad: pct_mol
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         expresion_original: "H₂ ≥ 98 % mol — RECOMENDACIÓN de la industria de infraestructura (GIE); no vinculante. Alternativa 99,5 % para redes exigentes."
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "Dominio de RED (gasoducto), NO de vehículo. Es una RECOMENDACIÓN de consenso de la industria europea de infraestructura (GIE): H₂ ≥ 98 % mol; algunos países/redes optan por 99,5 %. NO es vinculante a nivel UE (lo formalizará ENNOH). El único valor VINCULANTE de las 4 jurisdicciones es el de Portugal (RQS, 98 %). NO usar el 99,97 % de ISO 14687 (pila PEM/vehículo)."
@@ -3688,6 +3689,7 @@ parametros_hidrogeno:
         tipo_limite: maximo
         valor: 0.1
         unidad: pct_mol
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         expresion_original: "O₂ ≤ 0,1 % mol — RECOMENDACIÓN de la industria de infraestructura (GIE), no vinculante."
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "Dominio de RED: la infraestructura europea (GIE) RECOMIENDA O₂ ≤ 0,1 % mol (= 1000 µmol/mol), ~200× más permisivo que el 5 µmol/mol de ISO 14687 (vehículo, que NO aplica a la red). No vinculante (ENNOH lo formalizará). En redes con almacenamiento subterráneo (UGS) puede exigirse más estricto."
@@ -4024,6 +4026,7 @@ parametros_hidrogeno:
         tipo_limite: cualitativo
         valor: null
         unidad: adimensional
+        condiciones_referencia: { temperatura_combustion_C: 15, temperatura_volumen_C: 15, presion_bar: 1.01325, notacion: "@15/15" }
         expresion_original: "Aceite y partículas: «técnicamente libre» (restricción cualitativa de red); sin umbral numérico de red específico."
         estado_verificacion: VERIFICADO_SECUNDARIO
         nota: "Dominio de RED: GIE se alinea con EASEE-gas (calidad de gas) — aceite/partículas como restricción CUALITATIVA («técnicamente libre»). El 1 mg/kg de ISO 14687 es de vehículo (repostaje), NO de red. Método por ISO 8573 / ISO 19880-1."
