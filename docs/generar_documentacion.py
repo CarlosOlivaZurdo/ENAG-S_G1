@@ -242,7 +242,28 @@ conservan como ficheros de imagen independientes y se incluyen también en este 
 17. Garantías del sistema
 18. Stack tecnológico y despliegue
 19. Diseño ideal frente a implementación real
-20. Glosario
+20. Alcance y limitaciones del prototipo
+21. Glosario
+
+---
+
+## Documentos del proyecto
+
+Conjunto de entregables (carpeta `docs/`). Cada uno cumple un papel distinto; **este documento es
+la referencia técnica y de funcionamiento completa** (el "manual"), y basta por sí solo para
+explicar el sistema.
+
+| Documento | Formato | Para qué sirve |
+|---|---|---|
+| **Documentacion_Comparador_Gas** (este) | MD · PDF | Referencia técnica y de funcionamiento completa. |
+| **Presentacion_15min** · **Presentacion_7min** | PDF · PPTX | Diapositivas de la exposición (completa y ejecutiva), con notas del ponente. |
+| **Guion_Presentacion_15min** · **_7min** | MD | El texto a decir, diapositiva a diapositiva y con tiempos. |
+| **Prospeccion_Normativa_Hidrogeno** | MD | Marco regulatorio del hidrógeno verificado + hoja de ruta de escalado. |
+| **Estudio_Terminologia_Biometano** | MD | Justificación (medida) de una capa de búsqueda semántica. |
+| **Arquitectura_Esquema_Cajas** · **Ontologia_Estructura** | PNG · SVG | Los dos diagramas (embebidos en este documento). |
+
+Fuera de `docs/`: `LEER_PRIMERO.txt` (guía rápida de arranque) y `README.md` (especificación de
+diseño del proyecto).
 
 ---
 
@@ -645,7 +666,30 @@ que lo opere.
 
 ---
 
-## 20. Glosario
+## 20. Alcance y limitaciones del prototipo
+
+Para una lectura honesta, conviene explicitar qué es y qué no es hoy el sistema:
+
+- **Prototipo demostrativo, no producción.** Está pensado para **uso interno/local** (se sirve por
+  HTTP; ver §18) y para demostrar la arquitectura y el rigor de los datos, no para una explotación a
+  gran escala ni multiusuario concurrente.
+- **Sin autenticación.** No incorpora control de acceso ni gestión de usuarios: se asume una red de
+  confianza. Añadir autenticación —o servir tras un proxy inverso con TLS— queda para el despliegue (§18).
+- **Cobertura de datos delimitada.** Gas natural: {len(PARAMS)} parámetros × {len(CODES)}
+  jurisdicciones ({verif} verificados, {noverf} no verificables). Biometano e hidrógeno: alcance
+  acotado y, en el hidrógeno, **marco normativo aún en construcción** (se trata como prospección; ver §15).
+- **Búsqueda documental léxica.** El RAG es por términos, no semántico (§12, §19); la capa vectorial
+  está preparada pero desactivada por defecto.
+- **La IA es opcional y acotada.** Sin clave de OpenAI el sistema funciona en modo determinista (igual
+  de fiable para límites y comparaciones); y la IA **nunca genera cifras** (§11).
+
+Ninguna de estas limitaciones afecta a la garantía central: **las cifras nunca se inventan** y todo
+es trazable a su fuente. Son el alcance natural de un prototipo, y el camino a producción está
+indicado (§18).
+
+---
+
+## 21. Glosario
 
 - **Backend / servidor de aplicación:** el programa que da soporte a la web y ejecuta la lógica.
 - **FastAPI:** framework con el que se ha desarrollado el servidor. Es infraestructura propia.
