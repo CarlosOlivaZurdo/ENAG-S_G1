@@ -661,7 +661,7 @@ que lo opere.
 | El diseño / la ontología describe… | La realidad del código es… |
 |---|---|
 | RAG con **Vector DB + similitud semántica** | **Búsqueda léxica** SQLite `LIKE` (sin vectores) |
-| Normalización **"con `pint`"** | `pint` no se importa; conversiones = tablas verificadas a mano |
+| Normalización **"con `pint`"** | `pint` no se importa; los factores de conversión provienen de la norma **ISO 13443** (transcritos y verificados, sin librería externa) |
 | Interfaz con **Streamlit** (prototipo inicial) | **`index.html`** (JavaScript puro) servido por FastAPI |
 
 ---

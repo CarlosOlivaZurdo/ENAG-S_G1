@@ -107,7 +107,7 @@ ARROWS = [
     (700, 545, 542, 545, "llama a las funciones", 0, -12, "cb"),
     (330, 622, 330, 667, "lee", 10, 0, "lm"),
     (910, 622, 910, 667, "buscar_pdfs", 10, 0, "lm"),
-    (330, 820, 330, 777, "extracción a mano", 10, 0, "lm"),
+    (330, 820, 330, 777, "extracción verificada", 10, 0, "lm"),
     (910, 820, 910, 777, "indexa (pdfplumber)", 10, 0, "lm"),
 ]
 
