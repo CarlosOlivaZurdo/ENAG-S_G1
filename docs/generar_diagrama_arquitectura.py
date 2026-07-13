@@ -52,7 +52,7 @@ BOXES = [
     dict(x=150, y=120, w=300, h=52, fill="#ffffff", stroke=CIAN, header=None,
          body=[("CONSULTA LIBRE  (chat)", "bodybold", AZUL)], align="center"),
     dict(x=470, y=120, w=300, h=52, fill="#ffffff", stroke=CIAN, header=None,
-         body=[("COMPARATIVA  (matriz + exportar)", "bodybold", AZUL)], align="center"),
+         body=[("COMPARATIVA  ·  GN · biometano · H2", "bodybold", AZUL)], align="center"),
     dict(x=790, y=120, w=300, h=52, fill="#ffffff", stroke=CIAN, header=None,
          body=[("ANALIZAR GAS", "bodybold", AZUL)], align="center"),
 
@@ -84,8 +84,8 @@ BOXES = [
     dict(x=120, y=668, w=420, h=108, fill=VERDE_BG, stroke=VERDE,
          header="5 · ONTOLOGÍA (YAML)  —  FUENTE DE VERDAD",
          hfill=VERDE, hcolor="#ffffff",
-         body=[("ontologia_enagas.yaml", "bodybold", AZUL),
-               ("10 parámetros × 21 países + cita + estado_verificación", "small", TINTA)], align="center"),
+         body=[("ontologia_enagas.yaml   ·   tipo_gas", "bodybold", AZUL),
+               ("gas natural 10×21 · biometano · hidrógeno + cita + estado", "small", TINTA)], align="center"),
 
     dict(x=700, y=668, w=420, h=108, fill=NARAN_BG, stroke=NARANJA,
          header="6 · RAG  —  agente_pdf.py + SQLite",

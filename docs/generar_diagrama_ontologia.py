@@ -38,7 +38,7 @@ BOXES = [
                ("fuentes_normativas[]  (las normas)", "small", TINTA)], align="center"),
     dict(x=360, y=158, w=262, h=64, fill=AZUL_BG, stroke=CIAN, header=None,
          body=[("2 · parametros:", "bodybold", AZUL),
-               ("los 10 índices de calidad", "small", TINTA)], align="center"),
+               ("+_biometano · +_hidrogeno (tipo_gas)", "small", TINTA)], align="center"),
     dict(x=656, y=158, w=240, h=64, fill=AZUL_BG, stroke=CIAN, header=None,
          body=[("3 · unidades · flags", "bodybold", AZUL),
                ("catálogos auxiliares", "small", TINTA)], align="center"),
@@ -63,8 +63,8 @@ BOXES = [
     dict(x=470, y=300, w=380, h=96, fill=AZUL_BG, stroke=CIAN,
          header="parametros:  los 10 índices",
          hfill=AZUL, hcolor="#ffffff",
-         body=[("Wobbe · PCS · densidad rel. · S total · H₂S+COS", "small", TINTA),
-               ("RSH · O₂ · CO₂ · rocío H₂O · rocío HC", "small", TINTA),
+         body=[("Wobbe · PCS · densidad rel. · S total · H2S+COS", "small", TINTA),
+               ("RSH · O2 · CO2 · rocío H2O · rocío HC", "small", TINTA),
                ("(c/u: nombre_completo · símbolo · grupo · unidad)", "tiny", "#5d7082")], align="center"),
 
     dict(x=470, y=420, w=380, h=80, fill=AZUL_BG, stroke=CIAN,
@@ -124,7 +124,7 @@ ARROWS = [
 ]
 
 FOOT1 = "VERIFICADO = consta en fuente oficial.   NO_VERIFICABLE_SIN_FUENTE = no se inventa (se deja en blanco)."
-FOOT2 = "El motor determinista LEE de aquí. Cada límite es trazable a su fuente: documento · artículo · página · URL."
+FOOT2 = "Mismo esquema para gas natural, biometano e hidrógeno (dimensión tipo_gas). Cada límite es trazable a su fuente: documento · artículo · página · URL."
 
 # --------------------------------------------------------------- helpers PIL
 def _dashed(d, x1, y1, x2, y2, color, w, dash=8, gap=6):

@@ -1,6 +1,6 @@
 # =============================================================================
-# ONTOLOGÍA DE CALIDAD DEL GAS NATURAL — ENAGÁS
-# Comparación regulatoria multinacional (España · Portugal · Francia · UE)
+# ONTOLOGÍA DE CALIDAD DEL GAS — ENAGÁS
+# Comparación regulatoria multinacional · gas natural, biometano e hidrógeno
 # =============================================================================
 #
 # PROPÓSITO
@@ -9,10 +9,14 @@
 #
 # ARQUITECTURA
 # Pregunta → Orquestador → ¿Comparativa? → Ontología + Normalizador → Flag → LLM redacta
-#                       → ¿Abierta?       → RAG (Vector DB + chunks PDF) → LLM con cita
+#                       → ¿Abierta?       → RAG (índice léxico SQLite de los PDF) → LLM con cita
 #
-# ESQUEMA MULTI-PAÍS × MULTI-PARÁMETRO (v3.1.0)
-# parametros[<ID>].limites[<JURISDICCION>] con jurisdicciones abiertas (ES, PT, FR, UE).
+# ESQUEMA MULTI-GAS × MULTI-PAÍS × MULTI-PARÁMETRO (v3.2.0)
+# Dimensión tipo_gas (ver `tipos_gas`), aditiva y con gas_natural por defecto:
+#   parametros[<ID>].limites[<JURISDICCION>]            → gas natural (10 parám. × 21 jurisd.)
+#   parametros_biometano[<ID>].limites[<JURISDICCION>]  → biometano  (ES, PT, FR, UE)
+#   parametros_hidrogeno[<ID>].limites[<JURISDICCION>]  → hidrógeno  (dominio de RED: CEN,
+#     GIE/UE, ES, FR, PT · y dominio de producto/vehículo: ISO14687). Marco en construcción.
 #
 # ESTADOS DE VERIFICACIÓN
 #   VERIFICADO                → cifra contrastada verbatim contra su fuente oficial.
@@ -36,8 +40,8 @@
 # =============================================================================
 
 ontologia:
-  version: "3.1.0"
-  fecha_revision: "2026-06"
+  version: "3.2.0"
+  fecha_revision: "2026-07"
   descripcion: >
     Ontología determinista para comparar parámetros de calidad del gas natural entre
     España, Portugal, Francia y el marco europeo. Cubre los 10 parámetros del alcance

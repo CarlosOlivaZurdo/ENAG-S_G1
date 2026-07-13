@@ -1,10 +1,10 @@
-# Documentación técnica — Comparador Regulatorio de Calidad de Gas Natural
+# Documentación técnica — Comparador Regulatorio de Calidad de Gas
 
-*Documento único de referencia. Consolida toda la explicación del sistema: qué hace, cómo
-está construido y cómo funciona cada componente. Cotejado con el código y con los datos
-reales — versión de ontología **3.1.0**, revisión **2026-06**.
-Los diagramas de arquitectura y de la ontología se conservan como ficheros de imagen
-independientes y se incluyen también en este documento.*
+*Gas natural · biometano · hidrógeno. Documento único de referencia: consolida toda la
+explicación del sistema —qué hace, cómo está construido y cómo funciona cada componente—.
+Cotejado con el código y con los datos reales — versión de ontología **3.2.0**,
+revisión **2026-07**. Los diagramas de arquitectura y de la ontología se
+conservan como ficheros de imagen independientes y se incluyen también en este documento.*
 
 ## Índice
 
@@ -22,11 +22,12 @@ independientes y se incluyen también en este documento.*
 12. La recuperación documental (RAG)
 13. El chat y el historial persistente
 14. Estado real de los datos
-15. Metodología de construcción y verificación
-16. Garantías del sistema
-17. Stack tecnológico y despliegue
-18. Diseño ideal frente a implementación real
-19. Glosario
+15. Ampliación del alcance: biometano e hidrógeno
+16. Metodología de construcción y verificación
+17. Garantías del sistema
+18. Stack tecnológico y despliegue
+19. Diseño ideal frente a implementación real
+20. Glosario
 
 ---
 
@@ -43,6 +44,11 @@ jurisdicciones** y **10 parámetros**, y responde en lenguaje natural. Su princi
 de diseño es la **ausencia de cifras no verificadas**: el sistema no genera ningún valor por
 estimación; todas las cifras proceden de una base contrastada frente a la normativa oficial y
 se presentan con su cita correspondiente.
+
+El alcance inicial —el gas natural— se ha **ampliado a biometano e hidrógeno** como una capa
+aditiva que no altera nada de lo anterior (ver §15). Salvo indicación en contra, las secciones
+1 a 14 describen el sistema tomando el gas natural como referencia; la mecánica (motor, ontología,
+normalización, IA y RAG) es común a los tres gases.
 
 ---
 
@@ -62,7 +68,9 @@ y buscar en los documentos (RAG). El servidor expone varios servicios (endpoints
 chat (con detección de **interconexiones/cadenas**), comparación puntual, matriz comparativa,
 **validación de un gas concreto** y **exportación de informes** (Excel/PDF). La arquitectura de
 cuatro componentes no cambia con estas funciones: son endpoints y vistas nuevos dentro de las
-mismas cajas.
+mismas cajas. La ampliación a **biometano** e **hidrógeno** (§15) tampoco cambia la arquitectura:
+se añade un parámetro `tipo_gas` que enruta a la sección de ontología del gas elegido, con
+`gas_natural` por defecto para no alterar el comportamiento existente.
 
 ---
 
@@ -109,12 +117,19 @@ nunca calcula ni inventa valores.
 
 ### 5.1. Estructura
 
-La ontología tiene dos partes principales:
+La ontología se organiza así:
 
 | Clave | Contenido |
 |---|---|
-| `ontologia.fuentes_normativas` | El **catálogo de las 29 normas** oficiales: `id`, `nombre`, `organismo`, `publicacion`, `url` (cita) y `pdf` (copia local). |
-| `parametros` | Los **10 parámetros**, cada uno con un bloque `limites:` con una entrada **por país**. |
+| `ontologia.fuentes_normativas` | El **catálogo de las 39 normas** oficiales: `id`, `nombre`, `organismo`, `publicacion`, `url` (cita) y `pdf` (copia local). |
+| `ontologia.tipos_gas` | El **registro de los 3 tipos de gas** (gas natural, biometano, hidrógeno) y a qué sección de parámetros apunta cada uno. |
+| `parametros` | **Gas natural**: los **10 parámetros**, cada uno con un bloque `limites:` con una entrada **por país** (×21). |
+| `parametros_biometano` | **Biometano**: 12 parámetros, con `limites:` por jurisdicción (España, Portugal, Francia, UE). |
+| `parametros_hidrogeno` | **Hidrógeno**: 18 parámetros, con `limites:` por jurisdicción (dominio de red y de producto). |
+
+Las tres secciones de parámetros comparten **exactamente el mismo esquema** (ver §5.2); solo
+cambian el conjunto de jurisdicciones y las fuentes. El detalle del biometano y del hidrógeno
+está en la §15.
 
 ![Estructura de la ontología](Ontologia_Estructura.png)
 
@@ -343,8 +358,10 @@ al no depender de servicios externos para localizar la información.
 ## 13. El chat y el historial persistente
 
 - **Frontend (`index.html`):** SPA en JavaScript puro; render de Markdown con `marked` +
-  saneado con `DOMPurify`. Tres pestañas: *Consulta libre* (chat), *Comparativa*
-  (puntual + matriz) y *Analizar gas* (validación de un gas concreto).
+  saneado con `DOMPurify`. Cinco secciones: *Consulta libre gas natural* (chat), *Comparativa
+  gas natural* (puntual + matriz), *Analizar gas natural* (validación de un gas concreto) y las
+  dos de la ampliación —*Comparativa biometano* y *Comparativa hidrógeno*— con la misma
+  presentación (ver §15).
 - **Analizar gas (`/api/analizar-gas`):** el usuario introduce la composición/medidas de un gas
   (CO₂, O₂, H₂S, azufre, PCS, Wobbe, rocíos…) y el sistema responde, país a país, si **cumple /
   está en zona de alerta / no cumple / no tiene límite**, con la cita oficial de cada límite. La
@@ -373,9 +390,10 @@ al no depender de servicios externos para localizar la información.
 
 ## 14. Estado real de los datos
 
-Cobertura actual: **176 celdas VERIFICADO**, **34 NO_VERIFICABLE**, 0 pendientes,
-sobre 210 celdas (10 parámetros × 21 jurisdicciones).
-Las 210 celdas resuelven por la ruta real de la aplicación.
+Cobertura actual **del gas natural**: **176 celdas VERIFICADO**, **34 NO_VERIFICABLE**,
+0 pendientes, sobre 210 celdas (10 parámetros × 21
+jurisdicciones). Las 210 celdas resuelven por la ruta real de la aplicación.
+*(La cobertura de biometano e hidrógeno se detalla en la §15.)*
 
 **✓** = verificado verbatim · **○** = la norma no fija ese parámetro (hueco honesto)
 
@@ -414,7 +432,75 @@ numéricamente** (y por política no se inventan). Detalle:
 
 ---
 
-## 15. Metodología de construcción y verificación
+## 15. Ampliación del alcance: biometano e hidrógeno
+
+El sistema nació para el gas natural y se ha ampliado a **biometano** e **hidrógeno** como una
+**capa aditiva**. Se añade una dimensión de **tipo de gas** (registrada en `tipos_gas`, con
+3 valores) que por defecto vale `gas_natural`: así **todo el gas natural queda intacto**
+—mismo motor, mismas garantías, mismas pruebas— y los gases nuevos **reutilizan la misma
+maquinaria** (consulta, comparativa, matriz, normalización ISO 13443 y estados de verificación).
+El principio de **cero cifras inventadas** se mantiene idéntico.
+
+| Tipo de gas | Sección de la ontología | Jurisdicciones | Parámetros |
+|---|---|---|---|
+| **Gas natural** | `parametros` | 21 (España … UE) | 10 |
+| **Biometano** | `parametros_biometano` | 4 · España · Portugal · Francia · UE | 12 |
+| **Hidrógeno** | `parametros_hidrogeno` | RED (CEN · GIE/UE · ES · FR · PT) + producto (ISO 14687) | 18 |
+
+En la interfaz esto se traduce en dos secciones nuevas —**Comparativa biometano** y **Comparativa
+hidrógeno**— idénticas en aspecto y funcionamiento a la del gas natural (misma tabla, matriz,
+condiciones de referencia y exportación), con España siempre como base de comparación.
+
+### 15.1. Biometano (inyección en red)
+
+Parámetros clave del comparador: **CH₄ mínimo · CO₂ máximo · siloxanos** (como silicio total),
+además de las impurezas de inyección (O₂, azufre total, H₂S+COS, NH₃, aminas, compuestos
+halogenados, aceite de compresor y rocío de agua). Fuentes oficiales empleadas:
+
+- **EN 16723-1:2016** — fija límite a 4 parámetros (silicio, CO, NH₃, aminas).
+- **EN 16726:2025** — calidad de la red que admite biometano (CO₂, O₂, azufre, H₂S+COS).
+- **CEN/TR 17238:2018** — metodología de evaluación de valores límite.
+- **Reglamento (UE) 2024/1789** y **Directiva (UE) 2024/1788** — marco de mercado del gas
+  renovable y del hidrógeno (art. 23 de especificaciones comunes aún no ejercido).
+- **Orden TED/181/2025** (España) · **GRTgaz / GRDF** (Francia) · **RQS — Regulamento 826/2023,
+  Anexo XI** (Portugal).
+
+Cobertura: **17 valores verificados** (verbatim), **2 verificados por fuente
+pública secundaria** (norma primaria de pago) y **8 no verificables** (la norma no fija
+el valor — hueco honesto, no se inventa).
+
+### 15.2. Hidrógeno (marco en construcción)
+
+A diferencia del gas natural, **la normativa de hidrógeno aún no está madura**: a fecha de esta
+revisión **no existe todavía un código de red de hidrógeno consolidado** (ENNOH, el organismo que
+lo desarrollará, sigue en constitución). Por eso el hidrógeno se aborda como **prospección
+normativa** —mapa del marco y su calendario, detallado en `Prospeccion_Normativa_Hidrogeno.md`—
+registrando **solo lo que de verdad es vinculante**. La distinción esencial es de **dominio**:
+
+- **Dominio de RED** (gasoducto — el de Enagás como operador de transporte): **CEN/TS 17977:2023**
+  (norma CEN de redes reconvertidas) y la **recomendación del GIE**. Pureza de H₂ ≥ 98 % mol,
+  O₂ ≤ 0,1 % mol, a condiciones ISO 13443 (15/15). **Portugal** (RQS, Anexo XII) es la única
+  jurisdicción que hoy lo fija como **vinculante** (≥ 98 %); España y Francia regulan el
+  *blending* (incorporación de H₂ en el gas natural); la UE lo **recomienda** vía GIE.
+- **Dominio de PRODUCTO / VEHÍCULO**: **ISO 14687:2019 Grade D** (y su equivalente europeo
+  **EN 17124**), pureza 99,97 % para pilas de combustible PEM de automoción. **No es lo que
+  necesita un operador de red**; se incluye por completitud, marcado explícitamente como dominio
+  de vehículo para no confundirlo con la calidad de red.
+
+Parámetros clave del comparador: **pureza de H₂ · O₂ · trazas de compresores**. Cobertura:
+**16 verificados**, **18 por fuente secundaria** y **6 no verificables**.
+
+### 15.3. Estudio de terminología (¿hace falta una capa semántica?)
+
+Antes de nada se midió cuánto varían los **nombres** de un mismo parámetro entre normas (índice de
+variación terminológica): **27,4** en gas natural, **9,2** en biometano y **7,3** en hidrógeno
+(umbral 7,0), según `Estudio_Terminologia_Biometano.md`. El estudio **justifica** una capa de
+búsqueda semántica multilingüe, que se deja **preparada y opcional** (no activa por defecto): sin
+ella, la búsqueda documental es la léxica descrita en §12, plenamente reproducible.
+
+---
+
+## 16. Metodología de construcción y verificación
 
 Para cada jurisdicción: (1) se identificó la **normativa oficial vigente**; (2) se **obtuvo el
 documento** y se archivó localmente; (3) se **transcribió cada cifra literalmente**, sin
@@ -428,7 +514,7 @@ hay incoherencias.
 
 ---
 
-## 16. Garantías del sistema
+## 17. Garantías del sistema
 
 - **Ausencia de cifras inventadas**, por diseño: los valores proceden de código y datos
   verificados, no del modelo.
@@ -441,7 +527,7 @@ hay incoherencias.
 
 ---
 
-## 17. Stack tecnológico y despliegue
+## 18. Stack tecnológico y despliegue
 
 **Backend:** Python · FastAPI · uvicorn (con TLS) · OpenAI SDK (GPT-4o-mini, function-calling) ·
 pydantic · PyYAML (ontología) · pdfplumber (extracción de PDF) · sqlite3 (índice RAG) ·
@@ -461,7 +547,7 @@ versión tras un `git pull`). En la primera visita el navegador pide aceptar el 
 
 ---
 
-## 18. Diseño ideal frente a implementación real (honestidad de ingeniería)
+## 19. Diseño ideal frente a implementación real (honestidad de ingeniería)
 
 | El diseño / la ontología describe… | La realidad del código es… |
 |---|---|
@@ -471,7 +557,7 @@ versión tras un `git pull`). En la primera visita el navegador pide aceptar el 
 
 ---
 
-## 19. Glosario
+## 20. Glosario
 
 - **Backend / servidor de aplicación:** el programa que da soporte a la web y ejecuta la lógica.
 - **FastAPI:** framework con el que se ha desarrollado el servidor. Es infraestructura propia.
@@ -486,5 +572,9 @@ versión tras un `git pull`). En la primera visita el navegador pide aceptar el 
 - **Indexación:** preparar el buscador procesando los documentos y almacenando su texto segmentado.
 - **SQLite:** base de datos ligera; aquí se emplea únicamente como índice del buscador documental.
 - **VERIFICADO / NO_VERIFICABLE:** cifra contrastada con la norma / parámetro que la norma no fija.
+- **VERIFICADO_SECUNDARIO:** valor no tomado del texto primario (norma de pago), sino de una fuente pública secundaria citada; usado sobre todo en biometano/hidrógeno.
+- **tipo_gas:** la dimensión que selecciona el gas (gas natural, biometano o hidrógeno); por defecto `gas_natural`.
+- **Dominio de red vs. de producto (hidrógeno):** calidad del H₂ para el gasoducto (red, CEN/TS 17977, GIE) frente a la del H₂ como combustible de vehículo (producto, ISO 14687); son especificaciones distintas y no comparables.
+- **Biometano / hidrógeno:** gases renovables añadidos como capa aditiva; ver §15.
 
 *Fin del documento.*
