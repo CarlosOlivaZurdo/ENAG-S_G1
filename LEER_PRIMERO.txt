@@ -51,6 +51,16 @@ Nota: algunas redes de empresa aislan los equipos entre si; si es asi, este
 modo no funcionara y habria que desplegarlo en un servidor/nube.
 
 
+SERVIR EN PRODUCCION / HTTPS (opcional)
+---------------------------------------
+La herramienta se sirve por HTTP, pensada para uso INTERNO/LOCAL. Si se quiere
+un despliegue de produccion con conexion cifrada (HTTPS), esta DEJADO INDICADO
+como hacerlo dentro de iniciar_chatbot.bat (busca la nota "[HTTPS OPCIONAL]"):
+basta con generar el certificado autofirmado y anadir los flags TLS a uvicorn;
+o, mejor, servirla detras de un proxy inverso (nginx / IIS) con un certificado
+de confianza. Esa decision se deja al equipo que lo opere.
+
+
 ACTUALIZAR LAS NORMATIVAS OFICIALES (opcional)
 ----------------------------------------------
 La informacion procede de los documentos OFICIALES (BOE, EUR-Lex, ERSE, GRTgaz)
