@@ -101,7 +101,7 @@ BOXES = [
 
 # Flechas: x1,y1,x2,y2, label, label_dx, label_dy, label_anchor
 ARROWS = [
-    (620, 188, 620, 230, "HTTPS / JSON  (TLS · sin caché)", 12, -10, "lm"),
+    (620, 188, 620, 230, "HTTP / JSON  (sin caché)", 12, -10, "lm"),
     (330, 393, 330, 471, "modo «determinista»", -8, 0, "rm"),
     (910, 393, 910, 471, "None  →  modo «ia»", 10, 0, "lm"),
     (700, 545, 542, 545, "llama a las funciones", 0, -12, "cb"),

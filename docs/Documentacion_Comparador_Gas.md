@@ -529,19 +529,27 @@ hay incoherencias.
 
 ## 18. Stack tecnológico y despliegue
 
-**Backend:** Python · FastAPI · uvicorn (con TLS) · OpenAI SDK (GPT-4o-mini, function-calling) ·
+**Backend:** Python · FastAPI · uvicorn · OpenAI SDK (GPT-4o-mini, function-calling) ·
 pydantic · PyYAML (ontología) · pdfplumber (extracción de PDF) · sqlite3 (índice RAG) ·
-openpyxl + xhtml2pdf (informes Excel/PDF) · cryptography (certificado HTTPS).
+openpyxl + xhtml2pdf (informes Excel/PDF) · cryptography (certificado HTTPS, opcional).
 **Frontend:** HTML + JavaScript vanilla (marked, DOMPurify).
 **Endpoints HTTP:** `/` (sirve la web) · `/api/status` · `/api/chat` (chat en lenguaje natural;
 también resuelve **interconexiones/cadenas**) · `/api/parametros` · `/api/comparar` · `/api/matriz` ·
 `/api/analizar-gas` (valida un gas concreto contra la normativa de cada país) · `/api/exportar-matriz`
 (informe Excel/PDF de la matriz para las jurisdicciones seleccionadas).
 **Despliegue:** `iniciar_chatbot.bat` — lanzador del equipo que se auto-actualiza
-(`git pull --ff-only`), genera un certificado TLS **autofirmado** si no existe
-(`generar_certificado.py` → `cert.pem`/`key.pem`, no versionados), libera el puerto 8000 y arranca
-`uvicorn` por **HTTPS** (`https://localhost:8000/`). La web se sirve **sin caché** (siempre la última
-versión tras un `git pull`). En la primera visita el navegador pide aceptar el certificado autofirmado.
+(`git pull --ff-only`), libera el puerto 8000 y arranca `uvicorn` por **HTTP**
+(`http://localhost:8000/`), pensado para **uso interno/local**. La web se sirve **sin caché**
+(siempre la última versión tras un `git pull`). El frontend se adapta solo al protocolo con el que
+se le sirve (usa `location.origin`), por lo que no hay URLs fijas a cambiar.
+
+**Servir en producción (HTTPS) — dejado indicado:** el proyecto incluye todo lo necesario para
+elevar a HTTPS sin reprogramar nada. En el propio `iniciar_chatbot.bat` (nota *[HTTPS OPCIONAL]*)
+se explica: (1) descomentar `generar_certificado.py` (genera un certificado autofirmado
+`cert.pem`/`key.pem`) y (2) añadir `--ssl-keyfile key.pem --ssl-certfile cert.pem` al comando
+`uvicorn`. Para un despliegue robusto, lo recomendado es situarlo **tras un proxy inverso**
+(nginx, IIS…) que gestione el TLS con un certificado de confianza. Esa decisión se deja al equipo
+que lo opere.
 
 *(La interfaz es `index.html` servida por FastAPI; el sistema **no** usa Streamlit.)*
 
