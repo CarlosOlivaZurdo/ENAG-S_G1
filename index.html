@@ -325,7 +325,7 @@
   <!-- Workspace -->
   <div class="workspace">
     <header class="topbar">
-      <h1 id="topTitle">Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span></h1>
+      <h1 id="topTitle">Consulta libre gas natural</h1>
       <div class="spacer"></div>
       <div class="status"><span id="statusDot" class="dot off"></span><span id="statusText">Comprobando…</span></div>
       <button class="icon-btn" id="gearBtn" title="Configuración">⚙</button>
@@ -358,8 +358,8 @@
     <div id="viewCompare" class="view">
       <div class="cmp-wrap">
         <div class="cmp-hero">
-          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa de calidad de gas</b></div>
-          <h1>Comparativa de calidad de gas</h1>
+          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa gas natural</b></div>
+          <h1>Comparativa gas natural</h1>
           <p class="cmp-hero-sub">Requisitos de calidad del gas natural por jurisdicción, normalizados a las condiciones de España.</p>
         </div>
         <div class="cmp-inner">
@@ -420,8 +420,8 @@
     <div id="viewGas" class="view">
       <div class="cmp-wrap">
         <div class="cmp-hero">
-          <div class="cmp-bc">Inicio <span>›</span> <b>Analizar un gas</b></div>
-          <h1>Analizar un gas concreto</h1>
+          <div class="cmp-bc">Inicio <span>›</span> <b>Analizar gas natural</b></div>
+          <h1>Analizar gas natural</h1>
           <p class="cmp-hero-sub">Introduce la composición o las medidas del gas y comprueba, jurisdicción a jurisdicción, si cumple la normativa.</p>
         </div>
         <div class="cmp-inner">
@@ -458,8 +458,8 @@
     <div id="viewBiometano" class="view">
       <div class="cmp-wrap">
         <div class="cmp-hero">
-          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa de biometano</b></div>
-          <h1>Comparativa de biometano</h1>
+          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa biometano</b></div>
+          <h1>Comparativa biometano</h1>
           <p class="cmp-hero-sub">Requisitos de calidad del biometano para inyección en red. Marco UE: Reglamento (UE) 2024/1789 (sin límites numéricos; art. 23 aún no ejercido), normas armonizadas EN 16723-1 y EN 16726, más las specs nacionales (ES, PT y red francesa GRTgaz).</p>
         </div>
         <div class="cmp-inner">
@@ -517,8 +517,8 @@
     <div id="viewHidrogeno" class="view">
       <div class="cmp-wrap">
         <div class="cmp-hero">
-          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa de hidrógeno</b></div>
-          <h1>Comparativa de hidrógeno</h1>
+          <div class="cmp-bc">Inicio <span>›</span> <b>Comparativa hidrógeno</b></div>
+          <h1>Comparativa hidrógeno</h1>
           <p class="cmp-hero-sub">Especificación de calidad del hidrógeno (ISO 14687:2019 Grade D / EN 17124).</p>
         </div>
         <div class="cmp-inner">
@@ -624,11 +624,11 @@
 
   /* ===== View switching ===== */
   const TITLES = {
-    chat: 'Consulta regulatoria <span class="sub">· cumplimiento y comparación entre jurisdicciones</span>',
-    compare: 'Comparativa',
-    gas: 'Analizar un gas <span class="sub">· validación de calidad por jurisdicción</span>',
-    biometano: 'Biometano <span class="sub">· Reg. (UE) 2024/1789 · EN 16723-1 / EN 16726 (inyección en red)</span>',
-    hidrogeno: 'Hidrógeno <span class="sub">· ISO 14687 Grade D (pureza PEM)</span>'
+    chat: 'Consulta libre gas natural',
+    compare: 'Comparativa gas natural',
+    gas: 'Analizar gas natural',
+    biometano: 'Comparativa biometano',
+    hidrogeno: 'Comparativa hidrógeno'
   };
   function setView(view){
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.view===view));
