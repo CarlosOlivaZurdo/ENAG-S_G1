@@ -279,7 +279,7 @@ bloques = [
                             "Las tres capas de datos"], AZUL2),
     ("03", "Ontología", ["Estructura del fichero", "Anatomía de un valor",
                          "Estados de verificación"], VERDE),
-    ("04", "Herramientas", ["El stack completo, pieza a pieza", "Módulos propios y endpoints",
+    ("04", "Herramientas", ["El stack y el papel de cada pieza", "Código propio y endpoints",
                             "Motor, IA, RAG y ampliación"], NARANJA),
 ]
 x = 0.6
@@ -649,124 +649,104 @@ slide_seccion("04", "Las herramientas",
               "Con qué está construida la aplicación, pieza a pieza, y qué papel cumple cada una.")
 
 # --------------------- 14. El stack de un vistazo ---------------------
-s = _slide(); _cabecera(s, "El stack tecnológico de un vistazo", nxt(), kicker="Herramientas")
+s = _slide(); _cabecera(s, "El stack tecnológico", nxt(), kicker="Herramientas")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
-       [("Todas las herramientas que usa la aplicación, agrupadas por capa.", 14, GRIS, False, False, 0)])
+       [("Lo que la aplicación usa realmente, agrupado por capa.", 14, GRIS, False, False, 0)])
 capas = [
     ("FRONTEND", CYAN, ["HTML + CSS", "JavaScript vanilla", "marked", "DOMPurify", "localStorage"]),
     ("BACKEND", AZUL, ["Python 3.11+", "FastAPI", "uvicorn", "pydantic", "python-dotenv"]),
-    ("DATOS Y DOCUMENTOS", VERDE, ["PyYAML", "SQLite", "pdfplumber", "pandas", "openpyxl · xhtml2pdf"]),
+    ("DATOS Y DOCUMENTOS", VERDE, ["PyYAML", "SQLite", "pdfplumber", "openpyxl", "xhtml2pdf"]),
     ("IA  (opcional)", NARANJA, ["OpenAI SDK", "GPT-4o-mini", "function calling", "temperatura 0", "sustituible"]),
 ]
 x = 0.6
 for titulo, color, items in capas:
-    _rbox(s, x, 1.9, 2.95, 3.8, fill=GRISCL, line=BORDE, line_w=1)
+    _rbox(s, x, 1.9, 2.95, 3.4, fill=GRISCL, line=BORDE, line_w=1)
     _box(s, x, 1.9, 2.95, 0.5, fill=color)
     _texto(s, x, 1.95, 2.95, 0.42, [(titulo, 12.5, BLANCO, True, False, 0)], align=PP_ALIGN.CENTER)
-    _texto(s, x + 0.2, 2.55, 2.6, 3.0, [(i, 13, TINTA, False, True, 0) for i in items], space=10)
+    _texto(s, x + 0.2, 2.55, 2.6, 2.7, [(i, 13, TINTA, False, True, 0) for i in items], space=9)
     x += 3.11
-_box(s, 0.6, 5.9, 12.13, 1.0, fill=AZULCL)
-_box(s, 0.6, 5.9, 0.09, 1.0, fill=AZUL)
-_texto(s, 0.9, 5.98, 11.7, 0.9, [
-    ("Todo el stack es software libre salvo la API de OpenAI — el único componente de pago, y además opcional.",
-     14, AZUL, True, False, 0),
-    ("Calidad y trazabilidad del propio proyecto: pytest (pruebas automáticas) · git (versiona el código Y la ontología).",
-     12.5, GRIS, False, False, 0),
-], space=3)
-_notes(s, "Este es el mapa completo. Cuatro capas. Lo importante: todo es software libre EXCEPTO la API de "
-          "OpenAI, que además es opcional —sin ella el sistema sigue funcionando en modo determinista—. "
-          "En las tres diapositivas siguientes vemos el papel exacto de cada pieza.")
+_box(s, 0.6, 5.5, 12.13, 0.55, fill=AZULCL)
+_box(s, 0.6, 5.5, 0.09, 0.55, fill=AZUL)
+_texto(s, 0.9, 5.52, 11.7, 0.5, [
+    ("Todo es software libre salvo la API de OpenAI — el único componente de pago, y además opcional.",
+     14, AZUL, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
+_box(s, 0.6, 6.2, 12.13, 0.72, fill=GRISCL)
+_box(s, 0.6, 6.2, 0.09, 0.72, fill=NARANJA)
+_texto(s, 0.9, 6.24, 11.7, 0.66, [
+    ("Honestidad de ingeniería — declarado en requirements pero NO usado hoy:", 12, NARANJAOS, True, False, 0),
+    ("pint y PyPDF2 (nunca se importan) · pandas (leía un Excel ya retirado; la fuente es la ontología) · "
+     "cryptography (solo si se activa el HTTPS, hoy comentado).", 11.5, GRIS, False, False, 0),
+], space=2)
+_notes(s, "El mapa del stack. Dos mensajes. Uno: todo es software libre EXCEPTO la API de OpenAI, que además "
+          "es opcional. Y dos, la banda de abajo, que es la que da credibilidad: hemos revisado el proyecto y "
+          "hay dependencias declaradas que hoy NO se usan —pint, PyPDF2, pandas y cryptography—. Lo decimos "
+          "en vez de venderlas como parte del sistema. Si os preguntan por ellas, esa es la respuesta.")
 
-# --------------------- 15. Herramientas — Backend ---------------------
-slide_tabla("Herramientas — Backend",
-    ["Herramienta", "Para qué sirve exactamente en la aplicación"],
+# --------------- 15. Las herramientas y su papel ---------------
+slide_tabla("Cada herramienta y su papel",
+    ["Herramienta", "Capa", "Para qué sirve exactamente"],
     [
-        ["Python 3.11+", "Lenguaje de todo el backend y de los scripts de datos, diagramas y documentación."],
-        ["FastAPI", "Framework con el que está construido NUESTRO servidor: define los endpoints y valida las peticiones."],
-        ["uvicorn", "El servidor que ejecuta FastAPI y atiende el puerto 8000 (lo lanza iniciar_chatbot.bat)."],
-        ["pydantic", "Valida y tipa los datos que entran y salen de cada endpoint: evita peticiones malformadas."],
-        ["python-dotenv", "Carga la clave de OpenAI desde el entorno, para que nunca esté escrita en el código."],
-        ["pytest", f"Ejecuta las pruebas automáticas: comprueba que las {N_CELDAS} celdas resuelven y que nada se rompe."],
+        ["FastAPI + uvicorn", "Backend", "NUESTRO servidor: define los endpoints y los sirve. Infraestructura propia y gratuita."],
+        ["pydantic", "Backend", "Valida y tipa lo que entra y sale de cada endpoint: evita peticiones malformadas."],
+        ["python-dotenv", "Backend", "Carga la clave de OpenAI desde el entorno: nunca va escrita en el código."],
+        ["PyYAML", "Datos", "Lee la ONTOLOGÍA. Es la puerta a todas las cifras del sistema."],
+        ["pdfplumber + SQLite", "Documentos", "Extraen el texto de los PDF y lo indexan para el buscador (RAG). No guardan ninguna cifra."],
+        ["openpyxl + xhtml2pdf", "Informes", "Exportan la matriz comparativa a Excel y a PDF, con los mismos datos de la web."],
+        ["OpenAI (GPT-4o-mini)", "IA · opcional", "Interpreta y REDACTA. Con function calling PIDE las cifras: nunca las genera."],
+        ["HTML + JS vanilla", "Frontend", "La interfaz (index.html), sin framework. marked pinta el Markdown y DOMPurify lo sanea (anti-XSS)."],
+        ["pytest + git", "Calidad", "Pruebas automáticas y versionado del código Y de la ontología: cada cambio de cifra queda registrado."],
     ],
-    col_ratios=[2.6, 9.5], fsize=14, kicker="Herramientas",
-    notas="Aquí conviene deshacer una confusión: FastAPI y la API de OpenAI no son lo mismo, aunque ambas "
-          "lleven 'API'. FastAPI es el framework con el que construimos NUESTRO servidor: infraestructura "
-          "propia y gratuita. La API de OpenAI es un servicio de terceros, de pago, que consumimos de forma "
-          "puntual y controlada.")
+    intro="Nueve piezas. Ninguna decorativa: cada una cumple una función concreta.",
+    col_ratios=[2.5, 1.5, 8.1], fsize=12.5, kicker="Herramientas",
+    notas="Deshaced aquí una confusión frecuente: FastAPI y la API de OpenAI no son lo mismo aunque ambas lleven "
+          "'API'. FastAPI es el framework de NUESTRO servidor: propio y gratuito. La API de OpenAI es un "
+          "servicio de terceros, de pago y opcional. Y la pieza que hay que retener es PyYAML: es lo que abre "
+          "la ontología, de donde salen TODAS las cifras.")
 
-# --------------- 16. Herramientas — Datos y documentos ---------------
-slide_tabla("Herramientas — Datos y documentos",
-    ["Herramienta", "Para qué sirve exactamente en la aplicación"],
-    [
-        ["PyYAML", "Lee la ONTOLOGÍA (el fichero .yaml con las cifras verificadas). Es la puerta a la base de conocimiento."],
-        ["pdfplumber", "Extrae el TEXTO de los PDF oficiales para poder indexarlos y buscar en ellos."],
-        ["sqlite3", "Base de datos ligera que actúa de ÍNDICE del buscador documental (RAG). No guarda ninguna cifra."],
-        ["pandas", "Manejo tabular de datos dentro del motor determinista (carga y cruce de tablas)."],
-        ["openpyxl", "Genera el informe de la matriz comparativa en EXCEL, con las celdas coloreadas por nivel."],
-        ["xhtml2pdf", "Genera el informe de la matriz en PDF, y también la documentación del proyecto."],
-        ["cryptography", "Genera el certificado autofirmado para servir por HTTPS (opcional, para producción)."],
-    ],
-    col_ratios=[2.6, 9.5], fsize=13.5, kicker="Herramientas",
-    notas="Aquí está el reparto real del dato. PyYAML abre la ontología, que es de donde salen TODAS las cifras. "
-          "pdfplumber y sqlite3 son solo para el buscador documental: el índice NO guarda números. openpyxl y "
-          "xhtml2pdf son para exportar informes: serializan los mismos datos que ya están en pantalla, no "
-          "generan cifras nuevas.")
-
-# --------------- 17. Herramientas — IA y frontend ---------------
-slide_tabla("Herramientas — IA y frontend",
-    ["Herramienta", "Capa", "Para qué sirve exactamente en la aplicación"],
-    [
-        ["OpenAI SDK", "IA", "Cliente para hablar con el modelo. Es el ÚNICO componente de pago, y es opcional."],
-        ["GPT-4o-mini", "IA", "El modelo: interpreta la pregunta y REDACTA la respuesta. Temperatura 0. Nunca genera cifras."],
-        ["function calling", "IA", "El mecanismo por el que el modelo PIDE los datos a nuestras herramientas en vez de inventarlos."],
-        ["HTML + JS vanilla", "Frontend", "La interfaz (index.html). Sin framework: una SPA ligera con cinco secciones."],
-        ["marked", "Frontend", "Convierte a HTML el Markdown con el que responde el asistente (tablas, negritas, listas)."],
-        ["DOMPurify", "Frontend", "Sanea ese HTML antes de pintarlo: evita la inyección de código en el navegador (XSS)."],
-        ["localStorage", "Frontend", "Guarda el historial de la conversación en el navegador; se restaura al recargar."],
-    ],
-    col_ratios=[2.3, 1.2, 8.6], fsize=13.5, kicker="Herramientas",
-    notas="En la capa de IA lo esencial es el 'function calling': es el mecanismo que permite que el modelo, "
-          "cuando necesita un número, lo PIDA a nuestras herramientas en lugar de sacarlo de su memoria. Ahí "
-          "está técnicamente la garantía anti-alucinación. En el frontend, DOMPurify merece mención: es la "
-          "protección contra inyección de código en el navegador.")
-
-# --------------- 18. Módulos propios del proyecto ---------------
-slide_tabla("Los módulos propios del proyecto",
-    ["Fichero", "Responsabilidad"],
-    [
-        ["api.py", "El núcleo: endpoints, ROUTER DETERMINISTA y orquestación de la respuesta."],
-        ["fuente_oficial.py", "Lee la ontología y devuelve el valor CON SU CITA. La única puerta a las cifras."],
-        ["conversor_unidades.py", "Conversión de unidades y factores ISO 13443 (Tabla A.1) para comparar de forma homogénea."],
-        ["condiciones_referencia.py", "Gestión de las condiciones de referencia (temperatura y presión) de cada país."],
-        ["motor_determinista.py", "Lógica de comparación y de evaluación de cumplimiento, sin IA."],
-        ["agente_pdf.py", "Indexación de los PDF y búsqueda documental (RAG) sobre el índice SQLite."],
-        ["llm_interface.py", "La frontera con el modelo: define las herramientas que puede invocar y sus salvaguardas."],
-        ["busqueda_semantica.py", "Capa de búsqueda semántica: PREPARADA y opcional (desactivada por defecto)."],
-    ],
-    intro="Código propio: cada fichero, una responsabilidad.",
-    col_ratios=[3.0, 9.1], fsize=13, kicker="Herramientas",
-    notas="La pieza que hay que retener es fuente_oficial.py: es la ÚNICA puerta a las cifras. Todo —el chat, "
-          "la comparativa, la matriz, el análisis de gas— pasa por ahí. Si alguien quiere auditar de dónde "
-          "sale un número, ese es el sitio donde mirar.")
-
-# --------------- 19. Endpoints ---------------
-slide_tabla("Los servicios que expone la aplicación",
-    ["Endpoint", "Qué hace"],
-    [
-        ["/", "Sirve la interfaz web (index.html)."],
-        ["/api/status", "Estado del sistema: si la IA está activa o se opera en modo determinista."],
-        ["/api/chat", "Consulta en lenguaje natural. Resuelve también INTERCONEXIONES en cadena entre países."],
-        ["/api/parametros", "Lista los parámetros y jurisdicciones disponibles para cada tipo de gas."],
-        ["/api/comparar", "Comparación puntual de un parámetro entre España y otro país."],
-        ["/api/matriz", "La matriz comparativa completa: todas las jurisdicciones × todos los parámetros."],
-        ["/api/analizar-gas", "Valida un gas concreto contra la normativa de cada país: cumple / alerta / no cumple."],
-        ["/api/exportar-matriz", "Descarga la comparativa en Excel o PDF para las jurisdicciones seleccionadas."],
-    ],
-    col_ratios=[3.0, 9.1], fsize=13, kicker="Herramientas",
-    notas="Ocho servicios. Merece la pena destacar dos: /api/analizar-gas, que valida un gas real país a país y "
-          "marca la ZONA DE ALERTA —cumple, pero a menos del 10 % del límite—; y la detección de "
-          "interconexiones dentro de /api/chat, que calcula qué gas puede atravesar una cadena de países e "
-          "identifica el CUELLO DE BOTELLA regulatorio.")
+# --------------- 16. Módulos propios y endpoints ---------------
+s = _slide(); _cabecera(s, "El código propio y lo que expone", nxt(), kicker="Herramientas")
+_texto(s, 0.6, 1.35, 12.2, 0.35,
+       [("A la izquierda, nuestros módulos: cada fichero, una responsabilidad. A la derecha, los servicios que ofrece la aplicación.",
+         14, GRIS, False, False, 0)])
+modulos = [
+    ("api.py", "El núcleo: endpoints, ROUTER DETERMINISTA y orquestación."),
+    ("fuente_oficial.py", "Lee la ontología y devuelve el valor CON SU CITA. La única puerta a las cifras."),
+    ("conversor_unidades.py", "Unidades y factores ISO 13443 (Tabla A.1)."),
+    ("condiciones_referencia.py", "Las condiciones (T y P) de cada país."),
+    ("motor_determinista.py", "Comparación y evaluación de cumplimiento, sin IA."),
+    ("agente_pdf.py", "Indexa los PDF y busca en ellos (RAG)."),
+    ("llm_interface.py", "La frontera con el modelo y sus salvaguardas."),
+    ("busqueda_semantica.py", "Capa semántica: preparada y opcional."),
+]
+endpoints = [
+    ("/", "Sirve la interfaz web."),
+    ("/api/status", "¿IA activa o modo determinista?"),
+    ("/api/chat", "Consulta libre. También resuelve INTERCONEXIONES en cadena."),
+    ("/api/parametros", "Parámetros y jurisdicciones por tipo de gas."),
+    ("/api/comparar", "Compara un parámetro España-país."),
+    ("/api/matriz", "La matriz completa: jurisdicciones × parámetros."),
+    ("/api/analizar-gas", "Valida un gas real: cumple / alerta / no cumple."),
+    ("/api/exportar-matriz", "Descarga la comparativa en Excel o PDF."),
+]
+for (titulo, color, filas, x) in (("MÓDULOS PROPIOS", AZUL, modulos, 0.6),
+                                  ("ENDPOINTS", CYAN, endpoints, 6.85)):
+    _box(s, x, 1.85, 5.9, 0.45, fill=color)
+    _texto(s, x + 0.18, 1.88, 5.5, 0.4, [(titulo, 13, BLANCO, True, False, 0)])
+    y = 2.35
+    for i, (izq, der) in enumerate(filas):
+        _box(s, x, y, 5.9, 0.56, fill=GRISCL if i % 2 == 0 else BLANCO)
+        _texto(s, x + 0.15, y + 0.02, 2.35, 0.52, [(izq, 10.5, AZUL, True, False, 0)],
+               anchor=MSO_ANCHOR.MIDDLE, font=MONO)
+        _texto(s, x + 2.55, y + 0.02, 3.2, 0.52, [(der, 10.5, TINTA, False, False, 0)],
+               anchor=MSO_ANCHOR.MIDDLE)
+        y += 0.56
+_box(s, 0.6, 6.9, 12.13, 0.02, fill=BORDE)
+_notes(s, "La pieza que hay que retener de la izquierda es fuente_oficial.py: es la ÚNICA puerta a las cifras. "
+          "Todo —el chat, la comparativa, la matriz, el análisis de gas— pasa por ahí. Si alguien quiere auditar "
+          "de dónde sale un número, ese es el sitio. De la derecha, destacad dos servicios: analizar-gas, que "
+          "valida un gas real país a país y marca la ZONA DE ALERTA (cumple, pero a menos del 10 % del límite); "
+          "y la detección de interconexiones dentro de /api/chat, que calcula qué gas atraviesa una cadena de "
+          "países e identifica el CUELLO DE BOTELLA regulatorio.")
 
 # --------------- 20. Motor determinista + ISO 13443 ---------------
 s = _slide(); _cabecera(s, "El motor determinista y la normalización", nxt(), kicker="Cómo funciona")
