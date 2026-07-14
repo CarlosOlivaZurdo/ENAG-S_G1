@@ -1,15 +1,14 @@
 """Capa de datos OFICIAL: lee de la ontología validada (extracción verificada de los
-PDFs oficiales) en lugar del Excel/CSV.
+PDF oficiales).
 
 Política de fuentes (acordada con el equipo):
-  • La fuente PRIMARIA es la documentación oficial vigente, ya extraída y verificada
+  • La fuente ÚNICA es la documentación oficial vigente, ya extraída y verificada
     en `data/ontologia/ontologia_enagas.yaml` (con artículo, página, organismo,
-    fecha/versión y URL). Los PDFs oficiales están en `data/raw/`.
-  • El Excel/CSV pasa a ser solo un ÍNDICE de referencia; nunca la fuente final.
-  • Ante discrepancia Excel ↔ oficial, prevalece la oficial (y se señala).
+    fecha/versión y URL). Los PDF oficiales están en `data/raw/`.
+  • No se inventa ningún valor: lo que la norma no fija se marca como no verificable.
 
-Este módulo devuelve registros con la MISMA forma que consume el resto del sistema
-(`consultar_excel` / `evaluar_cumplimiento`), enriquecidos con la cita completa.
+Este módulo devuelve los registros (valor + cita completa) que consume el resto del
+sistema a través de `consultar()` y `evaluar()`.
 """
 import os
 import re

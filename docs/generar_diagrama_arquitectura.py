@@ -78,7 +78,7 @@ BOXES = [
          header="4 · CAPA LLM  —  OpenAI gpt-4o-mini",
          hfill=NARANJA, hcolor="#ffffff",
          body=[("function-calling · temperature 0 · no inventa cifras", "small", TINTA),
-               ("tools:  consultar_excel*,  evaluar_cumplimiento,", "body", TINTA),
+               ("tools:  consultar_norma,  evaluar_cumplimiento,", "body", TINTA),
                ("convertir_unidades / condiciones,  buscar_pdfs", "body", TINTA)], align="center"),
 
     dict(x=120, y=668, w=420, h=108, fill=VERDE_BG, stroke=VERDE,
@@ -111,7 +111,7 @@ ARROWS = [
     (910, 820, 910, 777, "indexa (pdfplumber)", 10, 0, "lm"),
 ]
 
-FOOT = "* consultar_excel: nombre histórico; hoy lee la ONTOLOGÍA, no Excel."
+FOOT = "Las herramientas del LLM leen la ONTOLOGÍA verificada (de los PDF oficiales); el LLM nunca genera cifras."
 
 # ------------------------------------------------------------------ PIL (PNG)
 def render_png(scale=2):

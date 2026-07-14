@@ -64,8 +64,8 @@ de confianza. Esa decision se deja al equipo que lo opere.
 ACTUALIZAR LAS NORMATIVAS OFICIALES (opcional)
 ----------------------------------------------
 La informacion procede de los documentos OFICIALES (BOE, EUR-Lex, ERSE, GRTgaz)
-descargados en data\raw\; el Excel solo sirve de indice. Para refrescar los PDFs a
-su ultima version publicada, ejecuta (requiere internet):
+descargados en data\raw\, a traves de la ontologia verificada. Para refrescar los
+PDFs a su ultima version publicada, ejecuta (requiere internet):
    - Doble clic en:  actualizar_fuentes.bat
 Descarga BOE y EUR-Lex automaticamente; para Portugal/Francia, anade la URL directa
 del PDF en actualizar_fuentes.py cuando la tengas. Conserva el PDF anterior como .bak.

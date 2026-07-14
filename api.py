@@ -14,12 +14,7 @@ from pydantic import BaseModel, Field
 
 from llm_interface import get_provider
 
-from motor_determinista import (
-    buscar_pdfs,
-    indexar_pdfs,
-    consultar_excel,
-    evaluar_cumplimiento,
-)
+from agente_pdf import buscar_pdfs, indexar_pdfs
 from conversor_unidades import (
     convertir_unidades,
     convertir_condiciones_referencia,
@@ -188,8 +183,8 @@ LLM_TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "consultar_excel",
-            "description": "Consulta los límites regulatorios de calidad de gas para un parámetro y país.",
+            "name": "consultar_norma",
+            "description": "Consulta los límites regulatorios de calidad de gas para un parámetro y país (fuente oficial: la ontología verificada).",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -208,7 +203,7 @@ LLM_TOOLS = [
                 "Evalúa si un valor MEDIDO (aportado por el usuario) cumple los límites "
                 "regulatorios. ÚSALA SOLO si el usuario da un valor numérico a evaluar. "
                 "Si el usuario solo pregunta por el límite/valor de la normativa (sin dar "
-                "un valor propio), usa `consultar_excel`; NUNCA inventes un valor."
+                "un valor propio), usa `consultar_norma`; NUNCA inventes un valor."
             ),
             "parameters": {
                 "type": "object",
@@ -310,9 +305,9 @@ LLM_TOOLS = [
 ]
 
 TOOL_FUNCS: Dict[str, Callable[..., Any]] = {
-    # Las consultas normativas usan la FUENTE OFICIAL (ontología) como primaria; el Excel
-    # solo como respaldo. Lambdas con enlace tardío (los wrappers se definen más abajo).
-    "consultar_excel": lambda **kw: _consultar_norma(kw.get("parametro", ""), kw.get("pais", "")),
+    # Las consultas normativas usan la FUENTE OFICIAL: la ontología verificada (de los PDF
+    # oficiales). Lambdas con enlace tardío (los wrappers se definen más abajo).
+    "consultar_norma": lambda **kw: _consultar_norma(kw.get("parametro", ""), kw.get("pais", "")),
     "evaluar_cumplimiento": lambda **kw: _evaluar_norma(kw.get("parametro", ""), kw.get("pais", ""), kw.get("valor"), kw.get("unidad")),
     "convertir_condiciones_referencia": convertir_a_condiciones_espana,
     "convertir_condiciones_iso13443": convertir_condiciones_referencia,
@@ -325,7 +320,7 @@ def responder_con_llm(mensaje: str, session_id: str) -> str:
     """Redacta la respuesta con el LLM configurado usando las herramientas deterministas.
 
     El modelo NUNCA inventa cifras: los números provienen de las herramientas
-    (ontología/Excel/PDF). El LLM solo interpreta la pregunta y redacta el
+    (ontología / PDF). El LLM solo interpreta la pregunta y redacta el
     resultado. El bucle de tool-calling vive en `llm_interface.py`; aquí solo se
     pasa el system prompt, el historial, el mensaje, los esquemas de herramientas
     y el mapa de funciones deterministas.
@@ -731,59 +726,16 @@ def _num_simple(x: Any) -> Optional[float]:
     return float(m.group(0)) if m else None
 
 
-def _detectar_discrepancia(rec_oficial: Dict[str, Any], excel: Optional[Dict[str, Any]]) -> str:
-    """Compara el límite OFICIAL con el del Excel (mismo parámetro/país). Nota si difieren
-    (solo si las unidades coinciden y ambos son numéricos)."""
-    if not excel or not excel.get("matches"):
-        return ""
-    m = excel["matches"][0]
-    u_excel = _normalize_unit(_txt(m.get("unidad")).strip("()"))
-    u_ofi = _normalize_unit(rec_oficial.get("unidad") or "")
-    if u_excel and u_ofi and u_excel != u_ofi:
-        return ""  # unidades distintas: no comparamos crudo
-    difs = []
-    for campo, etiqueta in (("limite_superior", "máximo"), ("limite_inferior", "mínimo")):
-        o = _num_simple(rec_oficial.get(campo)); e = _num_simple(_txt(m.get(campo)))
-        if o is not None and e is not None and abs(o - e) > 1e-6:
-            difs.append(f"{etiqueta}: oficial {rec_oficial.get(campo)} vs Excel {_txt(m.get(campo))}")
-    return "; ".join(difs)
-
-
 def _consultar_norma(parametro: str, pais: str, tipo_gas: str = "gas_natural") -> Dict[str, Any]:
-    """Consulta normativa. FUENTE PRIMARIA: documentación oficial (ontología verificada
-    de los PDFs en data/raw). El Excel solo como índice/respaldo. Si hay dato oficial y
-    el Excel discrepa, prevalece el oficial y se marca la discrepancia.
-
-    `tipo_gas` por defecto "gas_natural" → comportamiento idéntico al actual. Para
-    "biometano" se consulta `parametros_biometano` y se OMITE el respaldo del Excel
-    (el Excel es solo de gas natural — riesgo R3)."""
-    oficial = fuente_oficial.consultar(parametro, pais, tipo_gas)
-    if tipo_gas != "gas_natural":
-        return oficial  # sin respaldo Excel para gases no naturales
-    try:
-        excel = consultar_excel(parametro, pais)
-    except Exception:
-        excel = {"count": 0, "matches": []}
-    if oficial.get("count"):
-        disc = _detectar_discrepancia(oficial["matches"][0], excel)
-        if disc:
-            oficial["matches"][0]["discrepancia"] = disc
-        return oficial
-    return excel  # el oficial no cubre este caso → respaldo del Excel
+    """Consulta normativa. FUENTE ÚNICA: documentación oficial (ontología verificada,
+    extraída de los PDF de data/raw). `tipo_gas` por defecto "gas_natural"; con
+    "biometano"/"hidrogeno" se consulta la sección de parámetros de ese gas."""
+    return fuente_oficial.consultar(parametro, pais, tipo_gas)
 
 
 def _evaluar_norma(parametro: str, pais: str, valor: float, unidad: Optional[str] = None) -> Dict[str, Any]:
-    """Evaluación de cumplimiento contra el límite OFICIAL; Excel solo como respaldo."""
-    oficial = fuente_oficial.evaluar(parametro, pais, valor, unidad)
-    if oficial.get("count"):
-        try:
-            disc = _detectar_discrepancia(oficial["matches"][0], consultar_excel(parametro, pais))
-            if disc:
-                oficial["matches"][0]["discrepancia"] = disc
-        except Exception:
-            pass
-        return oficial
-    return evaluar_cumplimiento(parametro, pais, valor, unidad=unidad)
+    """Evaluación de cumplimiento contra el límite OFICIAL (ontología verificada)."""
+    return fuente_oficial.evaluar(parametro, pais, valor, unidad)
 
 
 def _cita_oficial(item: Dict[str, Any]) -> str:
@@ -990,8 +942,6 @@ def _evaluar_paises(parametro: str, valor: float, unidad: Optional[str], paises:
             celda = f"{valor_eval} {unidad_reg}".strip()
         lines.append(f"| {pais_fila} | {nombre} | {celda} | {limite_cell} | {condiciones} | {res} | {detalle} | {comp} |")
         evidencias.append(f"- **{pais_fila}** · {nombre}: {_cita_oficial(item)}")
-        if item.get("discrepancia"):
-            evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la fuente oficial): {item['discrepancia']}")
         if item.get("nota"):
             evidencias.append(f"  - 📝 Nota de la fuente: {item['nota']}")
         if estado == "Cumple":
@@ -1052,8 +1002,6 @@ def _comparar_normativa(parametro: str, paises: list) -> str:
                     normalizaciones.append(nota)
             lines.append(f"| {pais} | {nombre} | {limite} | {unidad_reg or '—'} | {cond} | {comp} |")
             evidencias.append(f"- **{pais}** · {nombre}: {_cita_oficial(m)}")
-            if m.get("discrepancia"):
-                evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la oficial): {m['discrepancia']}")
             if m.get("nota"):
                 evidencias.append(f"  - 📝 Nota de la fuente: {m['nota']}")
     if not hubo:
@@ -2352,8 +2300,6 @@ def _format_info_response(
                 rango = f"{rango} ({unidad_reg})"
         lines.append(f"| {parametro_name} | {rango} | {condiciones} |")
         evidencias.append(f"- **{parametro_name}**: {_cita_oficial(item)}")
-        if item.get("discrepancia"):
-            evidencias.append(f"  - ⚠ Discrepancia con el Excel (prevalece la oficial): {item['discrepancia']}")
     if evidencias:
         lines += ["", "**Evidencias (fuente oficial)**", ""] + evidencias
     return "\n".join(lines)
@@ -2413,7 +2359,7 @@ def _fallback_deterministic_response(mensaje: str, session_id: str = "default") 
             if pdf_resultados["count"] > 0:
                 primer_resultado = pdf_resultados["matches"][0]
                 return (
-                    f"No encontré coincidencia exacta en el Excel/CSV para '{parametro}' en '{pais_formateado}', "
+                    f"No encontré un límite fijado para '{parametro}' en '{pais_formateado}' en la ontología, "
                     f"pero sí encontré información en PDF: {primer_resultado.get('name')} (página {primer_resultado.get('page')}). "
                     f"Extracto: {primer_resultado.get('snippet', '')}"
                 )
