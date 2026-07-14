@@ -279,8 +279,9 @@ bloques = [
                             "Las tres capas de datos"], AZUL2),
     ("03", "Ontología", ["Estructura del fichero", "Anatomía de un valor",
                          "Estados de verificación"], VERDE),
-    ("04", "Herramientas", ["El stack y el papel de cada pieza", "Código propio y endpoints",
-                            "Motor, IA, RAG y ampliación"], NARANJA),
+    ("04", "Herramientas", ["El stack: la pieza clave de cada capa",
+                            "Motor determinista, IA y RAG",
+                            "Ampliación a biometano e hidrógeno"], NARANJA),
 ]
 x = 0.6
 for num, tit, items, color in bloques:
@@ -651,122 +652,53 @@ slide_seccion("04", "Las herramientas",
 # --------------------- 14. El stack de un vistazo ---------------------
 s = _slide(); _cabecera(s, "El stack tecnológico", nxt(), kicker="Herramientas")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
-       [("Lo esencial de cada capa: la pieza que manda y el porqué. (El detalle completo, en la diapositiva siguiente.)",
-         14, GRIS, False, False, 0)])
+       [("La pieza que manda en cada capa, y por qué. En pequeño, las de apoyo.", 14, GRIS, False, False, 0)])
 capas = [
-    ("FRONTEND", CYAN, [
-        ("JavaScript vanilla", "La interfaz (index.html). Sin framework: una SPA ligera."),
-        ("DOMPurify", "Sanea el HTML de la respuesta antes de pintarlo (anti-XSS)."),
-    ]),
-    ("BACKEND", AZUL, [
-        ("FastAPI", "NUESTRO servidor: define y expone los endpoints. Propio y gratuito."),
-        ("uvicorn", "Lo ejecuta y atiende las peticiones en el puerto 8000."),
-    ]),
-    ("DATOS Y DOCUMENTOS", VERDE, [
-        ("PyYAML", "Lee la ONTOLOGÍA: la puerta a TODAS las cifras del sistema."),
-        ("pdfplumber + SQLite", "Extraen e indexan el texto de los PDF (RAG). Ninguna cifra."),
-    ]),
-    ("IA  (opcional)", NARANJA, [
-        ("GPT-4o-mini", "Interpreta y REDACTA, a temperatura 0. Nunca genera cifras."),
-        ("function calling", "El mecanismo por el que PIDE la cifra en vez de inventarla."),
-    ]),
+    ("FRONTEND", CYAN,
+     [("JavaScript vanilla", "La interfaz (index.html). Sin framework."),
+      ("DOMPurify", "Sanea el HTML antes de pintarlo (anti-XSS).")],
+     "+ marked (pinta el Markdown) · localStorage (historial)"),
+    ("BACKEND", AZUL,
+     [("FastAPI", "NUESTRO servidor: define y expone los endpoints."),
+      ("uvicorn", "Lo ejecuta y atiende el puerto 8000.")],
+     "+ pydantic (valida) · python-dotenv (custodia la clave)"),
+    ("DATOS Y DOCUMENTOS", VERDE,
+     [("PyYAML", "Lee la ONTOLOGÍA: la puerta a TODAS las cifras."),
+      ("pdfplumber + SQLite", "Indexan el texto de los PDF (RAG). Ninguna cifra.")],
+     "+ openpyxl · xhtml2pdf (informes Excel y PDF)"),
+    ("IA  (opcional)", NARANJA,
+     [("GPT-4o-mini", "Interpreta y REDACTA, a temperatura 0."),
+      ("function calling", "PIDE la cifra en vez de inventarla.")],
+     "+ sustituible por un modelo on-premise"),
 ]
 x = 0.6
-for titulo, color, items in capas:
-    _rbox(s, x, 1.9, 2.95, 3.4, fill=GRISCL, line=BORDE, line_w=1)
-    _box(s, x, 1.9, 2.95, 0.5, fill=color)
-    _texto(s, x, 1.95, 2.95, 0.42, [(titulo, 12.5, BLANCO, True, False, 0)], align=PP_ALIGN.CENTER)
-    y = 2.62
+for titulo, color, items, apoyo in capas:
+    _rbox(s, x, 1.85, 2.95, 3.75, fill=GRISCL, line=BORDE, line_w=1)
+    _box(s, x, 1.85, 2.95, 0.5, fill=color)
+    _texto(s, x, 1.9, 2.95, 0.42, [(titulo, 12.5, BLANCO, True, False, 0)], align=PP_ALIGN.CENTER)
+    y = 2.55
     for nombre, papel in items:
-        _box(s, x + 0.2, y, 0.055, 0.28, fill=color)
-        _texto(s, x + 0.35, y - 0.05, 2.45, 0.32, [(nombre, 14, AZUL, True, False, 0)])
-        _texto(s, x + 0.35, y + 0.3, 2.45, 0.95, [(papel, 11.5, GRIS, False, False, 0)])
-        y += 1.35
+        _box(s, x + 0.2, y, 0.055, 0.26, fill=color)
+        _texto(s, x + 0.35, y - 0.06, 2.45, 0.3, [(nombre, 14, AZUL, True, False, 0)])
+        _texto(s, x + 0.35, y + 0.26, 2.45, 0.8, [(papel, 11.5, GRIS, False, False, 0)])
+        y += 1.15
+    _box(s, x + 0.2, 4.95, 2.55, 0.02, fill=BORDE)
+    _texto(s, x + 0.2, 5.02, 2.6, 0.55, [(apoyo, 10.5, GRIS, False, False, 0)])
     x += 3.11
-_box(s, 0.6, 5.5, 12.13, 0.55, fill=AZULCL)
-_box(s, 0.6, 5.5, 0.09, 0.55, fill=AZUL)
-_texto(s, 0.9, 5.52, 11.7, 0.5, [
+_box(s, 0.6, 5.82, 12.13, 1.1, fill=AZULCL)
+_box(s, 0.6, 5.82, 0.09, 1.1, fill=AZUL)
+_texto(s, 0.9, 5.9, 11.7, 1.0, [
     ("Todo es software libre salvo la API de OpenAI — el único componente de pago, y además opcional.",
-     14, AZUL, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
-_box(s, 0.6, 6.2, 12.13, 0.72, fill=GRISCL)
-_box(s, 0.6, 6.2, 0.09, 0.72, fill=NARANJA)
-_texto(s, 0.9, 6.24, 11.7, 0.66, [
-    ("Honestidad de ingeniería — declarado en requirements pero NO usado hoy:", 12, NARANJAOS, True, False, 0),
-    ("pint y PyPDF2 (nunca se importan) · pandas (leía un Excel ya retirado; la fuente es la ontología) · "
-     "cryptography (solo si se activa el HTTPS, hoy comentado).", 11.5, GRIS, False, False, 0),
-], space=2)
+     14, AZUL, True, False, 0),
+    ("Y por honestidad: pint, PyPDF2, pandas y cryptography están declarados en requirements pero HOY NO SE USAN "
+     "(el Excel que leía pandas se retiró; la fuente es la ontología).", 11.5, GRIS, False, False, 0),
+], space=3)
 _notes(s, "El mapa del stack. Dos mensajes. Uno: todo es software libre EXCEPTO la API de OpenAI, que además "
           "es opcional. Y dos, la banda de abajo, que es la que da credibilidad: hemos revisado el proyecto y "
           "hay dependencias declaradas que hoy NO se usan —pint, PyPDF2, pandas y cryptography—. Lo decimos "
           "en vez de venderlas como parte del sistema. Si os preguntan por ellas, esa es la respuesta.")
 
-# --------------- 15. Las herramientas y su papel ---------------
-slide_tabla("Cada herramienta y su papel",
-    ["Herramienta", "Capa", "Para qué sirve exactamente"],
-    [
-        ["FastAPI + uvicorn", "Backend", "NUESTRO servidor: define los endpoints y los sirve. Infraestructura propia y gratuita."],
-        ["pydantic", "Backend", "Valida y tipa lo que entra y sale de cada endpoint: evita peticiones malformadas."],
-        ["python-dotenv", "Backend", "Carga la clave de OpenAI desde el entorno: nunca va escrita en el código."],
-        ["PyYAML", "Datos", "Lee la ONTOLOGÍA. Es la puerta a todas las cifras del sistema."],
-        ["pdfplumber + SQLite", "Documentos", "Extraen el texto de los PDF y lo indexan para el buscador (RAG). No guardan ninguna cifra."],
-        ["openpyxl + xhtml2pdf", "Informes", "Exportan la matriz comparativa a Excel y a PDF, con los mismos datos de la web."],
-        ["OpenAI (GPT-4o-mini)", "IA · opcional", "Interpreta y REDACTA. Con function calling PIDE las cifras: nunca las genera."],
-        ["HTML + JS vanilla", "Frontend", "La interfaz (index.html), sin framework. marked pinta el Markdown y DOMPurify lo sanea (anti-XSS)."],
-        ["pytest + git", "Calidad", "Pruebas automáticas y versionado del código Y de la ontología: cada cambio de cifra queda registrado."],
-    ],
-    intro="Nueve piezas. Ninguna decorativa: cada una cumple una función concreta.",
-    col_ratios=[2.5, 1.5, 8.1], fsize=12.5, kicker="Herramientas",
-    notas="Deshaced aquí una confusión frecuente: FastAPI y la API de OpenAI no son lo mismo aunque ambas lleven "
-          "'API'. FastAPI es el framework de NUESTRO servidor: propio y gratuito. La API de OpenAI es un "
-          "servicio de terceros, de pago y opcional. Y la pieza que hay que retener es PyYAML: es lo que abre "
-          "la ontología, de donde salen TODAS las cifras.")
-
-# --------------- 16. Módulos propios y endpoints ---------------
-s = _slide(); _cabecera(s, "El código propio y lo que expone", nxt(), kicker="Herramientas")
-_texto(s, 0.6, 1.35, 12.2, 0.35,
-       [("A la izquierda, nuestros módulos: cada fichero, una responsabilidad. A la derecha, los servicios que ofrece la aplicación.",
-         14, GRIS, False, False, 0)])
-modulos = [
-    ("api.py", "El núcleo: endpoints, ROUTER DETERMINISTA y orquestación."),
-    ("fuente_oficial.py", "Lee la ontología y devuelve el valor CON SU CITA. La única puerta a las cifras."),
-    ("conversor_unidades.py", "Unidades y factores ISO 13443 (Tabla A.1)."),
-    ("condiciones_referencia.py", "Las condiciones (T y P) de cada país."),
-    ("motor_determinista.py", "Comparación y evaluación de cumplimiento, sin IA."),
-    ("agente_pdf.py", "Indexa los PDF y busca en ellos (RAG)."),
-    ("llm_interface.py", "La frontera con el modelo y sus salvaguardas."),
-    ("busqueda_semantica.py", "Capa semántica: preparada y opcional."),
-]
-endpoints = [
-    ("/", "Sirve la interfaz web."),
-    ("/api/status", "¿IA activa o modo determinista?"),
-    ("/api/chat", "Consulta libre. También resuelve INTERCONEXIONES en cadena."),
-    ("/api/parametros", "Parámetros y jurisdicciones por tipo de gas."),
-    ("/api/comparar", "Compara un parámetro España-país."),
-    ("/api/matriz", "La matriz completa: jurisdicciones × parámetros."),
-    ("/api/analizar-gas", "Valida un gas real: cumple / alerta / no cumple."),
-    ("/api/exportar-matriz", "Descarga la comparativa en Excel o PDF."),
-]
-for (titulo, color, filas, x) in (("MÓDULOS PROPIOS", AZUL, modulos, 0.6),
-                                  ("ENDPOINTS", CYAN, endpoints, 6.85)):
-    _box(s, x, 1.85, 5.9, 0.45, fill=color)
-    _texto(s, x + 0.18, 1.88, 5.5, 0.4, [(titulo, 13, BLANCO, True, False, 0)])
-    y = 2.35
-    for i, (izq, der) in enumerate(filas):
-        _box(s, x, y, 5.9, 0.56, fill=GRISCL if i % 2 == 0 else BLANCO)
-        _texto(s, x + 0.15, y + 0.02, 2.35, 0.52, [(izq, 10.5, AZUL, True, False, 0)],
-               anchor=MSO_ANCHOR.MIDDLE, font=MONO)
-        _texto(s, x + 2.55, y + 0.02, 3.2, 0.52, [(der, 10.5, TINTA, False, False, 0)],
-               anchor=MSO_ANCHOR.MIDDLE)
-        y += 0.56
-_box(s, 0.6, 6.9, 12.13, 0.02, fill=BORDE)
-_notes(s, "La pieza que hay que retener de la izquierda es fuente_oficial.py: es la ÚNICA puerta a las cifras. "
-          "Todo —el chat, la comparativa, la matriz, el análisis de gas— pasa por ahí. Si alguien quiere auditar "
-          "de dónde sale un número, ese es el sitio. De la derecha, destacad dos servicios: analizar-gas, que "
-          "valida un gas real país a país y marca la ZONA DE ALERTA (cumple, pero a menos del 10 % del límite); "
-          "y la detección de interconexiones dentro de /api/chat, que calcula qué gas atraviesa una cadena de "
-          "países e identifica el CUELLO DE BOTELLA regulatorio.")
-
-# --------------- 20. Motor determinista + ISO 13443 ---------------
+# --------------- 15. Motor determinista + ISO 13443 ---------------
 s = _slide(); _cabecera(s, "El motor determinista y la normalización", nxt(), kicker="Cómo funciona")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("«Determinista» = ante la misma consulta, siempre la misma respuesta, calculada por código, sin azar ni IA.",
