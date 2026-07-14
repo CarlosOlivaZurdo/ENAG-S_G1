@@ -43,8 +43,6 @@ explicar el sistema.
 | **Documentacion_Comparador_Gas** (este) | MD · PDF | Referencia técnica y de funcionamiento completa. |
 | **Presentacion_Comparador_Gas** | PPTX | La presentación (editable, 23 diapositivas, con notas del ponente): arquitectura, ontología y herramientas. |
 | **Preguntas_Respuestas_Defensa** | MD · PDF | Batería de preguntas y respuestas para preparar la defensa del proyecto. |
-| **Presentacion_15min** · **Presentacion_7min** | PDF | Diapositivas de la exposición anterior (completa y ejecutiva). |
-| **Guion_Presentacion_15min** · **_7min** | MD | El texto a decir, diapositiva a diapositiva y con tiempos. |
 | **Prospeccion_Normativa_Hidrogeno** | MD | Marco regulatorio del hidrógeno verificado + hoja de ruta de escalado. |
 | **Estudio_Terminologia_Biometano** | MD | Justificación (medida) de una capa de búsqueda semántica. |
 | **Arquitectura_Esquema_Cajas** · **Ontologia_Estructura** | PNG · SVG | Los dos diagramas (embebidos en este documento y en la presentación). |
