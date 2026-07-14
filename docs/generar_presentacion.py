@@ -392,7 +392,7 @@ _box(s, 3.2, 3.72, 0.09, 1.05, fill=VERDE)
 _texto(s, 3.42, 3.79, 4.45, 0.92, [
     ("RUTA A · Consulta cuantitativa   (la mayoría)", 12.5, VERDEOS, True, False, 0),
     ("La resuelve el CÓDIGO. Sin IA.", 11.5, TINTA, False, False, 0),
-    ("motor_determinista · conversor_unidades · fuente_oficial", 10, GRIS, False, False, 0),
+    ("fuente_oficial · conversor_unidades · condiciones_referencia", 10, GRIS, False, False, 0),
 ], space=1)
 # Ruta B
 _rbox(s, 3.2, 5.0, 4.75, 1.05, fill=NARANJACL, line=NARANJA, line_w=1.25)
