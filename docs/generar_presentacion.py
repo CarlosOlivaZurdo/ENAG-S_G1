@@ -651,19 +651,37 @@ slide_seccion("04", "Las herramientas",
 # --------------------- 14. El stack de un vistazo ---------------------
 s = _slide(); _cabecera(s, "El stack tecnológico", nxt(), kicker="Herramientas")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
-       [("Lo que la aplicación usa realmente, agrupado por capa.", 14, GRIS, False, False, 0)])
+       [("Lo esencial de cada capa: la pieza que manda y el porqué. (El detalle completo, en la diapositiva siguiente.)",
+         14, GRIS, False, False, 0)])
 capas = [
-    ("FRONTEND", CYAN, ["HTML + CSS", "JavaScript vanilla", "marked", "DOMPurify", "localStorage"]),
-    ("BACKEND", AZUL, ["Python 3.11+", "FastAPI", "uvicorn", "pydantic", "python-dotenv"]),
-    ("DATOS Y DOCUMENTOS", VERDE, ["PyYAML", "SQLite", "pdfplumber", "openpyxl", "xhtml2pdf"]),
-    ("IA  (opcional)", NARANJA, ["OpenAI SDK", "GPT-4o-mini", "function calling", "temperatura 0", "sustituible"]),
+    ("FRONTEND", CYAN, [
+        ("JavaScript vanilla", "La interfaz (index.html). Sin framework: una SPA ligera."),
+        ("DOMPurify", "Sanea el HTML de la respuesta antes de pintarlo (anti-XSS)."),
+    ]),
+    ("BACKEND", AZUL, [
+        ("FastAPI", "NUESTRO servidor: define y expone los endpoints. Propio y gratuito."),
+        ("uvicorn", "Lo ejecuta y atiende las peticiones en el puerto 8000."),
+    ]),
+    ("DATOS Y DOCUMENTOS", VERDE, [
+        ("PyYAML", "Lee la ONTOLOGÍA: la puerta a TODAS las cifras del sistema."),
+        ("pdfplumber + SQLite", "Extraen e indexan el texto de los PDF (RAG). Ninguna cifra."),
+    ]),
+    ("IA  (opcional)", NARANJA, [
+        ("GPT-4o-mini", "Interpreta y REDACTA, a temperatura 0. Nunca genera cifras."),
+        ("function calling", "El mecanismo por el que PIDE la cifra en vez de inventarla."),
+    ]),
 ]
 x = 0.6
 for titulo, color, items in capas:
     _rbox(s, x, 1.9, 2.95, 3.4, fill=GRISCL, line=BORDE, line_w=1)
     _box(s, x, 1.9, 2.95, 0.5, fill=color)
     _texto(s, x, 1.95, 2.95, 0.42, [(titulo, 12.5, BLANCO, True, False, 0)], align=PP_ALIGN.CENTER)
-    _texto(s, x + 0.2, 2.55, 2.6, 2.7, [(i, 13, TINTA, False, True, 0) for i in items], space=9)
+    y = 2.62
+    for nombre, papel in items:
+        _box(s, x + 0.2, y, 0.055, 0.28, fill=color)
+        _texto(s, x + 0.35, y - 0.05, 2.45, 0.32, [(nombre, 14, AZUL, True, False, 0)])
+        _texto(s, x + 0.35, y + 0.3, 2.45, 0.95, [(papel, 11.5, GRIS, False, False, 0)])
+        y += 1.35
     x += 3.11
 _box(s, 0.6, 5.5, 12.13, 0.55, fill=AZULCL)
 _box(s, 0.6, 5.5, 0.09, 0.55, fill=AZUL)
