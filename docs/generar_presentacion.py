@@ -3,10 +3,10 @@
 
     python docs/generar_presentacion.py
 
-Presentación única y completa, centrada en:
+Presentación breve (10 diapositivas), centrada en:
   - la ARQUITECTURA del sistema (esquema DIBUJADO en la propia diapositiva, apaisado),
   - la ONTOLOGÍA (esquema DIBUJADO: el fichero y sus cinco claves),
-  - TODAS LAS HERRAMIENTAS que usa la aplicación, indicando el papel de cada una.
+  - y las garantías (cero cifras inventadas, trazabilidad).
 
 Los esquemas NO son imágenes: se dibujan con formas nativas de PowerPoint, adaptadas al
 formato 16:9, para que se lean bien y sean editables.
@@ -20,7 +20,7 @@ import io
 import collections
 import yaml
 from pptx import Presentation
-from pptx.util import Inches, Pt, Emu
+from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
@@ -76,7 +76,6 @@ prs = Presentation()
 prs.slide_width = Inches(13.333)
 prs.slide_height = Inches(7.5)
 BLANK = prs.slide_layouts[6]
-W, H = prs.slide_width, prs.slide_height
 
 
 def _slide():
@@ -144,7 +143,7 @@ def _texto(slide, l, t, w, h, runs, align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, 
 def _cabecera(slide, titulo, n, kicker=None):
     _box(slide, 0, 0, 13.333, 1.02, fill=AZUL)
     _box(slide, 0, 1.02, 13.333, 0.055, fill=CYAN)
-    ty = 0.24 if kicker else 0.16
+    ty = 0.16
     if kicker:
         _texto(slide, 0.55, 0.13, 11.5, 0.26, [(kicker.upper(), 11, CYAN, True, False, 0)])
         ty = 0.38
@@ -164,93 +163,7 @@ def nxt():
     return N
 
 
-def slide_seccion(numero, titulo, subtitulo):
-    """Separador de bloque: da ritmo y aspecto profesional."""
-    s = _slide()
-    _box(s, 0, 0, 13.333, 7.5, fill=AZUL)
-    _box(s, 0, 3.35, 13.333, 0.05, fill=CYAN)
-    _box(s, 1.1, 2.35, 0.13, 1.6, fill=VERDE)
-    _texto(s, 1.5, 2.3, 10.5, 0.6, [(f"BLOQUE {numero}", 14, CYAN, True, False, 0)])
-    _texto(s, 1.5, 2.7, 10.8, 0.9, [(titulo, 40, BLANCO, True, False, 0)])
-    _texto(s, 1.5, 3.7, 10.8, 0.8, [(subtitulo, 17, RGBColor(0xC9, 0xD6, 0xE0), False, False, 0)])
-    nxt()
-    return s
-
-
-def slide_tabla(titulo, headers, filas, notas="", intro=None, col_ratios=None,
-                fsize=13, kicker=None):
-    s = _slide(); _cabecera(s, titulo, nxt(), kicker)
-    top = 1.42
-    if intro:
-        _texto(s, 0.6, top, 12.1, 0.5, [(intro, 14, GRIS, False, False, 0)])
-        top += 0.58
-    nrows, ncols = len(filas) + 1, len(headers)
-    tw = Inches(12.1)
-    # Alto disponible repartido: la tabla ocupa hasta 6.95
-    alto = Inches((6.95 - top) / nrows)
-    gr = s.shapes.add_table(nrows, ncols, Inches(0.6), Inches(top), tw, alto * nrows).table
-    gr.first_row = False; gr.horz_banding = False
-    for i in range(nrows):
-        gr.rows[i].height = alto
-    if col_ratios:
-        tot = sum(col_ratios)
-        for j, cr in enumerate(col_ratios):
-            gr.columns[j].width = int(tw * cr / tot)
-    for j, htxt in enumerate(headers):
-        c = gr.cell(0, j); c.fill.solid(); c.fill.fore_color.rgb = AZUL
-        c.vertical_anchor = MSO_ANCHOR.MIDDLE
-        c.margin_left = Pt(8); c.margin_top = Pt(2); c.margin_bottom = Pt(2)
-        p = c.text_frame.paragraphs[0]; r = p.add_run(); r.text = htxt
-        r.font.name = FUENTE; r.font.size = Pt(fsize); r.font.bold = True; r.font.color.rgb = BLANCO
-    for i, fila in enumerate(filas, start=1):
-        for j, val in enumerate(fila):
-            c = gr.cell(i, j); c.fill.solid()
-            c.fill.fore_color.rgb = GRISCL if i % 2 else BLANCO
-            c.vertical_anchor = MSO_ANCHOR.MIDDLE
-            c.margin_left = Pt(8); c.margin_top = Pt(2); c.margin_bottom = Pt(2)
-            p = c.text_frame.paragraphs[0]; p.word_wrap = True
-            mono = isinstance(val, str) and (val.endswith(".py") or val.startswith("/") or val.startswith("data/"))
-            run = p.add_run(); run.text = val
-            run.font.name = MONO if mono else FUENTE
-            run.font.size = Pt(fsize - 1.5 if mono else fsize)
-            run.font.bold = bool(j == 0 and not mono)
-            run.font.color.rgb = AZUL if j == 0 else TINTA
-    if notas:
-        _notes(s, notas)
-    return s
-
-
-def slide_2col(titulo, izq, der, notas="", intro=None, kicker=None, alto=4.6, banda=None):
-    """Dos paneles equilibrados: (encabezado, color, [puntos])."""
-    s = _slide(); _cabecera(s, titulo, nxt(), kicker)
-    top = 1.42
-    if intro:
-        _texto(s, 0.6, top, 12.1, 0.5, [(intro, 14, GRIS, False, False, 0)])
-        top += 0.6
-    for (enc, color, puntos), x in ((izq, 0.6), (der, 6.85)):
-        _box(s, x, top, 5.9, alto, fill=GRISCL)
-        _box(s, x, top, 5.9, 0.5, fill=color)
-        _texto(s, x + 0.18, top + 0.06, 5.5, 0.4, [(enc, 15, BLANCO, True, False, 0)])
-        runs = []
-        for p in puntos:
-            if isinstance(p, tuple):
-                runs.append((p[0], 12.5, GRIS, False, False, 1))
-            else:
-                runs.append((p, 14.5, TINTA, False, True, 0))
-        _texto(s, x + 0.2, top + 0.68, 5.5, alto - 0.85, runs, space=10)
-    if banda:
-        by = top + alto + 0.28
-        _box(s, 0.6, by, 12.13, 6.92 - by, fill=AZULCL)
-        _box(s, 0.6, by, 0.09, 6.92 - by, fill=AZUL)
-        runs = [(banda[0], 14, AZUL, True, False, 0)]
-        runs += [(t, 12.5, TINTA, False, False, 0) for t in banda[1:]]
-        _texto(s, 0.9, by + 0.08, 11.7, 6.8 - by, runs, space=3)
-    if notas:
-        _notes(s, notas)
-    return s
-
-
-# ================================ CONTENIDO ================================
+# ============================== CONTENIDO (10) ==============================
 
 # ------------------------------ 1. Portada ------------------------------
 s = _slide()
@@ -262,104 +175,67 @@ _texto(s, 1.35, 2.0, 11, 1.2, [
     ("de Calidad de Gas", 42, BLANCO, True, False, 0),
 ], space=2)
 _texto(s, 1.38, 4.85, 11, 1.2, [
-    ("Arquitectura, ontología y herramientas del sistema", 21, CYAN, False, False, 0),
+    ("Arquitectura, ontología y garantías del sistema", 21, CYAN, False, False, 0),
     (f"Gas natural · biometano · hidrógeno   |   {N_JUR} jurisdicciones · {N_PAR} parámetros · "
      f"{N_CELDAS} valores trazables", 15, RGBColor(0xC9, 0xD6, 0xE0), False, False, 0),
 ], space=7)
 _texto(s, 1.38, 6.55, 11, 0.4,
        [(f"Ontología v{VER_ONT}  ·  Presentación técnica", 12, RGBColor(0x8F, 0xA6, 0xB8), False, False, 0)])
-_notes(s, "Presentación del sistema. El hilo conductor es doble: CÓMO ESTÁ CONSTRUIDO (arquitectura, "
-          "ontología y herramientas) y POR QUÉ ES FIABLE (trazabilidad total y cero cifras inventadas).")
+_notes(s, "El hilo conductor es doble: CÓMO ESTÁ CONSTRUIDO (arquitectura y ontología) y POR QUÉ ES FIABLE "
+          "(trazabilidad total y cero cifras inventadas).")
 
-# ------------------------------ 2. Índice ------------------------------
-s = _slide(); _cabecera(s, "Índice", nxt())
-bloques = [
-    ("01", "Contexto", ["El problema regulatorio", "El sistema en cifras"], CYAN),
-    ("02", "Arquitectura", ["Los cuatro componentes", "El recorrido de una consulta",
-                            "Las tres capas de datos"], AZUL2),
-    ("03", "Ontología", ["Estructura del fichero", "Anatomía de un valor",
-                         "Estados de verificación"], VERDE),
-    ("04", "Herramientas", ["El stack: la pieza clave de cada capa",
-                            "Motor determinista, IA y RAG",
-                            "Ampliación a biometano e hidrógeno"], NARANJA),
-]
-x = 0.6
-for num, tit, items, color in bloques:
-    _box(s, x, 1.75, 2.95, 4.6, fill=GRISCL)
-    _box(s, x, 1.75, 2.95, 0.09, fill=color)
-    _texto(s, x + 0.22, 1.95, 2.5, 0.6, [(num, 30, color, True, False, 0)])
-    _texto(s, x + 0.22, 2.6, 2.6, 0.5, [(tit, 18, AZUL, True, False, 0)])
-    _texto(s, x + 0.22, 3.25, 2.55, 2.9,
-           [(i, 13, GRIS, False, True, 0) for i in items], space=11)
-    x += 3.11
-_notes(s, "Agenda en cuatro bloques. Primero el contexto; luego la ARQUITECTURA (la forma del sistema); "
-          "luego la ONTOLOGÍA (el corazón del dato); y por último las HERRAMIENTAS (con qué está hecho, "
-          "pieza a pieza). Cerramos con las garantías.")
-
-# ------------------------- 3. Contexto y objetivo -------------------------
-slide_2col("Contexto y objetivo",
-    ("EL PROBLEMA", NARANJA, [
-        "Cada país regula la calidad admisible del gas con SU PROPIA normativa: Wobbe, PCS, azufre, CO2, puntos de rocío.",
-        "La información está dispersa en boletines oficiales distintos y en varios idiomas.",
-        "Las unidades y las condiciones de referencia NO coinciden: unos miden a 0 °C, otros a 15 o a 25 °C.",
-        "Compararlas a mano es laborioso, lento y propenso a error.",
-    ]),
-    ("LA SOLUCIÓN", VERDE, [
-        f"Un asistente que compara la calidad regulatoria entre {N_JUR} jurisdicciones y {N_PAR} parámetros.",
-        "Se pregunta en LENGUAJE NATURAL; responde con la CITA OFICIAL de cada cifra.",
-        "Normaliza automáticamente unidades y condiciones (ISO 13443) para que la comparación sea válida.",
-        "Principio de diseño: CERO CIFRAS INVENTADAS. Ningún valor se estima.",
-    ]),
-    intro="El problema es concreto, y la propuesta de valor también.",
-    notas="El problema: la información regulatoria está dispersa y, sobre todo, NO ES DIRECTAMENTE COMPARABLE, "
-          "porque cada país usa unidades y condiciones distintas. Nuestra solución compara 21 jurisdicciones y "
-          "10 parámetros en lenguaje natural, normalizando antes de comparar. Y su principio de diseño es que "
-          "no genera ninguna cifra por estimación.")
-
-# ------------------------- 4. El sistema en cifras -------------------------
-s = _slide(); _cabecera(s, "El sistema en cifras", nxt())
-tarjetas = [(str(N_JUR), "jurisdicciones", CYAN), (str(N_PAR), "parámetros de calidad", CYAN),
-            (str(N_CELDAS), "valores trazables", CYAN), ("0", "cifras inventadas", VERDE)]
-x = 0.6
-for num, txt, color in tarjetas:
-    _box(s, x, 1.65, 2.95, 2.25, fill=GRISCL)
-    _box(s, x, 1.65, 2.95, 0.09, fill=color)
-    _texto(s, x, 1.95, 2.95, 1.1, [(num, 52, AZUL, True, False, 0)], align=PP_ALIGN.CENTER)
-    _texto(s, x, 3.1, 2.95, 0.6, [(txt, 14, GRIS, False, False, 0)], align=PP_ALIGN.CENTER)
-    x += 3.11
-# Desglose del "0"
-_box(s, 0.6, 4.25, 12.1, 2.0, fill=AZULCL)
-_box(s, 0.6, 4.25, 0.09, 2.0, fill=AZUL)
-_texto(s, 0.95, 4.4, 11.6, 0.4, [("Detrás de ese cero está lo importante:", 16, AZUL, True, False, 0)])
-_box(s, 1.0, 4.9, 5.4, 1.15, fill=VERDECL)
-_texto(s, 1.2, 5.02, 5.0, 0.9, [
-    (f"{N_VERIF} VERIFICADOS", 17, VERDEOS, True, False, 0),
-    ("Contrastados VERBATIM contra su boletín oficial.", 13, TINTA, False, False, 0),
+# --------------------- 2. Contexto, objetivo y alcance ---------------------
+s = _slide(); _cabecera(s, "Contexto, objetivo y alcance", nxt())
+_texto(s, 0.6, 1.35, 12.2, 0.35,
+       [("El problema es concreto; la propuesta de valor, también.", 14, GRIS, False, False, 0)])
+_rbox(s, 0.6, 1.75, 5.9, 2.35, fill=GRISCL, line=BORDE, line_w=1)
+_box(s, 0.6, 1.75, 5.9, 0.5, fill=NARANJA)
+_texto(s, 0.78, 1.8, 5.5, 0.42, [("EL PROBLEMA", 14, BLANCO, True, False, 0)])
+_texto(s, 0.8, 2.4, 5.5, 1.6, [
+    ("Cada país regula la calidad del gas con SU PROPIA normativa, dispersa y en varios idiomas.",
+     13, TINTA, False, True, 0),
+    ("Las unidades y las condiciones de referencia NO coinciden: unos miden a 0 °C, otros a 15 o a 25 °C.",
+     13, TINTA, False, True, 0),
+    ("Compararlas a mano es lento y propenso a error.", 13, TINTA, False, True, 0),
+], space=7)
+_rbox(s, 6.85, 1.75, 5.9, 2.35, fill=GRISCL, line=BORDE, line_w=1)
+_box(s, 6.85, 1.75, 5.9, 0.5, fill=VERDE)
+_texto(s, 7.03, 1.8, 5.5, 0.42, [("LA SOLUCIÓN", 14, BLANCO, True, False, 0)])
+_texto(s, 7.05, 2.4, 5.5, 1.6, [
+    (f"Un asistente que compara {N_JUR} jurisdicciones y {N_PAR} parámetros, en lenguaje natural.",
+     13, TINTA, False, True, 0),
+    ("Normaliza unidades y condiciones (ISO 13443) ANTES de comparar, y cita la fuente de cada cifra.",
+     13, TINTA, False, True, 0),
+    ("Principio de diseño: CERO CIFRAS INVENTADAS.", 13, AZUL, True, True, 0),
+], space=7)
+for num, txt, color, x in ((str(N_JUR), "jurisdicciones", CYAN, 0.6),
+                           (str(N_PAR), "parámetros", CYAN, 3.71),
+                           (str(N_CELDAS), "valores trazables", CYAN, 6.82),
+                           ("0", "cifras inventadas", VERDE, 9.93)):
+    _box(s, x, 4.3, 2.95, 1.6, fill=GRISCL)
+    _box(s, x, 4.3, 2.95, 0.08, fill=color)
+    _texto(s, x, 4.5, 2.95, 0.85, [(num, 40, AZUL, True, False, 0)], align=PP_ALIGN.CENTER)
+    _texto(s, x, 5.4, 2.95, 0.45, [(txt, 13, GRIS, False, False, 0)], align=PP_ALIGN.CENTER)
+_box(s, 0.6, 6.05, 12.13, 0.85, fill=AZULCL)
+_box(s, 0.6, 6.05, 0.09, 0.85, fill=AZUL)
+_texto(s, 0.9, 6.12, 11.7, 0.75, [
+    (f"Detrás de ese cero: {N_VERIF} valores VERIFICADOS verbatim contra su boletín oficial y "
+     f"{N_NOVER} declarados NO VERIFICABLES.", 14, AZUL, True, False, 0),
+    ("Cuando la norma de un país no fija un parámetro, no lo rellenamos con una estimación: lo marcamos y "
+     "explicamos por qué.", 12.5, GRIS, False, False, 0),
 ], space=3)
-_box(s, 6.9, 4.9, 5.4, 1.15, fill=NARANJACL)
-_texto(s, 7.1, 5.02, 5.0, 0.9, [
-    (f"{N_NOVER} NO VERIFICABLES", 17, NARANJAOS, True, False, 0),
-    ("La norma de ese país no fija el parámetro: se declara, no se inventa.", 13, TINTA, False, False, 0),
-], space=3)
-_texto(s, 0.6, 6.45, 12.1, 0.4,
-       [(f"Base documental: {N_FUENTES} normas oficiales catalogadas  ·  {N_GASES} tipos de gas "
-         f"(gas natural, biometano, hidrógeno)  ·  ~22 PDF archivados en local", 12, GRIS, False, False, 0)])
-_notes(s, f"Cuatro cifras fijan el alcance: {N_JUR} jurisdicciones, {N_PAR} parámetros, {N_CELDAS} valores "
-          f"trazables y CERO cifras inventadas. Detrás de ese cero: {N_VERIF} verificados verbatim y "
-          f"{N_NOVER} declarados 'no verificable' porque la norma no los fija. No los rellenamos con "
-          "estimaciones: los marcamos y explicamos por qué.")
+_notes(s, "El problema: la información regulatoria está dispersa y, sobre todo, NO ES DIRECTAMENTE COMPARABLE, "
+          "porque cada país usa unidades y condiciones distintas. Cuatro cifras fijan el alcance: "
+          f"{N_JUR} jurisdicciones, {N_PAR} parámetros, {N_CELDAS} valores trazables y CERO cifras inventadas. "
+          f"Detrás de ese cero: {N_VERIF} verificados verbatim y {N_NOVER} declarados 'no verificable' porque "
+          "la norma de ese país no los fija.")
 
-# ========================= BLOQUE 2 · ARQUITECTURA =========================
-slide_seccion("02", "Arquitectura",
-              "Cuatro componentes, responsabilidades separadas y una regla: la cifra nunca nace en el modelo.")
-
-# ---------------- 6. ARQUITECTURA — esquema dibujado (16:9) ----------------
-s = _slide(); _cabecera(s, "Arquitectura del sistema", nxt(), kicker="Esquema general")
+# ------------- 3. ARQUITECTURA — esquema dibujado (16:9) -------------
+s = _slide(); _cabecera(s, "Arquitectura del sistema", nxt(), kicker="Cómo está construido")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("Cuatro componentes. Sigue las flechas: toda cifra procede de la ontología; la IA solo redacta.",
          14, GRIS, False, False, 0)])
-
-# --- 1 · INTERFAZ WEB ---
+# 1 · Interfaz web
 _rbox(s, 0.45, 3.05, 2.15, 1.85, fill=BLANCO, line=BORDE, line_w=1.25)
 _box(s, 0.45, 3.05, 2.15, 0.42, fill=CYAN)
 _texto(s, 0.45, 3.09, 2.15, 0.35, [("1 · INTERFAZ WEB", 11.5, BLANCO, True, False, 0)], align=PP_ALIGN.CENTER)
@@ -370,15 +246,13 @@ _texto(s, 0.6, 3.58, 1.9, 1.25, [
     ("marked · DOMPurify", 11, GRIS, False, False, 0),
 ], space=2)
 _flecha(s, 2.63, 3.83, 0.32, 0.3, "der", CYAN)
-
-# --- 2 · SERVIDOR (contenedor) ---
+# 2 · Servidor (contenedor)
 _rbox(s, 2.98, 1.85, 5.2, 4.35, fill=GRISCL, line=AZUL, line_w=1.5)
 _box(s, 2.98, 1.85, 5.2, 0.62, fill=AZUL)
 _texto(s, 3.15, 1.9, 4.9, 0.52, [
     ("2 · SERVIDOR DE APLICACIÓN", 13, BLANCO, True, False, 0),
     ("Python · FastAPI · uvicorn · pydantic", 10.5, CYAN, False, False, 0),
 ], space=0)
-# Router
 _rbox(s, 3.2, 2.68, 4.75, 0.68, fill=AZUL2, line=None)
 _texto(s, 3.2, 2.74, 4.75, 0.56, [
     ("ROUTER DETERMINISTA", 13, BLANCO, True, False, 0),
@@ -386,7 +260,6 @@ _texto(s, 3.2, 2.74, 4.75, 0.56, [
 ], align=PP_ALIGN.CENTER, space=0)
 _flecha(s, 4.15, 3.4, 0.26, 0.24, "aba", VERDE)
 _flecha(s, 6.55, 3.4, 0.26, 0.24, "aba", NARANJA)
-# Ruta A
 _rbox(s, 3.2, 3.72, 4.75, 1.05, fill=VERDECL, line=VERDE, line_w=1.25)
 _box(s, 3.2, 3.72, 0.09, 1.05, fill=VERDE)
 _texto(s, 3.42, 3.79, 4.45, 0.92, [
@@ -394,7 +267,6 @@ _texto(s, 3.42, 3.79, 4.45, 0.92, [
     ("La resuelve el CÓDIGO. Sin IA.", 11.5, TINTA, False, False, 0),
     ("fuente_oficial · conversor_unidades · condiciones_referencia", 10, GRIS, False, False, 0),
 ], space=1)
-# Ruta B
 _rbox(s, 3.2, 5.0, 4.75, 1.05, fill=NARANJACL, line=NARANJA, line_w=1.25)
 _box(s, 3.2, 5.0, 0.09, 1.05, fill=NARANJA)
 _texto(s, 3.42, 5.07, 4.45, 0.92, [
@@ -402,11 +274,9 @@ _texto(s, 3.42, 5.07, 4.45, 0.92, [
     ("Va al modelo, que PIDE las cifras.", 11.5, TINTA, False, False, 0),
     ("llm_interface · function calling", 10, GRIS, False, False, 0),
 ], space=1)
-
 _flecha(s, 8.2, 4.1, 0.34, 0.3, "der", VERDE)
 _flecha(s, 8.2, 5.38, 0.34, 0.3, "der", NARANJA)
-
-# --- 3 · ONTOLOGÍA (la estrella) ---
+# 3 · Ontología
 _rbox(s, 8.6, 3.35, 4.25, 1.5, fill=AZUL, line=None)
 _texto(s, 8.8, 3.45, 3.9, 1.3, [
     ("3 · BASE DE CONOCIMIENTO", 11.5, CYAN, True, False, 0),
@@ -414,102 +284,86 @@ _texto(s, 8.8, 3.45, 3.9, 1.3, [
     (f"Las {N_CELDAS} cifras, cada una con su unidad, sus condiciones y su cita oficial.",
      11, RGBColor(0xC9, 0xD6, 0xE0), False, False, 0),
 ], space=2)
-# Flecha de vuelta (function calling) de la IA a la ontología
 _flecha(s, 9.05, 4.95, 0.3, 0.42, "arr", NARANJA)
 _texto(s, 9.45, 4.98, 3.4, 0.4,
        [("function calling: el modelo PIDE la cifra, no la inventa", 10.5, NARANJAOS, True, False, 0)],
        anchor=MSO_ANCHOR.MIDDLE)
-
-# --- 4 · IA EXTERNA ---
+# 4 · IA externa
 _rbox(s, 8.6, 5.45, 4.25, 1.0, fill=BLANCO, line=NARANJA, line_w=1.5, dash=True)
 _texto(s, 8.8, 5.53, 3.9, 0.85, [
     ("4 · SERVICIO DE IA  (externo · opcional)", 11.5, NARANJAOS, True, False, 0),
     ("OpenAI GPT-4o-mini · temperatura 0 — solo REDACTA, nunca genera cifras.", 11, TINTA, False, False, 0),
 ], space=1)
-
-# --- Banda inferior: documentos y RAG ---
 _box(s, 0.45, 6.42, 12.4, 0.5, fill=AZULCL)
 _box(s, 0.45, 6.42, 0.09, 0.5, fill=AZUL2)
 _texto(s, 0.7, 6.46, 12.0, 0.42, [
     ("Debajo de todo: los ~22 PDF oficiales (data/raw) y su índice de búsqueda SQLite — el índice guarda TEXTO, "
      "ninguna cifra.", 12, AZUL, False, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
-_notes(s, "Este es el esquema del sistema, y conviene recorrerlo con el dedo. Uno: el usuario pregunta desde la "
-          "interfaz web. Dos: la pregunta llega a NUESTRO servidor, y lo primero que hace es pasar por el ROUTER "
-          "DETERMINISTA, que decide quién la resuelve. Si es cuantitativa —RUTA A, la mayoría— la resuelve el "
-          "código leyendo la ontología, sin IA. Si es de texto abierto —RUTA B— va al modelo. Tres: fíjate en la "
-          "flecha que sube desde la IA hasta la ontología: incluso en la ruta B, el modelo no inventa el número, "
-          "lo PIDE mediante function calling. Cuatro: la IA es externa y opcional; si cae, el sistema conmuta "
-          "a determinista. Y abajo, los PDF y su índice de búsqueda, que no guardan ninguna cifra.")
+_notes(s, "Recorred el esquema con el dedo. Uno: el usuario pregunta desde la interfaz web. Dos: la pregunta "
+          "llega a NUESTRO servidor, y lo primero que hace es pasar por el ROUTER DETERMINISTA, que decide "
+          "quién la resuelve. Si es cuantitativa —RUTA A, la mayoría— la resuelve el código leyendo la "
+          "ontología, sin IA y sin posibilidad de error. Si es de texto abierto —RUTA B— va al modelo. Tres, y "
+          "es lo importante: fijaos en la flecha que SUBE desde la IA hasta la ontología. Incluso en la ruta B "
+          "el modelo no inventa el número: lo PIDE mediante function calling. Cuatro: la IA es externa y "
+          "opcional; si cae, el sistema conmuta a determinista y el chat nunca falla.")
 
-# --------------------- 7. Los cuatro componentes (tabla) ---------------------
-slide_tabla("Los cuatro componentes",
-    ["Componente", "Responsabilidad", "Con qué está hecho"],
-    [
-        ["1 · Interfaz web", "Formular la consulta y mostrar la respuesta con sus citas. Cinco secciones.",
-         "index.html — HTML + JavaScript vanilla"],
-        ["2 · Servidor de aplicación", "El núcleo: enruta, calcula, accede al dato y custodia las credenciales.",
-         "Python · FastAPI · uvicorn · pydantic"],
-        ["3 · Base de conocimiento", "La ÚNICA fuente autorizada de cifras: los límites con su contexto y su fuente.",
-         "Ontología YAML (PyYAML)"],
-        ["4 · Servicio de IA (externo)", "Interpretar la pregunta y REDACTAR el texto. Nunca genera cifras.",
-         "API de OpenAI (GPT-4o-mini)"],
-    ],
-    intro="Cada componente tiene una responsabilidad, y solo una. La separación es deliberada.",
-    col_ratios=[2.4, 5.5, 3.4], fsize=13.5, kicker="Arquitectura",
-    notas="La separación es lo que hace imposible la alucinación numérica: el mundo determinista (servidor + "
-          "ontología) es el único que produce números; el mundo conversacional (la IA) solo redacta. "
-          "Ojo con una confusión frecuente: FastAPI y la API de OpenAI no son lo mismo aunque ambas lleven "
-          "'API'. FastAPI es el framework de NUESTRO servidor: infraestructura propia y gratuita. La API de "
-          "OpenAI es un servicio de terceros, de pago y opcional.")
-
-# ------------------- 8. Las tres capas de datos (esquema) -------------------
-s = _slide(); _cabecera(s, "Las tres capas de datos", nxt(), kicker="Arquitectura")
+# --------------- 4. Las tres capas de datos (+ el stack) ---------------
+s = _slide(); _cabecera(s, "Las tres capas de datos", nxt(), kicker="Cómo está construido")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("No hay una única base de datos: hay tres capas con funciones distintas. Y solo UNA guarda cifras.",
          14, GRIS, False, False, 0)])
 capas = [
     ("CAPA 1", "Documentos oficiales", AZUL2,
      ["Los ~22 PDF de las normas: BOE, ERSE, GRTgaz, DVGW, Fluxys…",
-      "Archivados en local (data/raw) para no depender de webs externas.",
+      "Archivados en local para no depender de webs externas.",
       "Es la FUENTE ÚLTIMA DE VERDAD."], "pdfplumber"),
     ("CAPA 2", "La ontología", VERDE,
-     [f"Las {N_CELDAS} cifras extraídas de esos PDF, cada una con su contexto y su cita.",
+     [f"Las {N_CELDAS} cifras extraídas de esos PDF, con su contexto y su cita.",
       "Un único fichero YAML, legible y versionado en git.",
       "De aquí salen TODAS las respuestas."], "PyYAML"),
     ("CAPA 3", "Índice documental (RAG)", NARANJA,
      ["El TEXTO de los PDF troceado en fragmentos con solape.",
-      "Sirve para localizar el pasaje en consultas de texto abierto.",
+      "Localiza el pasaje en las consultas de texto abierto.",
       "NO ALMACENA NINGUNA CIFRA."], "SQLite"),
 ]
 x = 0.6
 for etiqueta, tit, color, puntos, herr in capas:
-    _rbox(s, x, 1.9, 3.93, 4.45, fill=GRISCL, line=BORDE, line_w=1)
-    _box(s, x, 1.9, 3.93, 0.52, fill=color)
-    _texto(s, x + 0.18, 1.95, 3.6, 0.42, [(etiqueta, 12, BLANCO, True, False, 0)])
-    _texto(s, x + 0.18, 2.55, 3.6, 0.45, [(tit, 17, AZUL, True, False, 0)])
-    _texto(s, x + 0.18, 3.1, 3.6, 2.6, [(p, 12.5, TINTA, False, True, 0) for p in puntos], space=9)
-    _box(s, x + 0.18, 5.75, 1.7, 0.35, fill=BLANCO, line=color, line_w=1)
-    _texto(s, x + 0.18, 5.77, 1.7, 0.3, [(herr, 11, color, True, False, 0)], align=PP_ALIGN.CENTER)
+    _rbox(s, x, 1.85, 3.93, 3.35, fill=GRISCL, line=BORDE, line_w=1)
+    _box(s, x, 1.85, 3.93, 0.5, fill=color)
+    _texto(s, x + 0.18, 1.9, 3.6, 0.42, [(etiqueta, 12, BLANCO, True, False, 0)])
+    _texto(s, x + 0.18, 2.48, 3.6, 0.42, [(tit, 16, AZUL, True, False, 0)])
+    _texto(s, x + 0.18, 2.98, 3.6, 1.7, [(p, 12, TINTA, False, True, 0) for p in puntos], space=7)
+    _box(s, x + 0.18, 4.68, 1.6, 0.33, fill=BLANCO, line=color, line_w=1)
+    _texto(s, x + 0.18, 4.7, 1.6, 0.29, [(herr, 11, color, True, False, 0)], align=PP_ALIGN.CENTER)
     x += 4.07
-_box(s, 0.6, 6.5, 12.13, 0.45, fill=AZULCL)
-_texto(s, 0.85, 6.52, 11.8, 0.4,
-       [("Las CIFRAS residen solo en la capa 2. La capa 3 es un buscador de texto: no puede producir un número.",
-         13, AZUL, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
-_notes(s, "Suele asumirse que hay una gran base de datos única. No es así. Lo importante de esta diapositiva "
-          "es el reparto: las cifras viven SOLO en la capa 2, la ontología. La capa 3, el índice documental, "
-          "no guarda ningún número: solo sirve para localizar el pasaje pertinente cuando la consulta es de "
-          "texto abierto. Y los PDF los guardamos localmente para no depender de que una web externa siga viva.")
+_box(s, 0.6, 5.35, 12.13, 0.62, fill=GRISCL)
+_box(s, 0.6, 5.35, 0.09, 0.62, fill=CYAN)
+_texto(s, 0.9, 5.38, 11.7, 0.56, [
+    ("El stack completo", 11.5, CYAN, True, False, 0),
+    ("Frontend: JavaScript vanilla · marked · DOMPurify    |    Backend: Python · FastAPI · uvicorn · pydantic"
+     "    |    Datos: PyYAML · pdfplumber · SQLite    |    Informes: openpyxl · xhtml2pdf    |    "
+     "IA (opcional): OpenAI GPT-4o-mini", 11, TINTA, False, False, 0),
+], space=1)
+_box(s, 0.6, 6.1, 12.13, 0.8, fill=AZULCL)
+_box(s, 0.6, 6.1, 0.09, 0.8, fill=AZUL)
+_texto(s, 0.9, 6.16, 11.7, 0.72, [
+    ("Las CIFRAS residen solo en la capa 2. La capa 3 es un buscador de texto: no puede producir un número.",
+     14, AZUL, True, False, 0),
+    ("Todo el stack es software libre salvo la API de OpenAI — el único componente de pago, y además opcional.",
+     12, GRIS, False, False, 0),
+], space=2)
+_notes(s, "Suele asumirse que hay una gran base de datos única. No es así. Lo importante es el reparto: las "
+          "cifras viven SOLO en la capa 2, la ontología. La capa 3, el índice documental, no guarda ningún "
+          "número: solo localiza el pasaje pertinente en las consultas de texto abierto. Y los PDF los "
+          "guardamos en local para no depender de que una web externa siga viva. Sobre el stack: todo es "
+          "software libre excepto la API de OpenAI, que además es opcional. Si os preguntan por pint, PyPDF2, "
+          "pandas o cryptography: están declarados en requirements pero HOY NO SE USAN, y lo sabemos.")
 
-# ========================== BLOQUE 3 · ONTOLOGÍA ==========================
-slide_seccion("03", "La ontología",
-              "El corazón del sistema: la extracción verificada de los PDF oficiales, con todo su contexto.")
-
-# ---------------- 10. ONTOLOGÍA — esquema dibujado (16:9) ----------------
-s = _slide(); _cabecera(s, "La ontología: estructura", nxt(), kicker="Ontología")
+# ------------- 5. ONTOLOGÍA — esquema dibujado (16:9) -------------
+s = _slide(); _cabecera(s, "La ontología: estructura", nxt(), kicker="El corazón del dato")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("Un único fichero YAML. Cinco claves. Toda la base de conocimiento del sistema.",
          14, GRIS, False, False, 0)])
-# El fichero (izquierda)
 _rbox(s, 0.5, 2.1, 3.15, 3.55, fill=AZUL, line=None)
 _texto(s, 0.72, 2.3, 2.75, 3.2, [
     ("FICHERO ÚNICO", 11, CYAN, True, False, 0),
@@ -521,184 +375,98 @@ _texto(s, 0.72, 2.3, 2.75, 3.2, [
     ("Versionado en git junto al código.", 12, RGBColor(0xC9, 0xD6, 0xE0), False, False, 0),
     ("Auditable celda a celda.", 12, RGBColor(0xC9, 0xD6, 0xE0), False, False, 0),
 ], space=4)
-# Bus vertical
 _box(s, 4.0, 2.25, 0.045, 3.3, fill=BORDE)
 ramas = [
-    ("ontologia.fuentes_normativas", f"El catálogo de las {N_FUENTES} normas oficiales: id, organismo, publicación, URL y copia local del PDF.", AZUL2),
-    ("ontologia.tipos_gas", f"El registro de los {N_GASES} tipos de gas y a qué sección de parámetros apunta cada uno.", AZUL2),
-    ("parametros", f"GAS NATURAL — {N_PAR} parámetros × {N_JUR} jurisdicciones = {N_CELDAS} celdas.", VERDE),
-    ("parametros_biometano", f"BIOMETANO — {len(PB)} parámetros × 4 jurisdicciones (ES · PT · FR · UE).", VERDE),
-    ("parametros_hidrogeno", f"HIDRÓGENO — {len(PH)} parámetros · dominio de RED y dominio de PRODUCTO.", VERDE),
+    ("ontologia.fuentes_normativas",
+     f"El catálogo de las {N_FUENTES} normas oficiales: id, organismo, publicación, URL y copia local del PDF.", AZUL2),
+    ("ontologia.tipos_gas",
+     f"El registro de los {N_GASES} tipos de gas y a qué sección de parámetros apunta cada uno.", AZUL2),
+    ("parametros",
+     f"GAS NATURAL — {N_PAR} parámetros × {N_JUR} jurisdicciones = {N_CELDAS} celdas.", VERDE),
+    ("parametros_biometano",
+     f"BIOMETANO — {len(PB)} parámetros × 4 jurisdicciones (ES · PT · FR · UE).", VERDE),
+    ("parametros_hidrogeno",
+     f"HIDRÓGENO — {len(PH)} parámetros · dominio de RED y dominio de PRODUCTO.", VERDE),
 ]
 y = 2.1
 for clave, desc, color in ramas:
-    cy = y + 0.31
-    _box(s, 4.045, cy - 0.02, 0.45, 0.045, fill=BORDE)
+    _box(s, 4.045, y + 0.29, 0.45, 0.045, fill=BORDE)
     _rbox(s, 4.55, y, 8.3, 0.62, fill=GRISCL, line=BORDE, line_w=1)
     _box(s, 4.55, y, 0.08, 0.62, fill=color)
-    _texto(s, 4.75, y + 0.03, 3.3, 0.56, [(clave, 12.5, color, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE, font=MONO)
+    _texto(s, 4.75, y + 0.03, 3.3, 0.56, [(clave, 12.5, color, True, False, 0)],
+           anchor=MSO_ANCHOR.MIDDLE, font=MONO)
     _texto(s, 8.05, y + 0.03, 4.7, 0.56, [(desc, 11.5, TINTA, False, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
     y += 0.72
-# Nota inferior
 _box(s, 0.5, 5.9, 12.35, 1.0, fill=AZULCL)
 _box(s, 0.5, 5.9, 0.09, 1.0, fill=AZUL)
 _texto(s, 0.8, 5.98, 11.9, 0.9, [
     ("Las tres secciones de parámetros comparten EXACTAMENTE el mismo esquema.", 14, AZUL, True, False, 0),
     ("Por eso la ampliación a biometano e hidrógeno no cambió la arquitectura: reutiliza la misma maquinaria "
-     "(consulta, comparativa, matriz, normalización ISO 13443 y estados de verificación).", 12.5, GRIS, False, False, 0),
+     "(consulta, comparativa, matriz, normalización ISO 13443 y estados de verificación).",
+     12.5, GRIS, False, False, 0),
 ], space=3)
-_notes(s, "La ontología es el elemento central. Es un ÚNICO fichero YAML, legible por una persona, con cinco "
-          "claves: el catálogo de normas, el registro de tipos de gas y las tres secciones de parámetros —una "
-          "por gas—. Lo importante: las tres secciones comparten exactamente el mismo esquema. Por eso "
-          "ampliar a biometano e hidrógeno no obligó a cambiar la arquitectura. Y el motor determinista lee "
-          "de aquí: el LLM nunca calcula ni inventa valores.")
+_notes(s, "La ontología es el elemento central: un ÚNICO fichero YAML, legible por una persona, con cinco "
+          "claves —el catálogo de normas, el registro de tipos de gas y las tres secciones de parámetros, una "
+          "por gas—. Lo importante: las tres secciones comparten exactamente el mismo esquema; por eso ampliar "
+          "a biometano e hidrógeno no obligó a cambiar la arquitectura. El motor determinista lee de aquí; el "
+          "modelo nunca calcula ni inventa valores. Y usamos YAML en vez de una base de datos porque a esta "
+          "escala es más AUDITABLE y TRAZABLE, y se versiona en git junto al código.")
 
-# --------------------- 11. Anatomía de un valor ---------------------
-s = _slide(); _cabecera(s, "Anatomía de un valor", nxt(), kicker="Ontología")
+# --------------- 6. Anatomía de un valor y su garantía ---------------
+s = _slide(); _cabecera(s, "Anatomía de un valor, y la garantía", nxt(), kicker="El corazón del dato")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("Cada límite NO es solo un número: guarda todo su contexto normativo. Ejemplo real — el O2 de España:",
          14, GRIS, False, False, 0)])
-_rbox(s, 0.55, 1.85, 6.55, 3.45, fill=RGBColor(0xF5, 0xF8, 0xFA), line=BORDE, line_w=1.25)
-_box(s, 0.55, 1.85, 6.55, 0.42, fill=AZUL2)
-_texto(s, 0.75, 1.89, 6.1, 0.35, [("ontologia_enagas.yaml  →  parametros → O2 → limites → ES", 11, BLANCO, False, False, 0)], font=MONO)
-_texto(s, 0.8, 2.4, 6.1, 2.8, [
-    ("ES:", 12.5, AZUL, True, False, 0),
-    ("  fuente: ORDEN_TED_181_2025", 12, TINTA, False, False, 0),
-    ("  articulo: \"Tabla 3, apdo. 2.5.2.1 (pág. 27)\"", 12, TINTA, False, False, 0),
-    ("  tipo_limite: maximo", 12, TINTA, False, False, 0),
-    ("  valor: 0.01", 12, TINTA, False, False, 0),
-    ("  unidad: pct_mol", 12, TINTA, False, False, 0),
-    ("  expresion_original: \"O2: – / 0,01 % mol\"", 12, AZUL, True, False, 0),
-    ("  condiciones_referencia:", 12, TINTA, False, False, 0),
-    ("    temperatura_volumen_C: 0", 12, TINTA, False, False, 0),
-    ("    presion_bar: 1.01325", 12, TINTA, False, False, 0),
-    ("  estado_verificacion: VERIFICADO", 12, VERDEOS, True, False, 0),
+_rbox(s, 0.55, 1.8, 6.35, 3.7, fill=RGBColor(0xF5, 0xF8, 0xFA), line=BORDE, line_w=1.25)
+_box(s, 0.55, 1.8, 6.35, 0.4, fill=AZUL2)
+_texto(s, 0.72, 1.83, 6.0, 0.34,
+       [("parametros -> O2 -> limites -> ES", 10.5, BLANCO, False, False, 0)], font=MONO)
+_texto(s, 0.78, 2.3, 6.0, 3.1, [
+    ("ES:", 12, AZUL, True, False, 0),
+    ("  fuente: ORDEN_TED_181_2025", 11.5, TINTA, False, False, 0),
+    ('  articulo: "Tabla 3, apdo. 2.5.2.1 (pág. 27)"', 11.5, TINTA, False, False, 0),
+    ("  tipo_limite: maximo", 11.5, TINTA, False, False, 0),
+    ("  valor: 0.01", 11.5, TINTA, False, False, 0),
+    ("  unidad: pct_mol", 11.5, TINTA, False, False, 0),
+    ('  expresion_original: "O2: – / 0,01 % mol"', 11.5, AZUL, True, False, 0),
+    ("  condiciones_referencia:", 11.5, TINTA, False, False, 0),
+    ("    temperatura_volumen_C: 0", 11.5, TINTA, False, False, 0),
+    ("    presion_bar: 1.01325", 11.5, TINTA, False, False, 0),
+    ("  estado_verificacion: VERIFICADO", 11.5, VERDEOS, True, False, 0),
 ], space=3, font=MONO)
-# Bloque de refuerzo bajo el YAML (rellena la columna y remata el mensaje)
-_rbox(s, 0.55, 5.45, 6.55, 1.45, fill=VERDECL, line=VERDE, line_w=1.25)
-_box(s, 0.55, 5.45, 0.09, 1.45, fill=VERDE)
-_texto(s, 0.85, 5.55, 6.05, 1.3, [
-    (f"Así son las {N_CELDAS} celdas. Todas.", 14, VERDEOS, True, False, 0),
-    ("Ninguna es «solo un número»: el valor viaja siempre con su unidad, sus condiciones de referencia, "
-     "su cita exacta y el texto literal de la norma del que se extrajo.", 12.5, TINTA, False, False, 0),
-], space=3)
-campos = [
-    ("fuente", "De qué norma sale (enlaza al catálogo)."),
-    ("articulo", "Dónde exactamente: tabla, apartado y página."),
-    ("tipo_limite", "Máximo, mínimo o rango."),
-    ("valor + unidad", "La cifra y la unidad en que se expresa."),
-    ("expresion_original", "El TEXTO LITERAL de la norma."),
-    ("condiciones_referencia", "Temperatura y presión de referencia."),
-    ("estado_verificacion", "La garantía frente a la invención de datos."),
-]
-y = 1.85
-for campo, desc in campos:
-    _box(s, 7.45, y, 5.4, 0.5, fill=GRISCL if campos.index((campo, desc)) % 2 == 0 else BLANCO)
-    _box(s, 7.45, y, 0.06, 0.5, fill=CYAN)
-    _texto(s, 7.62, y + 0.02, 2.15, 0.46, [(campo, 11.5, AZUL, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE, font=MONO)
-    _texto(s, 9.8, y + 0.02, 3.0, 0.46, [(desc, 11.5, TINTA, False, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
-    y += 0.55
-_box(s, 7.45, 5.75, 5.4, 0.85, fill=AZULCL)
-_texto(s, 7.65, 5.82, 5.05, 0.75, [
-    ("Gracias a expresion_original, un auditor puede recomprobar la transcripción SIN abrir el PDF.",
-     12.5, AZUL, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
+_rbox(s, 7.15, 1.8, 5.65, 1.75, fill=VERDECL, line=VERDE, line_w=1.25)
+_box(s, 7.15, 1.8, 0.09, 1.75, fill=VERDE)
+_texto(s, 7.45, 1.95, 5.2, 1.5, [
+    (f"{N_VERIF}   VERIFICADO", 20, VERDEOS, True, False, 0),
+    ("Cifra contrastada VERBATIM contra su boletín oficial, con artículo y página.",
+     12.5, TINTA, False, False, 0),
+], space=4)
+_rbox(s, 7.15, 3.75, 5.65, 1.75, fill=NARANJACL, line=NARANJA, line_w=1.25)
+_box(s, 7.15, 3.75, 0.09, 1.75, fill=NARANJA)
+_texto(s, 7.45, 3.9, 5.2, 1.5, [
+    (f"{N_NOVER}   NO VERIFICABLE", 20, NARANJAOS, True, False, 0),
+    ("La norma de ese país NO FIJA ese parámetro. No se inventa: se declara el hueco y se explica.",
+     12.5, TINTA, False, False, 0),
+], space=4)
+_box(s, 0.55, 5.7, 12.27, 1.2, fill=AZULCL)
+_box(s, 0.55, 5.7, 0.09, 1.2, fill=AZUL)
+_texto(s, 0.85, 5.77, 11.85, 1.1, [
+    ("Solo hay dos estados, y ningún intermedio. Los huecos no son errores: son honestidad.",
+     14, AZUL, True, False, 0),
+    ("Ejemplo real — DINAMARCA: los límites de O2 y CO2 de su norma corresponden al BIOGÁS DE DISTRIBUCIÓN, no "
+     "al gas natural de transporte. Trasladar ese valor sería un error metodológico; por eso se marcaron como "
+     "no verificable.", 12.5, TINTA, False, False, 0),
+    ("Gracias a expresion_original (el texto literal de la norma), un auditor puede recomprobar cualquier celda "
+     "SIN abrir el PDF.", 12.5, GRIS, False, False, 0),
+], space=2)
 _notes(s, "Aquí está el valor real del diseño: de cada dato no guardamos solo el número, sino todo su contexto. "
           "El campo clave es 'expresion_original': el texto literal de la norma, tal cual está redactado. Eso "
-          "convierte la confianza en VERIFICABILIDAD: no hay que creerse el dato, se puede comprobar en el acto.")
+          "convierte la confianza en VERIFICABILIDAD. A la derecha, la garantía anti-invención: dos estados y "
+          "ninguno intermedio. El ejemplo de Dinamarca es el que mejor lo ilustra: era fácil rellenar el hueco "
+          "con un número que estaba en la misma norma, pero pertenecía a otro contexto —biogás de "
+          "distribución, no transporte—. Preferimos el hueco honesto: informa mejor que un número falso.")
 
-# --------------------- 12. Estados de verificación ---------------------
-s = _slide(); _cabecera(s, "Estados de verificación", nxt(), kicker="Ontología")
-_texto(s, 0.6, 1.35, 12.2, 0.35,
-       [("La garantía anti-invención. Solo hay dos estados; no existe un punto intermedio.",
-         14, GRIS, False, False, 0)])
-_rbox(s, 0.6, 1.85, 5.95, 2.35, fill=VERDECL, line=VERDE, line_w=1.25)
-_box(s, 0.6, 1.85, 5.95, 0.09, fill=VERDE)
-_texto(s, 0.9, 2.05, 5.4, 2.0, [
-    (f"{N_VERIF}", 44, VERDEOS, True, False, 0),
-    ("VERIFICADO", 17, VERDEOS, True, False, 0),
-    ("Cifra contrastada VERBATIM contra su boletín oficial, con artículo y página.", 13, TINTA, False, False, 0),
-], space=3)
-_rbox(s, 6.78, 1.85, 5.95, 2.35, fill=NARANJACL, line=NARANJA, line_w=1.25)
-_box(s, 6.78, 1.85, 5.95, 0.09, fill=NARANJA)
-_texto(s, 7.08, 2.05, 5.4, 2.0, [
-    (f"{N_NOVER}", 44, NARANJAOS, True, False, 0),
-    ("NO VERIFICABLE", 17, NARANJAOS, True, False, 0),
-    ("La norma de ese país NO FIJA ese parámetro. No se inventa: se declara el hueco y se explica.",
-     13, TINTA, False, False, 0),
-], space=3)
-_box(s, 0.6, 4.45, 12.13, 1.35, fill=GRISCL)
-_box(s, 0.6, 4.45, 0.09, 1.35, fill=AZUL)
-_texto(s, 0.9, 4.55, 11.6, 1.2, [
-    ("Los huecos no son errores: son honestidad.", 17, AZUL, True, False, 0),
-    ("Ejemplo real — DINAMARCA: los límites de O2 y CO2 de su norma corresponden al BIOGÁS DE DISTRIBUCIÓN, "
-     "no al gas natural de transporte. Trasladar ese valor sería un error metodológico; por eso, para gas "
-     "natural, se marcaron como no verificable en lugar de rellenar el hueco.", 13, TINTA, False, False, 0),
-], space=4)
-_box(s, 0.6, 6.0, 12.13, 0.9, fill=AZULCL)
-_texto(s, 0.9, 6.08, 11.6, 0.8, [
-    ("En biometano e hidrógeno existe además VERIFICADO_SECUNDARIO:", 13, AZUL, True, False, 0),
-    ("valor tomado de una fuente pública secundaria citada, porque la norma primaria es de pago.",
-     12.5, GRIS, False, False, 0),
-], space=2)
-_notes(s, "Esta es la garantía anti-invención. Dos estados y ninguno intermedio: o la cifra consta en la norma, "
-          "o se declara que la norma no la establece. El ejemplo de Dinamarca es el que mejor lo ilustra: era "
-          "fácil rellenar el hueco con un número que estaba en la misma norma, pero pertenecía a otro contexto "
-          "—biogás de distribución, no transporte—. Preferimos el hueco honesto: informa mejor que un número falso.")
-
-# ======================== BLOQUE 4 · HERRAMIENTAS ========================
-slide_seccion("04", "Las herramientas",
-              "Con qué está construida la aplicación, pieza a pieza, y qué papel cumple cada una.")
-
-# --------------------- 14. El stack de un vistazo ---------------------
-s = _slide(); _cabecera(s, "El stack tecnológico", nxt(), kicker="Herramientas")
-_texto(s, 0.6, 1.35, 12.2, 0.35,
-       [("La pieza que manda en cada capa, y por qué. En pequeño, las de apoyo.", 14, GRIS, False, False, 0)])
-capas = [
-    ("FRONTEND", CYAN,
-     [("JavaScript vanilla", "La interfaz (index.html). Sin framework."),
-      ("DOMPurify", "Sanea el HTML antes de pintarlo (anti-XSS).")],
-     "+ marked (pinta el Markdown) · localStorage (historial)"),
-    ("BACKEND", AZUL,
-     [("FastAPI", "NUESTRO servidor: define y expone los endpoints."),
-      ("uvicorn", "Lo ejecuta y atiende el puerto 8000.")],
-     "+ pydantic (valida) · python-dotenv (custodia la clave)"),
-    ("DATOS Y DOCUMENTOS", VERDE,
-     [("PyYAML", "Lee la ONTOLOGÍA: la puerta a TODAS las cifras."),
-      ("pdfplumber + SQLite", "Indexan el texto de los PDF (RAG). Ninguna cifra.")],
-     "+ openpyxl · xhtml2pdf (informes Excel y PDF)"),
-    ("IA  (opcional)", NARANJA,
-     [("GPT-4o-mini", "Interpreta y REDACTA, a temperatura 0."),
-      ("function calling", "PIDE la cifra en vez de inventarla.")],
-     "+ sustituible por un modelo on-premise"),
-]
-x = 0.6
-for titulo, color, items, apoyo in capas:
-    _rbox(s, x, 1.85, 2.95, 3.75, fill=GRISCL, line=BORDE, line_w=1)
-    _box(s, x, 1.85, 2.95, 0.5, fill=color)
-    _texto(s, x, 1.9, 2.95, 0.42, [(titulo, 12.5, BLANCO, True, False, 0)], align=PP_ALIGN.CENTER)
-    y = 2.55
-    for nombre, papel in items:
-        _box(s, x + 0.2, y, 0.055, 0.26, fill=color)
-        _texto(s, x + 0.35, y - 0.06, 2.45, 0.3, [(nombre, 14, AZUL, True, False, 0)])
-        _texto(s, x + 0.35, y + 0.26, 2.45, 0.8, [(papel, 11.5, GRIS, False, False, 0)])
-        y += 1.15
-    _box(s, x + 0.2, 4.95, 2.55, 0.02, fill=BORDE)
-    _texto(s, x + 0.2, 5.02, 2.6, 0.55, [(apoyo, 10.5, GRIS, False, False, 0)])
-    x += 3.11
-_box(s, 0.6, 5.82, 12.13, 1.1, fill=AZULCL)
-_box(s, 0.6, 5.82, 0.09, 1.1, fill=AZUL)
-_texto(s, 0.9, 5.9, 11.7, 1.0, [
-    ("Todo es software libre salvo la API de OpenAI — el único componente de pago, y además opcional.",
-     14, AZUL, True, False, 0),
-    ("Y por honestidad: pint, PyPDF2, pandas y cryptography están declarados en requirements pero HOY NO SE USAN "
-     "(el Excel que leía pandas se retiró; la fuente es la ontología).", 11.5, GRIS, False, False, 0),
-], space=3)
-_notes(s, "El mapa del stack. Dos mensajes. Uno: todo es software libre EXCEPTO la API de OpenAI, que además "
-          "es opcional. Y dos, la banda de abajo, que es la que da credibilidad: hemos revisado el proyecto y "
-          "hay dependencias declaradas que hoy NO se usan —pint, PyPDF2, pandas y cryptography—. Lo decimos "
-          "en vez de venderlas como parte del sistema. Si os preguntan por ellas, esa es la respuesta.")
-
-# --------------- 15. Motor determinista + ISO 13443 ---------------
+# --------------- 7. Motor determinista + ISO 13443 ---------------
 s = _slide(); _cabecera(s, "El motor determinista y la normalización", nxt(), kicker="Cómo funciona")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("«Determinista» = ante la misma consulta, siempre la misma respuesta, calculada por código, sin azar ni IA.",
@@ -724,16 +492,17 @@ _texto(s, 6.98, 2.5, 5.55, 1.75, [
     ("Comparar esos valores EN BRUTO sería metodológicamente incorrecto.", 12.5, TINTA, False, True, 0),
     ("Solución: llevar TODO a la base española (0/0) con la norma ISO 13443.", 12.5, AZUL, True, True, 0),
 ], space=6)
-# Tabla de factores
 _box(s, 0.6, 4.55, 12.13, 0.45, fill=AZUL)
 _texto(s, 0.8, 4.58, 5.0, 0.4, [("Factores literales de la Tabla A.1 · ISO 13443", 13, BLANCO, True, False, 0)],
        anchor=MSO_ANCHOR.MIDDLE)
-_texto(s, 8.5, 4.58, 2.0, 0.4, [("PCS", 13, CYAN, True, False, 0)], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-_texto(s, 10.6, 4.58, 2.0, 0.4, [("Wobbe", 13, CYAN, True, False, 0)], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+_texto(s, 8.5, 4.58, 2.0, 0.4, [("PCS", 13, CYAN, True, False, 0)],
+       align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+_texto(s, 10.6, 4.58, 2.0, 0.4, [("Wobbe", 13, CYAN, True, False, 0)],
+       align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 factores = [
     ("25/0 → 0/0", "Portugal, Alemania, P. Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Grecia", "1,0026", "1,0026"),
     ("15/15 → 0/0", "Italia, UE, Chequia, Irlanda, Rumanía, Turquía, Reino Unido", "1,0570", "1,0569"),
-    ("25/20 → 0/0", "Eslovaquia — par no tabulado: se calcula con las ecuaciones del Anexo B de la norma", "~1,076", "~1,076"),
+    ("25/20 → 0/0", "Eslovaquia — par no tabulado: se calcula con las ecuaciones del Anexo B de la norma", "≈1,076", "≈1,076"),
     ("0/0 → 0/0", "España (base) y Francia — identidad, no hay conversión", "×1", "×1"),
 ]
 y = 5.0
@@ -741,73 +510,67 @@ for i, (par, paises, pcs, wob) in enumerate(factores):
     _box(s, 0.6, y, 12.13, 0.42, fill=GRISCL if i % 2 == 0 else BLANCO)
     _texto(s, 0.8, y + 0.01, 1.8, 0.4, [(par, 12, AZUL, True, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
     _texto(s, 2.6, y + 0.01, 5.8, 0.4, [(paises, 11, GRIS, False, False, 0)], anchor=MSO_ANCHOR.MIDDLE)
-    _texto(s, 8.5, y + 0.01, 2.0, 0.4, [(pcs, 12, TINTA, True, False, 0)], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _texto(s, 10.6, y + 0.01, 2.0, 0.4, [(wob, 12, TINTA, True, False, 0)], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _texto(s, 8.5, y + 0.01, 2.0, 0.4, [(pcs, 12, TINTA, True, False, 0)],
+           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _texto(s, 10.6, y + 0.01, 2.0, 0.4, [(wob, 12, TINTA, True, False, 0)],
+           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     y += 0.44
 _texto(s, 0.6, 6.78, 12.13, 0.3,
        [("Estos factores NO se estiman: se toman literalmente de la norma. España es siempre la base de referencia.",
          12, AZUL, True, False, 0)])
 _notes(s, "Un punto clave para la credibilidad es la comparabilidad: no basta con tener los números, hay que "
           "poder compararlos. Por eso llevamos todo a la base española aplicando los factores de la ISO 13443, "
-          "que no estimamos sino que tomamos literalmente de la norma. Fíjate en la fila de Eslovaquia: su par "
+          "que no estimamos sino que tomamos literalmente de la norma. Fijaos en la fila de Eslovaquia: su par "
           "de condiciones no está tabulado, así que se calcula con las ECUACIONES DEL ANEXO B de la misma "
-          "norma. Sigue siendo un valor derivado de la norma, no un número inventado.")
+          "norma. Sigue siendo un valor derivado de la norma, no un número inventado. Es la pregunta fina que "
+          "os pueden hacer.")
 
-# --------------- 21. IA y salvaguardas ---------------
-slide_2col("La IA y sus salvaguardas",
-    ("EL MODELO PUEDE", VERDE, [
-        "Interpretar la pregunta y detectar la intención.",
-        "Identificar entidades (parámetro, país, gas).",
-        "Reformular la consulta.",
-        "REDACTAR la respuesta final en lenguaje natural.",
-        ("Es la capa de LENGUAJE, no la fuente del dato.", True),
-    ]),
-    ("EL MODELO NO PUEDE", NARANJA, [
-        "Generar límites regulatorios.",
-        "Inventar valores.",
-        "Deducir conversiones ni calcular equivalencias.",
-        "Inferir comparabilidad por su cuenta.",
-        ("Para cualquier número invoca una herramienta: consultar · evaluar_cumplimiento · convertir_unidades · "
-         "convertir_condiciones_iso13443 · buscar_pdfs", True),
-    ]),
-    intro="Cuando una consulta sí llega al modelo, opera atada en corto.",
-    kicker="Cómo funciona", alto=3.15,
-    banda=["Tres salvaguardas más:",
-           "1) El SYSTEM_PROMPT le prohíbe inventar cifras, le obliga a citar y limita su ámbito a la calidad "
-           "del gas.   2) Temperatura 0 (máxima previsibilidad) y hasta 5 iteraciones de llamadas a herramientas.",
-           "3) Si OpenAI no está disponible —sin clave, sin red o por límite—, el sistema conmuta al motor "
-           "determinista: EL CHAT NUNCA DEVUELVE ERROR."],
-    notas="Hay que ser muy claro: el modelo NO es la fuente del dato, es la capa de lenguaje. Si necesita un "
-          "número, lo pide. El SYSTEM_PROMPT le prohíbe inventar cifras, le obliga a citar y le acota el ámbito. "
-          "Y si el servicio no está disponible, el sistema conmuta solo a modo determinista: la IA es una "
-          "comodidad, no una dependencia.")
+# --------------- 8. La IA, sus salvaguardas y el RAG ---------------
+s = _slide(); _cabecera(s, "La IA, sus salvaguardas y el RAG", nxt(), kicker="Cómo funciona")
+_texto(s, 0.6, 1.35, 12.2, 0.35,
+       [("Cuando una consulta sí llega al modelo, opera atada en corto.", 14, GRIS, False, False, 0)])
+_rbox(s, 0.6, 1.8, 5.9, 3.7, fill=GRISCL, line=BORDE, line_w=1)
+_box(s, 0.6, 1.8, 5.9, 0.5, fill=VERDE)
+_texto(s, 0.78, 1.85, 5.5, 0.42, [("QUÉ PUEDE Y QUÉ NO PUEDE EL MODELO", 14, BLANCO, True, False, 0)])
+_texto(s, 0.8, 2.45, 5.5, 2.9, [
+    ("PUEDE: interpretar la pregunta, detectar la intención y REDACTAR la respuesta.",
+     13, TINTA, False, True, 0),
+    ("NO PUEDE: generar límites, inventar valores, deducir conversiones ni inferir comparabilidad.",
+     13, AZUL, True, True, 0),
+    ("Para cualquier número invoca una herramienta: consultar · evaluar_cumplimiento · convertir_unidades · buscar_pdfs.",
+     13, TINTA, False, True, 0),
+    ("El SYSTEM_PROMPT le prohíbe inventar cifras, le obliga a citar y acota su ámbito. Temperatura 0.",
+     13, TINTA, False, True, 0),
+], space=9)
+_rbox(s, 6.85, 1.8, 5.9, 3.7, fill=GRISCL, line=BORDE, line_w=1)
+_box(s, 6.85, 1.8, 5.9, 0.5, fill=CYAN)
+_texto(s, 7.03, 1.85, 5.5, 0.42, [("LA RECUPERACIÓN DOCUMENTAL (RAG)", 14, BLANCO, True, False, 0)])
+_texto(s, 7.05, 2.45, 5.5, 2.9, [
+    ("INDEXACIÓN: pdfplumber extrae el texto y lo trocea en fragmentos CON SOLAPE (ventana deslizante, no por página).",
+     13, TINTA, False, True, 0),
+    ("Así, una respuesta partida entre dos páginas queda ENTERA dentro de un mismo fragmento.",
+     13, TINTA, False, True, 0),
+    ("RECUPERACIÓN: búsqueda LÉXICA (SQLite LIKE); devuelve archivo, página y extracto.",
+     13, TINTA, False, True, 0),
+    ("Es léxica, NO vectorial. Decisión consciente: reproducible y sin depender de terceros.",
+     13, AZUL, True, True, 0),
+], space=9)
+_box(s, 0.6, 5.7, 12.15, 1.2, fill=AZULCL)
+_box(s, 0.6, 5.7, 0.09, 1.2, fill=AZUL)
+_texto(s, 0.9, 5.77, 11.75, 1.1, [
+    ("La salvaguarda que lo cierra todo: si OpenAI no está disponible —sin clave, sin red o por límite—, el "
+     "sistema conmuta al motor determinista. EL CHAT NUNCA DEVUELVE ERROR.", 14, AZUL, True, False, 0),
+    ("¿Y una búsqueda semántica? Lo medimos antes de decidir: el estudio de terminología dio un índice de "
+     "variación de 27,4 en gas natural. La capa semántica queda preparada y activable, pero desactivada por "
+     "defecto por reproducibilidad.", 12.5, GRIS, False, False, 0),
+], space=3)
+_notes(s, "Hay que ser muy claro: el modelo NO es la fuente del dato, es la capa de lenguaje. Si necesita un "
+          "número, lo pide. Sobre el RAG somos transparentes: es léxico, no semántico. No es una carencia, es "
+          "una decisión: es reproducible y no depende de terceros. Y antes de decidirlo lo MEDIMOS, con el "
+          "estudio de terminología. Primero medir, luego decidir. La salvaguarda de abajo es la más "
+          "importante: la IA es una comodidad, no una dependencia.")
 
-# --------------- 22. RAG ---------------
-slide_2col("La recuperación documental (RAG)",
-    ("1 · INDEXACIÓN", AZUL2, [
-        "pdfplumber extrae el texto de los PDF oficiales.",
-        "Se trocea en fragmentos CON SOLAPE, con una ventana deslizante sobre el documento completo (no por página).",
-        ("Así, una respuesta partida entre dos páginas queda ENTERA dentro de un mismo fragmento, y sigue siendo recuperable.", True),
-        "Es incremental: solo se reprocesa lo nuevo o modificado, así que el arranque es casi inmediato.",
-    ]),
-    ("2 · RECUPERACIÓN", CYAN, [
-        "buscar_pdfs() hace una búsqueda LÉXICA (SQLite LIKE sobre el texto normalizado).",
-        "Devuelve los fragmentos relevantes con su archivo, su página y un extracto.",
-        ("Es léxica, NO vectorial: sin embeddings ni similitud semántica.", True),
-        "Decisión consciente: plenamente reproducible y sin depender de servicios externos.",
-    ]),
-    intro="Para las consultas de texto abierto, la respuesta se fundamenta en los documentos oficiales.",
-    kicker="Cómo funciona", alto=3.15,
-    banda=["¿Y si hiciera falta búsqueda semántica? Lo medimos antes de decidir.",
-           "El estudio de terminología cuantificó cuánto varían los NOMBRES de un mismo parámetro entre normas: "
-           "índice de variación 27,4 en gas natural · 9,2 en biometano · 7,3 en hidrógeno (umbral 7,0).",
-           "Ese estudio JUSTIFICA una capa semántica multilingüe, que queda preparada y activable, pero "
-           "desactivada por defecto por reproducibilidad."],
-    notas="Somos transparentes: nuestro RAG es léxico, no semántico. No es una carencia, es una decisión: es "
-          "reproducible y no depende de terceros. Y antes de decidirlo lo MEDIMOS, con el estudio de "
-          "terminología. Primero medir, luego decidir.")
-
-# --------------- 23. Ampliación: biometano e hidrógeno ---------------
+# --------------- 9. Ampliación: biometano e hidrógeno ---------------
 s = _slide(); _cabecera(s, "Ampliación: biometano e hidrógeno", nxt(), kicker="Alcance")
 _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("Añadidos como CAPA ADITIVA: se introduce la dimensión «tipo_gas», con gas_natural por defecto. "
@@ -832,7 +595,6 @@ for tit, color, clave, jur, par, nota in gases:
         (nota, 11.5, GRIS, False, False, 1),
     ], space=6)
     x += 4.07
-# Aviso del dominio del hidrógeno
 _box(s, 0.6, 4.85, 12.13, 1.45, fill=NARANJACL)
 _box(s, 0.6, 4.85, 0.09, 1.45, fill=NARANJA)
 _texto(s, 0.9, 4.93, 11.7, 1.3, [
@@ -841,7 +603,8 @@ _texto(s, 0.9, 4.93, 11.7, 1.3, [
      "Hoy solo PORTUGAL lo fija como vinculante; España y Francia regulan el blending; la UE lo recomienda.",
      12.5, TINTA, False, False, 0),
     ("PRODUCTO / VEHÍCULO: ISO 14687 Grade D — pureza 99,97 % para pilas de combustible. NO es lo que necesita "
-     "un operador de red. La herramienta los mantiene SEPARADOS para no confundirlos.", 12.5, TINTA, False, False, 0),
+     "un operador de red. La herramienta los mantiene SEPARADOS para no confundirlos.",
+     12.5, TINTA, False, False, 0),
 ], space=3)
 _box(s, 0.6, 6.45, 12.13, 0.45, fill=AZULCL)
 _texto(s, 0.9, 6.47, 11.7, 0.4, [
@@ -853,7 +616,7 @@ _notes(s, "La ampliación se hizo sin tocar nada de lo anterior: el gas natural 
           "especificaciones que no se pueden comparar, y la herramienta las mantiene separadas. Y hoy, de las "
           "cuatro jurisdicciones, solo Portugal fija una pureza vinculante del 98 %.")
 
-# --------------- 24. Garantías y cierre ---------------
+# --------------- 10. Garantías y cierre ---------------
 s = _slide()
 _box(s, 0, 0, 13.333, 7.5, fill=AZUL)
 _box(s, 0, 1.45, 13.333, 0.05, fill=CYAN)
@@ -873,12 +636,13 @@ for t, d in gar:
     y += 0.92
 _box(s, 0.9, 6.6, 11.6, 0.06, fill=VERDE)
 _texto(s, 0.9, 6.75, 11.6, 0.5,
-       [("La IA redacta el texto. Los números salen siempre de la normativa oficial.", 18, BLANCO, True, False, 0)])
+       [("La IA redacta el texto. Los números salen siempre de la normativa oficial.",
+         18, BLANCO, True, False, 0)])
 nxt()
-_notes(s, "En síntesis: hemos construido una herramienta que compara la calidad regulatoria del gas natural, el "
-          "biometano y el hidrógeno entre jurisdicciones, con trazabilidad total y sin cifras inventadas. Las "
-          "cifras salen siempre de normativa oficial verificada; la IA solo redacta el texto. Y la ampliación "
-          "se ha hecho sin degradar nada de lo anterior. Muchas gracias; quedo a vuestra disposición.")
+_notes(s, "En síntesis: una herramienta que compara la calidad regulatoria del gas natural, el biometano y el "
+          "hidrógeno entre jurisdicciones, con trazabilidad total y sin cifras inventadas. Las cifras salen "
+          "siempre de normativa oficial verificada; la IA solo redacta el texto. Muchas gracias; quedo a "
+          "vuestra disposición para las preguntas.")
 
 prs.save(PPTX)
 print("PPTX generado:", os.path.relpath(PPTX, RAIZ),
