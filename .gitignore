@@ -11,6 +11,9 @@ data/raw/NORM_17_06.csv
 # Backups de los PDF que genera actualizar_fuentes.py
 *.bak
 
+# Ficheros temporales de bloqueo de Office (aparecen al abrir un .pptx/.xlsx/.docx)
+~$*
+
 # Claves locales (usar .env.example como plantilla)
 .env
 
