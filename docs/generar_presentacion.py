@@ -212,7 +212,7 @@ _texto(s, 0.6, 1.35, 12.2, 0.35,
        [("Lo que acabáis de ver, resumido — y la promesa que lo sostiene.", 14, GRIS, False, False, 0)])
 for num, txt, color, x in ((str(GN_J), "jurisdicciones", CYAN, 0.6),
                            (str(GN_P), "parámetros de calidad", CYAN, 3.71),
-                           (str(TOT_CELDAS), "valores trazables", CYAN, 6.82),
+                           (str(TOT_CELDAS), "registros trazables", CYAN, 6.82),
                            ("0", "cifras inventadas", VERDE, 9.93)):
     _box(s, x, 1.8, 2.95, 1.75, fill=GRISCL)
     _box(s, x, 1.8, 2.95, 0.08, fill=color)
@@ -247,7 +247,7 @@ _texto(s, 0.9, 6.27, 11.75, 0.6, [
 ], anchor=MSO_ANCHOR.MIDDLE)
 _notes(s, "[~50 s] Recordad las cuatro cifras y saltad rápido al problema: la información regulatoria está "
           "dispersa y, sobre todo, NO ES DIRECTAMENTE COMPARABLE, porque cada país usa unidades y condiciones "
-          f"distintas. Y la promesa: cero cifras inventadas. De los {TOT_CELDAS} valores trazables, "
+          f"distintas. Y la promesa: cero cifras inventadas. De los {TOT_CELDAS} registros trazables, "
           f"{TOT_V} están verificados verbatim, {TOT_VS} por fuente pública secundaria (cuando la norma "
           f"primaria es de pago) y {TOT_NV} declarados 'no verificable' porque la norma no los fija. "
           "Cerrad enlazando: 'esto se sostiene sobre dos piezas, la arquitectura y la ontología'.")
@@ -300,7 +300,7 @@ _rbox(s, 8.6, 3.35, 4.25, 1.5, fill=AZUL, line=None)
 _texto(s, 8.8, 3.45, 3.9, 1.3, [
     ("3 · BASE DE CONOCIMIENTO", 11.5, CYAN, True, False, 0),
     ("Ontología YAML", 17, BLANCO, True, False, 0),
-    (f"Las {TOT_CELDAS} cifras, cada una con su unidad, sus condiciones y su cita oficial.",
+    (f"Los {TOT_CELDAS} registros, cada uno con su valor, unidad, condiciones y su cita oficial.",
      11, RGBColor(0xC9, 0xD6, 0xE0), False, False, 0),
 ], space=2)
 _flecha(s, 9.05, 4.95, 0.3, 0.42, "arr", NARANJA)
@@ -335,13 +335,13 @@ capas = [
     ("CAPA 1", "Documentos oficiales", AZUL2,
      ["Los ~22 PDF de las normas: BOE, ERSE, GRTgaz, DVGW, Fluxys…",
       "Archivados en local para no depender de webs externas.",
-      "Es la FUENTE ÚLTIMA DE VERDAD."], "pdfplumber"),
+      "Es la FUENTE ÚLTIMA DE VERDAD."], "PDF oficial"),
     ("CAPA 2", "La ontología", VERDE,
-     [f"Las {TOT_CELDAS} cifras extraídas de esos PDF, con su contexto y su cita.",
+     [f"Los {TOT_CELDAS} registros extraídos de esos PDF, con su contexto y su cita.",
       "Un único fichero YAML, legible y versionado en git.",
       "De aquí salen TODAS las respuestas."], "PyYAML"),
     ("CAPA 3", "Índice documental (RAG)", NARANJA,
-     ["El TEXTO de los PDF troceado en fragmentos con solape.",
+     ["pdfplumber trocea el TEXTO de los PDF en fragmentos con solape.",
       "Localiza el pasaje en las consultas de texto abierto.",
       "NO ALMACENA NINGUNA CIFRA."], "SQLite"),
 ]
@@ -400,8 +400,8 @@ ramas = [
     ("ontologia.tipos_gas", f"Los {N_GASES} tipos de gas y a qué sección de parámetros apunta cada uno.", AZUL2),
     ("unidades", "El catálogo de unidades admitidas (% mol, mg/m3, kWh/m3, MJ/m3, °C…).", AZUL2),
     ("parametros", f"GAS NATURAL — {GN_P} parámetros × {GN_J} jurisdicciones = {GN_C} celdas.", VERDE),
-    ("parametros_biometano", f"BIOMETANO — {BIO_P} parámetros × {BIO_J} jurisdicciones = {BIO_C} celdas.", VERDE),
-    ("parametros_hidrogeno", f"HIDRÓGENO — {H2_P} parámetros × {H2_J} jurisdicciones = {H2_C} celdas.", VERDE),
+    ("parametros_biometano", f"BIOMETANO — {BIO_P} parámetros · {BIO_C} celdas ({BIO_J} jurisdicciones: ES · PT · FR · UE).", VERDE),
+    ("parametros_hidrogeno", f"HIDRÓGENO — {H2_P} parámetros · {H2_C} celdas (dominio de red + producto).", VERDE),
 ]
 y = 1.85
 for clave, desc, color in ramas:
