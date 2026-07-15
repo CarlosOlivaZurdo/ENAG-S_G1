@@ -256,11 +256,10 @@ explicar el sistema.
 | Documento | Formato | Para qué sirve |
 |---|---|---|
 | **Documentacion_Comparador_Gas** (este) | MD · PDF | Referencia técnica y de funcionamiento completa. |
-| **Presentacion_Comparador_Gas** | PPTX | La presentación (editable, 23 diapositivas, con notas del ponente): arquitectura, ontología y herramientas. |
 | **Preguntas_Respuestas_Defensa** | MD · PDF | Batería de preguntas y respuestas para preparar la defensa del proyecto. |
 | **Prospeccion_Normativa_Hidrogeno** | MD | Marco regulatorio del hidrógeno verificado + hoja de ruta de escalado. |
 | **Estudio_Terminologia_Biometano** | MD | Justificación (medida) de una capa de búsqueda semántica. |
-| **Arquitectura_Esquema_Cajas** · **Ontologia_Estructura** | PNG · SVG | Los dos diagramas (embebidos en este documento y en la presentación). |
+| **Arquitectura_Esquema_Cajas** · **Ontologia_Estructura** | PNG · SVG | Los dos diagramas (embebidos en este documento). |
 
 Fuera de `docs/`: `LEER_PRIMERO.txt` (guía rápida de arranque) y `README.md` (especificación de
 diseño del proyecto).
@@ -555,8 +554,8 @@ al no depender de servicios externos para localizar la información.
 - **Frontend (`index.html`):** SPA en JavaScript puro; render de Markdown con `marked` +
   saneado con `DOMPurify`. Cinco secciones: *Consulta libre gas natural* (chat), *Comparativa
   gas natural* (puntual + matriz), *Analizar gas natural* (validación de un gas concreto) y las
-  dos de la ampliación —*Comparativa biometano* y *Comparativa hidrógeno*— con la misma
-  presentación (ver §15).
+  dos de la ampliación —*Comparativa biometano* y *Comparativa hidrógeno*— con el mismo
+  formato (ver §15).
 - **Analizar gas (`/api/analizar-gas`):** el usuario introduce la composición/medidas de un gas
   (CO₂, O₂, H₂S, azufre, PCS, Wobbe, rocíos…) y el sistema responde, país a país, si **cumple /
   está en zona de alerta / no cumple / no tiene límite**, con la cita oficial de cada límite. La

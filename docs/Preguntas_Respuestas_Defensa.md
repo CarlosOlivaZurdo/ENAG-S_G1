@@ -486,4 +486,4 @@ herramientas hacen que las cifras sean siempre las mismas; solo puede variar lig
 ---
 
 *Documento de apoyo a la defensa. Cotéjese siempre con `Documentacion_Comparador_Gas.md` para
-el detalle técnico y con los guiones de presentación para el hilo narrativo.*
+el detalle técnico.*
