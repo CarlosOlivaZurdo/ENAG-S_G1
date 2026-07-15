@@ -1,72 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="950" viewBox="0 0 1240 950" font-family="Arial, Helvetica, sans-serif">
-<rect width="1240" height="950" fill="#ffffff"/>
-<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#44515c"/></marker></defs>
-<text x="620.0" y="48" text-anchor="middle" font-size="27" font-weight="bold" fill="#013a57">Arquitectura del Comparador Regulatorio de Calidad de Gas — Enagás</text>
-<rect x="120" y="70" width="1000" height="118" rx="10" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
-<path d="M130,70 h980 a10,10 0 0 1 10,10 v20 h-1000 v-20 a10,10 0 0 1 10,-10 z" fill="#013a57"/>
-<text x="620.0" y="90" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">1 · NAVEGADOR  —  index.html  (SPA en JavaScript puro · identidad Enagás)</text>
-<rect x="150" y="120" width="300" height="52" rx="10" fill="#ffffff" stroke="#0099d6" stroke-width="1.5"/>
-<text x="300.0" y="142" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">CONSULTA LIBRE  (chat)</text>
-<rect x="470" y="120" width="300" height="52" rx="10" fill="#ffffff" stroke="#0099d6" stroke-width="1.5"/>
-<text x="620.0" y="142" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">COMPARATIVA  ·  GN · biometano · H2</text>
-<rect x="790" y="120" width="300" height="52" rx="10" fill="#ffffff" stroke="#0099d6" stroke-width="1.5"/>
-<text x="940.0" y="142" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">ANALIZAR GAS</text>
-<rect x="120" y="232" width="1000" height="172" rx="10" fill="#f5f8fa" stroke="#013a57" stroke-width="1.5"/>
-<path d="M130,232 h980 a10,10 0 0 1 10,10 v20 h-1000 v-20 a10,10 0 0 1 10,-10 z" fill="#013a57"/>
-<text x="620.0" y="252" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">2 · BACKEND  —  api.py  (FastAPI + uvicorn)</text>
-<text x="620.0" y="281" font-size="11" fill="#1b2a38" text-anchor="middle">Endpoints:  /  ·  /api/status  ·  /api/chat  ·  /api/parametros  ·  /api/comparar  ·  /api/matriz  ·  /api/analizar-gas  ·  /api/exportar-matriz</text>
-<rect x="150" y="305" width="940" height="88" rx="10" fill="#013a57" stroke="#013a57" stroke-width="1.5"/>
-<text x="620.0" y="327" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">ROUTER DETERMINISTA   ·   _validate_measurement_gate()</text>
-<text x="620.0" y="349" font-size="11" fill="#cfe8f6" text-anchor="middle">cumplimiento · límite · fuente · intercambiabilidad · interconexión/cadena · comparación · condiciones</text>
-<rect x="120" y="472" width="420" height="150" rx="10" fill="#eaf6fc" stroke="#0099d6" stroke-width="1.5"/>
-<path d="M130,472 h400 a10,10 0 0 1 10,10 v20 h-420 v-20 a10,10 0 0 1 10,-10 z" fill="#0099d6"/>
-<text x="330.0" y="492" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">3 · MOTOR DETERMINISTA</text>
-<text x="330.0" y="521" font-size="13" fill="#1b2a38" text-anchor="middle">fuente_oficial.py</text>
-<text x="330.0" y="543" font-size="13" fill="#1b2a38" text-anchor="middle">conversor_unidades.py  (ISO 13443 · Tabla A.1)</text>
-<text x="330.0" y="565" font-size="13" fill="#1b2a38" text-anchor="middle">condiciones_referencia.py</text>
-<rect x="700" y="472" width="420" height="150" rx="10" fill="#fdf2e6" stroke="#d98326" stroke-width="1.5"/>
-<path d="M710,472 h400 a10,10 0 0 1 10,10 v20 h-420 v-20 a10,10 0 0 1 10,-10 z" fill="#d98326"/>
-<text x="910.0" y="492" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">4 · CAPA LLM  —  OpenAI gpt-4o-mini</text>
-<text x="910.0" y="521" font-size="11" fill="#1b2a38" text-anchor="middle">function-calling · temperature 0 · no inventa cifras</text>
-<text x="910.0" y="541" font-size="13" fill="#1b2a38" text-anchor="middle">tools:  consultar_norma,  evaluar_cumplimiento,</text>
-<text x="910.0" y="563" font-size="13" fill="#1b2a38" text-anchor="middle">convertir_unidades / condiciones,  buscar_pdfs</text>
-<rect x="120" y="668" width="420" height="108" rx="10" fill="#eef7e7" stroke="#5a9e2f" stroke-width="1.5"/>
-<path d="M130,668 h400 a10,10 0 0 1 10,10 v20 h-420 v-20 a10,10 0 0 1 10,-10 z" fill="#5a9e2f"/>
-<text x="330.0" y="688" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">5 · ONTOLOGÍA (YAML)  —  FUENTE DE VERDAD</text>
-<text x="330.0" y="717" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">ontologia_enagas.yaml   ·   tipo_gas</text>
-<text x="330.0" y="739" font-size="11" fill="#1b2a38" text-anchor="middle">gas natural 10×21 · biometano · hidrógeno + cita + estado</text>
-<rect x="700" y="668" width="420" height="108" rx="10" fill="#fdf2e6" stroke="#d98326" stroke-width="1.5"/>
-<path d="M710,668 h400 a10,10 0 0 1 10,10 v20 h-420 v-20 a10,10 0 0 1 10,-10 z" fill="#d98326"/>
-<text x="910.0" y="688" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">6 · RAG  —  agente_pdf.py + SQLite</text>
-<text x="910.0" y="717" font-size="13" fill="#1b2a38" text-anchor="middle">índice LÉXICO  (SQLite LIKE · no vectorial)</text>
-<text x="910.0" y="739" font-size="11" fill="#1b2a38" text-anchor="middle">data/pdf_database.sqlite3</text>
-<rect x="120" y="820" width="1000" height="72" rx="10" fill="#eef2f6" stroke="#9aa7b3" stroke-width="1.5"/>
-<path d="M130,820 h980 a10,10 0 0 1 10,10 v20 h-1000 v-20 a10,10 0 0 1 10,-10 z" fill="#6b7884"/>
-<text x="620.0" y="840" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">7 · DOCUMENTOS OFICIALES  —  data/raw/*.pdf</text>
-<text x="620.0" y="869" font-size="11" fill="#1b2a38" text-anchor="middle">Snam · DVGW · Fluxys · Gassled · GAZ-SYSTEM · EN 16726 · …</text>
-<line x1="620" y1="188" x2="620" y2="230" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="629.0" y="188.0" width="150" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="632.0" y="199.0" font-size="11" fill="#44515c" text-anchor="start">HTTP / JSON  (sin caché)</text>
-<line x1="330" y1="393" x2="330" y2="471" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="319.0" y="421.0" width="120" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="322.0" y="432.0" font-size="11" fill="#44515c" text-anchor="end">modo «determinista»</text>
-<line x1="910" y1="393" x2="910" y2="471" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="917.0" y="421.0" width="114" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="920.0" y="432.0" font-size="11" fill="#44515c" text-anchor="start">None  →  modo «ia»</text>
-<line x1="700" y1="545" x2="542" y2="545" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="618.0" y="522.0" width="132" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="621.0" y="533.0" font-size="11" fill="#44515c" text-anchor="middle">llama a las funciones</text>
-<line x1="330" y1="622" x2="330" y2="667" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="337.0" y="633.5" width="24" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="340.0" y="644.5" font-size="11" fill="#44515c" text-anchor="start">lee</text>
-<line x1="910" y1="622" x2="910" y2="667" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="917.0" y="633.5" width="72" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="920.0" y="644.5" font-size="11" fill="#44515c" text-anchor="start">buscar_pdfs</text>
-<line x1="330" y1="820" x2="330" y2="777" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="337.0" y="787.5" width="132" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="340.0" y="798.5" font-size="11" fill="#44515c" text-anchor="start">extracción verificada</text>
-<line x1="910" y1="820" x2="910" y2="777" stroke="#44515c" stroke-width="2.2" marker-end="url(#ah)"/>
-<rect x="917.0" y="787.5" width="120" height="15" fill="#ffffff" opacity="0.95"/>
-<text x="920.0" y="798.5" font-size="11" fill="#44515c" text-anchor="start">indexa (pdfplumber)</text>
-<text x="120" y="912" font-size="11" fill="#6b7884" text-anchor="start">Las herramientas del LLM leen la ONTOLOGÍA verificada (de los PDF oficiales); el LLM nunca genera cifras.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="930" viewBox="0 0 1240 930" font-family="Arial, Helvetica, sans-serif">
+<rect width="1240" height="930" fill="#ffffff"/>
+<defs><marker id="ah" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#5a6672"/></marker></defs>
+<rect x="120" y="60" width="1000" height="92" rx="12" fill="#e8f1fb" stroke="#2b6cb0" stroke-width="1.6"/>
+<text x="620.0" y="101.5" font-size="17" font-weight="bold" fill="#013a57" text-anchor="middle">1 · Navegador — index.html   (SPA en JavaScript puro)</text>
+<text x="620.0" y="125.5" font-size="12" fill="#2b6cb0" text-anchor="middle">Consulta libre (chat)  ·  Comparativa GN / biometano / H2  ·  Analizar gas</text>
+<rect x="120" y="210" width="1000" height="132" rx="12" fill="#eef1f4" stroke="#93a1ad" stroke-width="1.6"/>
+<text x="620.0" y="252.0" font-size="17" font-weight="bold" fill="#1b2a38" text-anchor="middle">2 · Backend — api.py   (FastAPI + uvicorn)</text>
+<text x="620.0" y="276.0" font-size="12" fill="#5a6b78" text-anchor="middle">/api/status · /api/chat · /api/parametros · /api/comparar · /api/matriz · /api/analizar-gas · /api/exportar-matriz</text>
+<text x="620.0" y="295.0" font-size="13" font-weight="bold" fill="#013a57" text-anchor="middle">ROUTER DETERMINISTA  ·  _validate_measurement_gate()</text>
+<text x="620.0" y="315.0" font-size="12" fill="#8a97a3" text-anchor="middle">cumplimiento · límite · fuente · intercambiabilidad · interconexión · comparación · condiciones</text>
+<rect x="120" y="430" width="440" height="150" rx="12" fill="#e7f4e4" stroke="#5a9e2f" stroke-width="1.6"/>
+<text x="340.0" y="480.0" font-size="17" font-weight="bold" fill="#3e6b22" text-anchor="middle">3 · Motor determinista</text>
+<text x="340.0" y="504.0" font-size="13" fill="#0a2c40" text-anchor="middle">fuente_oficial.py</text>
+<text x="340.0" y="524.0" font-size="13" fill="#0a2c40" text-anchor="middle">conversor_unidades.py   (ISO 13443 · Tabla A.1)</text>
+<text x="340.0" y="544.0" font-size="13" fill="#0a2c40" text-anchor="middle">condiciones_referencia.py</text>
+<rect x="680" y="430" width="440" height="150" rx="12" fill="#fdf0e0" stroke="#d98326" stroke-width="1.6"/>
+<text x="900.0" y="480.5" font-size="17" font-weight="bold" fill="#a5610e" text-anchor="middle">4 · Capa LLM — OpenAI gpt-4o-mini</text>
+<text x="900.0" y="504.5" font-size="12" fill="#0a2c40" text-anchor="middle">function-calling · temperature 0 · no inventa cifras</text>
+<text x="900.0" y="523.5" font-size="13" fill="#0a2c40" text-anchor="middle">tools: consultar_norma · evaluar_cumplimiento</text>
+<text x="900.0" y="543.5" font-size="13" fill="#0a2c40" text-anchor="middle">convertir_unidades / condiciones · buscar_pdfs</text>
+<rect x="120" y="650" width="440" height="118" rx="12" fill="#e7f4e4" stroke="#5a9e2f" stroke-width="1.6"/>
+<text x="340.0" y="694.5" font-size="17" font-weight="bold" fill="#3e6b22" text-anchor="middle">5 · Ontología (YAML) — fuente de verdad</text>
+<text x="340.0" y="718.5" font-size="13" font-weight="bold" fill="#0a2c40" text-anchor="middle">ontologia_enagas.yaml   ·   tipo_gas</text>
+<text x="340.0" y="738.5" font-size="12" fill="#5a6b78" text-anchor="middle">cada cifra con su unidad, condiciones, cita y estado</text>
+<rect x="680" y="650" width="440" height="118" rx="12" fill="#fbeceb" stroke="#c0563f" stroke-width="1.6"/>
+<text x="900.0" y="694.5" font-size="17" font-weight="bold" fill="#9b3a28" text-anchor="middle">6 · RAG — agente_pdf.py + SQLite</text>
+<text x="900.0" y="718.5" font-size="13" fill="#0a2c40" text-anchor="middle">índice LÉXICO   (SQLite LIKE · no vectorial)</text>
+<text x="900.0" y="738.5" font-size="12" fill="#5a6b78" text-anchor="middle">data/pdf_database.sqlite3</text>
+<rect x="120" y="812" width="1000" height="72" rx="12" fill="#eef1f4" stroke="#93a1ad" stroke-width="1.6"/>
+<text x="620.0" y="843.5" font-size="17" font-weight="bold" fill="#1b2a38" text-anchor="middle">7 · Documentos oficiales — data/raw/*.pdf</text>
+<text x="620.0" y="867.5" font-size="12" fill="#5a6b78" text-anchor="middle">BOE · ERSE · GRTgaz · Snam · Fluxys · EN 16726 · …</text>
+<line x1="620" y1="152" x2="620" y2="208" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="628.0" y="161.0" width="152" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="632.0" y="172.0" font-size="12" fill="#5a6672" text-anchor="start">HTTP / JSON  (sin caché)</text>
+<line x1="340" y1="342" x2="340" y2="428" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="204.0" y="374.0" width="122" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="330.0" y="385.0" font-size="12" fill="#5a6672" text-anchor="end">modo «determinista»</text>
+<line x1="900" y1="342" x2="900" y2="428" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="908.0" y="374.0" width="116" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="912.0" y="385.0" font-size="12" fill="#5a6672" text-anchor="start">None  →  modo «ia»</text>
+<line x1="680" y1="505" x2="562" y2="505" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="565.0" y="482.0" width="104" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="621.0" y="493.0" font-size="12" fill="#5a6672" text-anchor="middle">function-calling</text>
+<line x1="340" y1="580" x2="340" y2="648" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="346.0" y="603.0" width="26" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="350.0" y="614.0" font-size="12" fill="#5a6672" text-anchor="start">lee</text>
+<line x1="900" y1="580" x2="900" y2="648" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="906.0" y="603.0" width="74" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="910.0" y="614.0" font-size="12" fill="#5a6672" text-anchor="start">buscar_pdfs</text>
+<line x1="340" y1="812" x2="340" y2="770" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="346.0" y="780.0" width="134" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="350.0" y="791.0" font-size="12" fill="#5a6672" text-anchor="start">extracción verificada</text>
+<line x1="900" y1="812" x2="900" y2="770" stroke="#5a6672" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="906.0" y="780.0" width="122" height="16" fill="#ffffff" opacity="0.95"/>
+<text x="910.0" y="791.0" font-size="12" fill="#5a6672" text-anchor="start">indexa (pdfplumber)</text>
+<text x="120" y="914" font-size="12" fill="#8a97a3" text-anchor="start">Las herramientas del LLM leen la ONTOLOGÍA verificada (extraída de los PDF oficiales); el LLM nunca genera cifras. Si la IA no está disponible, todo se resuelve en modo determinista.</text>
 </svg>
