@@ -141,7 +141,9 @@ TLS a uvicorn, o —mejor— servir tras un proxy inverso (nginx / IIS).
 
 Los datos proceden de los PDF oficiales en `data/raw/`. Para refrescarlos a su última versión
 publicada: doble clic en `actualizar_fuentes.bat` (BOE y EUR-Lex automáticos; para PT/FR se añade la
-URL directa en `actualizar_fuentes.py`).
+URL directa en `actualizar_fuentes.py`). Además **compara con la versión anterior y avisa de qué
+fuentes han cambiado** (y en qué líneas), para re-verificar solo esas. Los números **no** se cambian
+solos: los re-verifica una persona contra el PDF nuevo (así se sostiene el «cero cifras inventadas»).
 
 ---
 

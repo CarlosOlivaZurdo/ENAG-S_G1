@@ -74,7 +74,10 @@ descargados en data\raw\, a traves de la ontologia verificada. Para refrescar lo
 PDFs a su ultima version publicada, ejecuta (requiere internet):
    - Doble clic en:  actualizar_fuentes.bat
 Descarga BOE y EUR-Lex automaticamente; para Portugal/Francia, anade la URL directa
-del PDF en actualizar_fuentes.py cuando la tengas. Conserva el PDF anterior como .bak.
+del PDF en actualizar_fuentes.py cuando la tengas. Conserva el PDF anterior como .bak,
+COMPARA la version nueva con la anterior y te AVISA de que fuentes han cambiado (y en
+que lineas), para re-verificar solo esas en la ontologia. Ojo: los numeros no se
+cambian solos; los re-verifica una persona contra el PDF nuevo.
 
 
 PROBLEMAS FRECUENTES
