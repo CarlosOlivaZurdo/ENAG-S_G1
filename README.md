@@ -208,6 +208,9 @@ Toda la documentación técnica está en [`docs/`](docs/):
 | **Estudio_Terminologia_Biometano** | MD | Justificación (medida) de una capa de búsqueda semántica. |
 | **Arquitectura_Esquema_Cajas** · **Ontologia_Estructura** | PNG · SVG | Los dos diagramas del sistema. |
 
+> La **especificación original** del proyecto (el *prompt maestro* de partida) se conserva como
+> referencia histórica en [`docs/Especificacion_Original.md`](docs/Especificacion_Original.md).
+
 ---
 
 *Prototipo académico-profesional para Enagás · Cátedra de Industria Inteligente (Comillas ICAI).*

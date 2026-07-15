@@ -121,9 +121,10 @@ organiza en **tres capas** con funciones distintas.
 | **3. Índice documental (RAG)** | Índice del **texto** de los PDF, segmentado en fragmentos con solape (continuos, cruzan el salto de página) | Buscador interno, para consultas abiertas. |
 
 Las **cifras** residen en la capa 2 (la ontología), y cada una referencia su documento
-oficial de la capa 1. La capa 3 **no almacena ninguna cifra**: es un índice de búsqueda sobre
-el texto de los documentos. Los documentos (~22 PDF) se guardan **localmente** en `data/raw`
-para no depender de la disponibilidad de sitios web externos.
+oficial de la capa 1. La capa 3 **no es fuente de cifras**: es un índice de búsqueda sobre el
+texto de los documentos (que se devuelve citado, nunca como valores extraídos). Los documentos
+(~25 PDF) se guardan **localmente** en `data/raw` para no depender de la disponibilidad de sitios
+web externos.
 
 ---
 
@@ -185,8 +186,9 @@ normativo. Ejemplo real del O₂ de España, con cada campo anotado:
 - **`NO_VERIFICABLE_SIN_FUENTE`** — la norma citada **no fija** esa cifra → **no se inventa**,
   se marca como hueco honesto y se explica (34 valores).
 
-No existe un estado intermedio: un valor consta en la norma, o se declara que la norma no lo
-establece. *(Ejemplo: en Dinamarca, los límites de O₂/CO₂ de la norma corresponden al biogás
+En gas natural solo se dan esos dos estados. Existe además un tercero, **`VERIFICADO_SECUNDARIO`**
+—para las normas de pago, sobre todo en biometano e hidrógeno—: el valor se toma de una fuente
+pública secundaria citada (ver §15). *(Ejemplo: en Dinamarca, los límites de O₂/CO₂ de la norma corresponden al biogás
 de distribución, no al gas natural de transporte; por eso, para gas natural, se marcaron como
 no verificable en lugar de trasladar un valor de otro contexto.)*
 
