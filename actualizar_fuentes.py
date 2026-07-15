@@ -8,8 +8,8 @@ la última versión publicada:
 
 No usa dependencias externas salvo PyYAML (ya en requirements). Si una descarga falla o
 no devuelve un PDF, CONSERVA el PDF anterior y lo indica. Hace copia .bak antes de
-sobrescribir. Tras actualizar, conviene revisar la ontología: si la fuente oficial
-cambió de valores, el chatbot lo señalará como «discrepancia con el Excel/ontología».
+sobrescribir. Tras actualizar, conviene revisar la ontología: si la fuente oficial cambió
+de valores, hay que actualizar el valor verificado en `ontologia_enagas.yaml`.
 
 FUENTE ÚNICA DE URLS: cada fuente de `data/ontologia/ontologia_enagas.yaml` tiene un
 campo `url`. Ese MISMO enlace es el que se descarga aquí y el que aparece como cita en
