@@ -34,9 +34,11 @@ try:
     from src.llm.prompts import SYSTEM_PROMPT
 except Exception:  # fallback si el paquete src no está en el path
     SYSTEM_PROMPT = (
-        "Eres el Asistente Experto de Calidad de Gas Natural. Solo tratas la calidad "
-        "del gas natural (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido, UE). Nunca inventas valores "
-        "numéricos: los obtienes de las herramientas deterministas. Cita siempre la fuente."
+        "Eres el Asistente Experto de Calidad de Gas Natural. Tratas la calidad del gas y "
+        "su NORMATIVA (España, Portugal, Francia, Italia, Alemania, Países Bajos, Bélgica, Noruega, Polonia, Dinamarca, Hungría, Austria, Suiza, Chequia, Grecia, Irlanda, Rumanía, Eslovaquia, Turquía, Reino Unido, UE). "
+        "Los VALORES los obtienes de las herramientas deterministas (`consultar_norma`); el TEXTO de los "
+        "reglamentos, de `buscar_pdfs` sobre los PDF oficiales. Nunca inventas nada: cita siempre la fuente "
+        "(documento y página) y, si no consta, dilo."
     )
 
 load_dotenv()
@@ -221,7 +223,13 @@ LLM_TOOLS = [
         "type": "function",
         "function": {
             "name": "buscar_pdfs",
-            "description": "Busca texto relevante dentro de los PDF normativos indexados.",
+            "description": (
+                "Busca texto relevante dentro de los PDF normativos oficiales indexados (data/raw). "
+                "Úsala para preguntas sobre el CONTENIDO de un reglamento (artículos, definiciones, "
+                "requisitos, ámbito, métodos, excepciones). Busca con TÉRMINOS CLAVE (1-3 palabras), "
+                "no con la frase completa; si no hay resultados, reintenta con menos términos o sinónimos. "
+                "Responde solo con lo recuperado, citando documento y página; nunca inventes."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -707,6 +715,8 @@ def _es_tema_calidad_gas(texto_norm: str) -> bool:
         "o2", "co2", "dioxido", "dióxido", "carbono", "rocio", "rocío", "densidad",
         "indice", "índice", "ppm", "nm3", "nm³", "kwh", "mj", "molar",
         "limite", "límite", "normativa", "especificac", "hidrocarburo",
+        # texto/reglamento (para que las preguntas de normativa no se rechacen)
+        "reglament", "norma", "articulo", "artículo", "anexo", "biometano", "hidrogeno", "hidrógeno",
     )
     return any(t in texto_norm for t in terminos)
 

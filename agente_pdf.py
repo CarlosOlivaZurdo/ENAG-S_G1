@@ -378,21 +378,44 @@ def _fusionar_semantico(matches: List[Dict[str, Any]], query: str, limit: int) -
     return matches
 
 
+_STOPWORDS = {
+    "de", "del", "la", "el", "los", "las", "un", "una", "unos", "unas", "en", "y", "o",
+    "a", "al", "que", "cual", "cuales", "es", "son", "para", "por", "con", "sin", "sobre",
+    "como", "se", "su", "sus", "lo", "le", "me", "mi", "tu", "the", "of", "and", "to", "in",
+    "for", "on", "is", "are", "cuanto", "cuanta", "dice", "establece", "segun", "hay",
+    "sus", "esta", "este", "estos", "estas", "cuál", "qué", "cuáles", "según", "cuánto",
+}
+
+
 def buscar_pdfs(query: str, limit: int = 5) -> Dict[str, Any]:
     """Busca información relevante en los PDF ya indexados en SQLite.
 
     Recuperación HÍBRIDA: primero léxica (SQLite LIKE, suelo de recall) y, SI está
     activa la capa vectorial (embeddings construidos), completa con resultados
-    semánticos. Sin embeddings, el comportamiento es idéntico al histórico."""
+    semánticos. Sin embeddings, el comportamiento es idéntico al histórico.
+
+    Robustez: quita las palabras vacías y, si el AND de todos los términos no encuentra
+    nada, RELAJA la búsqueda a los términos más significativos (los más largos), para que
+    una pregunta en lenguaje natural también recupere el pasaje pertinente."""
     if not query or not query.strip():
         return {"count": 0, "matches": [], "database": str(PDF_DB_PATH)}
 
     query_norm = _normalize_text(query)
-    tokens = [token for token in re.split(r"\s+", query_norm) if len(token) > 1]
+    tokens = [t for t in re.split(r"\s+", query_norm) if len(t) > 1]
+    # palabras de CONTENIDO (sin vacías); si al quitarlas no queda nada, usa las originales
+    contenido = [t for t in tokens if t not in _STOPWORDS and len(t) > 2] or tokens
 
     with _connect() as conn:
         _ensure_schema(conn)
-        matches = _search_chunks(conn, tokens, limit=limit)
+        matches = _search_chunks(conn, contenido, limit=limit)
+        # Relajación progresiva: si el AND de todos los términos no encuentra nada,
+        # reintenta con subconjuntos cada vez menores (términos más largos = más específicos).
+        if not matches and len(contenido) > 1:
+            por_relevancia = sorted(contenido, key=len, reverse=True)
+            for n in range(len(por_relevancia) - 1, 0, -1):
+                matches = _search_chunks(conn, por_relevancia[:n], limit=limit)
+                if matches:
+                    break
 
     matches = _fusionar_semantico(matches, query, limit=limit)
 
