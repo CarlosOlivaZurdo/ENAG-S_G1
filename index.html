@@ -885,7 +885,6 @@
         linea += ' — ' + (href ? '<a href="'+esc(href)+'" target="_blank" rel="noopener">'+esc(f.url)+'</a>' : '<code>'+esc(f.url)+'</code>');
       }
       if(f.estado && f.estado!=='VERIFICADO') linea += ' <span class="muted">('+esc(f.estado)+')</span>';
-      if(f.discrepancia) linea += '<br><span style="color:#9a6400">⚠ Discrepancia con el Excel (prevalece la oficial): '+esc(f.discrepancia)+'</span>';
       return '<li>'+linea+'</li>';
     });
     if(evs.length){
