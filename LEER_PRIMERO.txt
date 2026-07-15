@@ -5,10 +5,16 @@
 
 QUE ES
 ------
-Aplicacion web para consultar y comparar requisitos de calidad de gas
-natural (indice de Wobbe, PCS, densidad, azufre, H2S+COS, O2, CO2, puntos
-de rocio) entre Espana, Portugal, Francia y la UE, con trazabilidad a la
-fuente normativa.
+Aplicacion web para consultar y comparar los requisitos de calidad de gas
+(indice de Wobbe, PCS, densidad, azufre, H2S+COS, O2, CO2, puntos de rocio)
+entre jurisdicciones europeas, con trazabilidad a la norma oficial y sin
+inventarse ninguna cifra.
+
+Cubre tres gases: GAS NATURAL (21 jurisdicciones), BIOMETANO e HIDROGENO
+(Espana, Portugal, Francia y la UE). Tiene cinco modos: consulta libre (un
+chat en lenguaje natural que responde valores, texto de la norma y
+explicaciones), comparativa de gas natural, analizar un gas concreto, y
+comparativa de biometano y de hidrogeno.
 
 
 REQUISITO PREVIO (una sola vez)

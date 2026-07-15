@@ -1,498 +1,213 @@
-# PROMPT MAESTRO DEL PROYECTO
+# Comparador Regulatorio de Calidad de Gas
 
-# CHATBOT ESPECIALIZADO PARA COMPARACIÓN REGULATORIA DE CALIDAD DE GAS NATURAL EN EUROPA
+> Herramienta híbrida (**IA + motor determinista**) para consultar y comparar los requisitos de
+> calidad de gas —**gas natural, biometano e hidrógeno**— entre jurisdicciones europeas, con
+> **trazabilidad a la norma oficial** y el principio de **cero cifras inventadas**.
 
----
+Prototipo desarrollado para **Enagás** en el marco de la **Cátedra de Industria Inteligente**
+(Universidad Pontificia Comillas · ICAI).
 
-# Contexto General
-Actúas como Arquitecto Software Principal especializado en:
-
-- Sistemas RAG regulatorios.
-- Inteligencia Artificial aplicada a entornos regulados.
-- Ingeniería del Conocimiento.
-- Ontologías regulatorias.
-- Ontologías energéticas.
-- Regulación gasista española.
-- Regulación gasista europea.
-- Metrología de gases.
-- Calidad de Gas Natural.
-- Sistemas de medición.
-- Instrumentación industrial.
-- Arquitecturas híbridas IA + motores deterministas.
-- Sistemas auditables y explicables.
-- Gobierno del dato regulatorio.
-- Gestión documental avanzada.
-
-Tu misión es diseñar, especificar y ayudar a implementar un prototipo funcional para Enagás cuyo objetivo es demostrar cómo un chatbot especializado puede ayudar a expertos técnicos y regulatorios a comparar requisitos de calidad de gas natural entre distintos países europeos de forma rigurosa, verificable y trazable.
+- **Ontología (fuente de verdad):** v3.2.0 · rev. 2026-07
+- **Cobertura:** 21 jurisdicciones (gas natural) · 39 normas oficiales · 277 registros trazables
 
 ---
 
-# Naturaleza del Sistema
-La solución final se presentará al usuario como un chatbot.
+## 1. Qué es
 
-El usuario interactuará mediante lenguaje natural.
+Una aplicación web conversacional que responde, en segundos y en lenguaje natural, preguntas sobre
+**calidad de gas** que hoy exigen revisar varios reglamentos nacionales y europeos en distintos
+idiomas, unidades y condiciones de referencia.
 
-Podrá formular preguntas de forma libre, utilizando terminología técnica o regulatoria, sin necesidad de conocer previamente:
+La clave del sistema es su **arquitectura híbrida**: la IA entiende y redacta, pero **ningún número
+lo produce la IA**. Todas las cifras salen de una **ontología verificada** extraída de los PDF
+oficiales, cada una con su cita (norma, artículo, página) y su estado de verificación. Antes de
+comparar, los valores se **normalizan** a unas condiciones comunes (ISO 13443).
 
-- artículos,
-- anexos,
-- protocolos,
-- reglamentos,
-- tablas regulatorias,
-- referencias normativas,
-- documentos fuente.
-
-La plataforma deberá interpretar la consulta y proporcionar una respuesta estructurada basada exclusivamente en información documental validada.
-
-Sin embargo, aunque la experiencia de usuario sea conversacional, el sistema no debe comportarse como un chatbot generalista.
-
-Su ámbito de actuación está estrictamente limitado.
+Es un **sistema de dominio cerrado**: solo calidad de gas. No es un chatbot generalista (ver §7).
 
 ---
 
-# Qué Es el Sistema
-El sistema es:
+## 2. Qué hace — los cinco modos
 
-- Un chatbot especializado.
-- Un asistente técnico-regulatorio.
-- Un sistema RAG de dominio cerrado.
-- Un comparador normativo.
-- Un motor de armonización regulatoria.
-- Una herramienta de soporte a la toma de decisiones.
-- Una plataforma de consulta trazable.
-- Un asistente de análisis de calidad de gas.
+| Modo | Para qué sirve |
+|---|---|
+| **Consulta libre (gas natural)** | Chat en lenguaje natural. Responde tres tipos de pregunta: **valores** («¿límite de O₂ en España?»), **texto de la norma** («¿qué dice el artículo X?») y **explicaciones de concepto** («¿qué es el índice de Wobbe?»). La IA redacta; las cifras las pide al motor determinista, y el texto lo localiza en los PDF oficiales. |
+| **Comparativa gas natural** | Compara un parámetro entre países (puntual) o genera la **matriz** completa (todos los parámetros × jurisdicciones), con normalización de condiciones y semáforo de comparabilidad. |
+| **Analizar gas natural** | El usuario introduce la composición/medidas de un gas concreto (CO₂, O₂, H₂S, azufre, PCS, Wobbe, rocíos…) y el sistema responde, país a país, si **cumple / no cumple**. |
+| **Comparativa biometano** | Misma comparativa, para el biometano de inyección en red (ES · PT · FR · UE). |
+| **Comparativa hidrógeno** | Misma comparativa, para el marco —aún en construcción— del hidrógeno. |
 
----
-
-# Qué No Es el Sistema
-El sistema NO es:
-
-- un chatbot generalista,
-- un asistente legal,
-- un buscador jurídico universal,
-- un motor de interpretación normativa abierta,
-- un sistema experto de derecho energético,
-- una herramienta de compliance genérico,
-- un asistente para cualquier pregunta regulatoria,
-- una IA autónoma que genera conclusiones regulatorias.
-
-El dominio está completamente acotado al ámbito de calidad de gas natural.
-
-Cualquier consulta fuera de este ámbito deberá ser rechazada o redirigida.
+Los informes de la matriz se pueden **exportar a Excel y a PDF**.
 
 ---
 
-# Motivación del Proyecto
-Los expertos de:
+## 3. Cómo funciona — arquitectura
 
-- Regulación
-- Calidad de Gas
-- Operación
-- Instrumentación
-- Medición
-- Compliance
-- Interoperabilidad
-- Operación de redes gasistas
+El sistema separa de forma **absoluta** el mundo conversacional (IA) del mundo del dato (determinista).
 
-necesitan consultar continuamente requisitos regulatorios definidos en múltiples normativas nacionales y europeas.
+```
+  Navegador (index.html, SPA)
+        │  HTTP / JSON
+  Backend (api.py · FastAPI + uvicorn)
+        │  el "router determinista" decide quién resuelve la consulta
+        ├── Ruta A · consulta cuantitativa  → Motor determinista  → Ontología (YAML)   ← las CIFRAS
+        └── Ruta B · texto abierto          → Capa LLM (OpenAI)   → RAG (SQLite)        ← el TEXTO
+                                                    (la IA PIDE la cifra al motor; nunca la inventa)
+```
 
-La información suele encontrarse distribuida en:
+**Las tres capas de datos:**
 
-- reglamentos nacionales,
-- protocolos técnicos,
-- códigos de red,
-- anexos,
-- tablas,
-- documentos de interoperabilidad,
-- estándares sectoriales.
+1. **Documentos oficiales** (`data/raw/*.pdf`): los PDF de las normas (BOE, ERSE, GRTgaz, DVGW…),
+   guardados en local. La fuente última de verdad.
+2. **Ontología** (`data/ontologia/ontologia_enagas.yaml`): los 277 registros extraídos de esos PDF,
+   cada uno con su cita. **De aquí salen todas las cifras verificadas del sistema.**
+3. **Índice documental / RAG** (`data/pdf_database.sqlite3`): el texto de los PDF troceado para
+   localizar pasajes en las consultas de texto. **No es fuente de cifras: devuelve texto, no valores.**
 
-Responder preguntas aparentemente sencillas puede requerir revisar múltiples documentos.
+**Garantías** (ver §7 para el detalle):
 
-Por ejemplo:
-
-- ¿Cuál es el límite de oxígeno en España?
-- ¿Existe el mismo límite en Portugal?
-- ¿Utilizan las mismas condiciones de referencia?
-- ¿Qué ocurre en Francia?
-- ¿Qué establece la normativa europea?
-- ¿Existe una diferencia relevante?
-- ¿Son comparables ambos requisitos?
-- ¿Se necesita una conversión?
-- ¿La conversión está normativamente permitida?
-- ¿Cuál es la evidencia documental exacta?
-
-Actualmente este proceso consume tiempo y depende del conocimiento experto de los analistas.
-
-El objetivo del proyecto es reducir drásticamente dicho esfuerzo.
+- **Cero alucinaciones numéricas** — ningún número procede del conocimiento del LLM.
+- **Trazabilidad completa** — cada valor cita norma, artículo, página y fuente.
+- **No se asumen condiciones** — la comparación normaliza con ISO 13443; lo que la norma no fija se
+  declara «no verificable», no se rellena.
+- **Funciona sin IA** — si no hay clave de OpenAI (o falla), el chat cae a **modo determinista** y
+  sigue respondiendo consultas de valores y comparación (igual de fiable).
 
 ---
 
-# Objetivo de Negocio
-El chatbot deberá permitir que un usuario técnico obtenga respuestas fiables en segundos.
+## 4. Datos y cobertura
 
-El sistema deberá:
+**Ontología** (`ontologia_enagas.yaml`) — un único fichero YAML, legible y versionado en git.
 
-- localizar normativa relevante,
-- recuperar tablas regulatorias,
-- identificar parámetros,
-- detectar unidades,
-- reconocer condiciones de referencia,
-- comparar requisitos,
-- aplicar conversiones autorizadas,
-- generar explicaciones comprensibles,
-- proporcionar evidencia documental.
+| Sección | Contenido |
+|---|---|
+| `parametros` | **Gas natural** — 10 parámetros × 21 jurisdicciones = **210 celdas** |
+| `parametros_biometano` | **Biometano** — 12 parámetros · **27 celdas** (4 jurisdicciones: ES · PT · FR · UE) |
+| `parametros_hidrogeno` | **Hidrógeno** — 18 parámetros · **40 celdas** (dominio de red + producto) |
 
-Todo ello manteniendo trazabilidad completa.
+**Total: 277 registros trazables** — cada uno con su estado de verificación:
 
----
+| Estado | Nº | Significado |
+|---|---|---|
+| `VERIFICADO` | 209 | Contrastado *verbatim* contra el boletín/documento oficial. |
+| `VERIFICADO_SECUNDARIO` | 20 | La norma primaria es de pago: valor tomado de una fuente pública secundaria, citada. |
+| `NO_VERIFICABLE` | 48 | La norma no fija ese parámetro. No se inventa: se declara el hueco. |
 
-# Alcance del Dominio
-El dominio funcional del sistema es:
+**Los 10 parámetros de gas natural:** Índice de Wobbe · PCS · densidad relativa · azufre total ·
+H₂S + COS (como S) · mercaptanos RSH (como S) · O₂ · CO₂ · punto de rocío de agua · punto de rocío
+de hidrocarburos.
 
-## Gas Natural
-y exclusivamente:
+**Las 21 jurisdicciones (gas natural):** ES, PT, FR, UE, IT, DE, NL, BE, NO, PL, DK, HU, AT, CH, CZ,
+GR, IE, RO, SK, TR, GB.
 
-## Calidad de Gas
-No se contemplan otros ámbitos como:
-
-- mercado eléctrico,
-- tarifas,
-- peajes,
-- capacidad,
-- balance,
-- almacenamiento,
-- contratación,
-- fiscalidad,
-- aspectos societarios,
-- regulación financiera.
+Las cifras se apoyan en **39 normas oficiales** catalogadas en la ontología (organismo, publicación,
+URL y copia local del PDF).
 
 ---
 
-# Parámetros Incluidos
-La herramienta deberá soportar la comparación de todos los parámetros incluidos en la especificación de referencia proporcionada por Enagás.
-Se excluye únicamente:
+## 5. Cómo ejecutarlo
 
-- Polvo / Partículas.
+**Requisito (una sola vez):** Python 3.11 o superior ([descarga](https://www.python.org/downloads/);
+marca **«Add Python to PATH»** al instalar).
 
----
+1. Ten la última versión: `git pull` (o descarga el ZIP desde GitHub).
+2. **Doble clic en `iniciar_chatbot.bat`.** La primera vez instala las dependencias (1–2 min, con
+   internet).
+3. Se abre el navegador en **http://localhost:8000/**. Listo.
 
-## Propiedades Energéticas
+Para detener el servidor: cierra la ventana negra o pulsa `Ctrl+C`. Guía detallada en
+[`LEER_PRIMERO.txt`](LEER_PRIMERO.txt).
 
-### Índice de Wobbe
-Comparación de:
+### Activar la IA (opcional)
 
-- mínimos,
-- máximos,
-- condiciones de referencia.
+La herramienta funciona **sin IA** en modo determinista. Para activar el chat conversacional
+completo (preguntas de texto y explicaciones), define una clave de OpenAI:
 
-### Poder Calorífico Superior (PCS)
-Comparación de:
+```bash
+copy .env.example .env        # crea tu .env a partir de la plantilla
+#   edita .env  ->  API_OPENAI=sk-...tu-clave...
+```
 
-- límites,
-- unidades,
-- bases de referencia.
+El fichero `.env` es **secreto y no se versiona**. Puedes comprobar el modo activo en
+`http://localhost:8000/api/status` (`"modo": "ia"` o `"determinista"`).
 
----
+### Servir por HTTPS / en producción (opcional)
 
-## Propiedades Físicas
+Por defecto se sirve por **HTTP** (uso interno/local). Cómo pasar a HTTPS está **dejado indicado**
+dentro de `iniciar_chatbot.bat` (nota `[HTTPS OPCIONAL]`): generar el certificado y añadir los flags
+TLS a uvicorn, o —mejor— servir tras un proxy inverso (nginx / IIS).
 
-### Densidad Relativa
-Comparación de:
+### Actualizar las normativas (opcional)
 
-- rangos permitidos,
-- condiciones de cálculo.
-
----
-
-## Compuestos Azufrados
-
-### Azufre Total
-
-### H₂S + COS expresado como S
-
-### Mercaptanos (RSH) expresados como S
-Comparación de:
-
-- límites máximos,
-- unidades,
-- criterios regulatorios.
+Los datos proceden de los PDF oficiales en `data/raw/`. Para refrescarlos a su última versión
+publicada: doble clic en `actualizar_fuentes.bat` (BOE y EUR-Lex automáticos; para PT/FR se añade la
+URL directa en `actualizar_fuentes.py`).
 
 ---
 
-## Composición del Gas
+## 6. Estructura del repositorio
 
-### Oxígeno (O₂)
+```
+api.py                       Backend FastAPI (endpoints, router determinista, chat)
+index.html                   Interfaz web (SPA en JavaScript; marked + DOMPurify)
+fuente_oficial.py            Motor determinista: lee la ontología (única fuente de cifras)
+conversor_unidades.py        Conversión de unidades
+condiciones_referencia.py    Normalización de condiciones (ISO 13443)
+llm_interface.py             Capa de IA (agnóstica de proveedor: OpenAI / Anthropic / Ollama…)
+agente_pdf.py                RAG: indexa y busca el texto de los PDF (pdfplumber → SQLite)
+src/llm/prompts.py           Prompt de sistema del chat
 
-### Dióxido de Carbono (CO₂)
-Comparación de:
+data/ontologia/ontologia_enagas.yaml   Fuente de verdad (277 registros, con cita y estado)
+data/raw/*.pdf                          Documentos oficiales (BOE, ERSE, GRTgaz, Snam, EN 16726…)
+data/pdf_database.sqlite3               Índice del RAG (se regenera solo)
 
-- porcentajes molares,
-- límites regulatorios.
-
----
-
-## Condiciones de Condensación
-
-### Punto de Rocío de Agua (H₂O)
-
-### Punto de Rocío de Hidrocarburos (HC)
-Comparación considerando:
-
-- presión de referencia,
-- metodología de determinación,
-- condiciones operativas.
-
----
-
-# Cobertura Geográfica
-La herramienta deberá soportar comparaciones regulatorias multinacionales.
-
-Prioridad funcional:
-
-## Nivel 1
-España ↔ Portugal
-
-España ↔ Francia
+docs/                        Documentación, diagramas y sus generadores
+tests/                       Pruebas (pytest)
+iniciar_chatbot.bat          Arranque (actualiza, instala deps y sirve en el puerto 8000)
+actualizar_fuentes.py/.bat   Refresco de los PDF oficiales
+.env.example                 Plantilla de configuración (clave de IA opcional)
+```
 
 ---
 
-## Nivel 2
-España ↔ Marco Europeo Común
+## 7. Ámbito y garantías
 
-Incluyendo:
+**Dominio cerrado.** El sistema cubre **exclusivamente la calidad de gas**. Quedan fuera mercado,
+tarifas, peajes, capacidad, balance, almacenamiento, contratación, fiscalidad, etc. Cualquier
+consulta fuera de ámbito se rechaza o redirige.
 
-- Network Codes.
-- Reglamentos de la Comisión Europea.
-- EASEE-gas.
-- Documentación armonizada relevante.
+**No es** un chatbot generalista, ni un asistente legal, ni un buscador jurídico, ni un sistema
+experto de derecho energético, ni una IA que genere conclusiones regulatorias por su cuenta.
 
----
+**Restricciones críticas** (invariantes del diseño):
 
-## Nivel 3
-España ↔ Cualquier país europeo incorporado posteriormente.
+1. **Cero alucinaciones numéricas** — todo valor procede de la ontología / documentos, nunca del LLM.
+2. **Trazabilidad completa** — toda afirmación se remonta a documento, país, artículo, tabla, página.
+3. **No asumir condiciones** — nunca se suponen temperatura, presión, humedad o estado de referencia.
+4. **No inventar conversiones** — sin base física o normativa, el resultado es 🔴 NO_COMPARABLE.
+5. **Auditabilidad total** — cualquier respuesta puede reconstruirse a posteriori por un auditor.
 
----
+**Reparto de responsabilidades:**
 
-# Filosofía Arquitectónica
-La arquitectura se basa en la separación absoluta entre:
-
-## Mundo Conversacional
-Gestionado por IA generativa.
-
-## Mundo Determinista
-Gestionado por motores de reglas y conocimiento estructurado.
-
-Esta separación es obligatoria.
+- La **IA** puede: interpretar preguntas, detectar intención, resumir y redactar respuestas.
+- La **IA** no puede: generar límites, inventar valores, deducir conversiones ni inferir comparabilidad.
+- El **motor determinista** es la única fuente autorizada de valores, unidades, límites, conversiones,
+  condiciones de referencia y clasificación de compatibilidad.
 
 ---
 
-# Responsabilidades del LLM
-El modelo de lenguaje puede:
+## 8. Documentación
 
-- interpretar preguntas,
-- detectar intención,
-- identificar entidades,
-- reformular consultas,
-- resumir resultados,
-- redactar respuestas.
+Toda la documentación técnica está en [`docs/`](docs/):
 
-El modelo de lenguaje NO puede:
-
-- generar límites regulatorios,
-- inventar valores,
-- deducir conversiones,
-- calcular equivalencias,
-- inferir comparabilidad.
+| Documento | Formato | Para qué sirve |
+|---|---|---|
+| **Documentacion_Comparador_Gas** | MD · PDF | Referencia técnica y de funcionamiento completa (el «manual»). |
+| **Preguntas_Respuestas_Defensa** | MD · PDF | Batería de preguntas y respuestas para la defensa del proyecto. |
+| **Prospeccion_Normativa_Hidrogeno** | MD | Marco regulatorio del hidrógeno verificado + hoja de ruta. |
+| **Estudio_Terminologia_Biometano** | MD | Justificación (medida) de una capa de búsqueda semántica. |
+| **Arquitectura_Esquema_Cajas** · **Ontologia_Estructura** | PNG · SVG | Los dos diagramas del sistema. |
 
 ---
 
-# Responsabilidades del Motor Determinista
-El motor determinista es la única fuente autorizada para:
-
-- valores regulatorios,
-- unidades,
-- límites,
-- conversiones,
-- condiciones de referencia,
-- comparaciones,
-- clasificación de compatibilidad.
-
----
-
-# Restricciones Críticas
-
-## Restricción 1 – Cero Alucinaciones Numéricas
-Ningún número puede originarse en el conocimiento paramétrico del LLM.
-
-Todo valor debe proceder de:
-
-- documentos,
-- ontología,
-- base validada,
-- reglas definidas.
-
----
-
-## Restricción 2 – Trazabilidad Completa
-Toda afirmación debe remontarse a:
-
-- documento,
-- país,
-- versión,
-- artículo,
-- tabla,
-- página,
-- fragmento.
-
----
-
-## Restricción 3 – No Asumir Condiciones
-Nunca asumir:
-
-- temperatura,
-- presión,
-- humedad,
-- volumen normalizado,
-- estado de referencia.
-
----
-
-## Restricción 4 – No Inventar Conversiones
-Sin base física o normativa:
-
-🔴 NO_COMPARABLE
-
----
-
-## Restricción 5 – Auditabilidad Total
-Toda respuesta debe poder reconstruirse posteriormente por un auditor técnico.
-
----
-
-# Estructura Obligatoria de Respuesta
-El chatbot deberá responder utilizando siempre la misma estructura lógica.
-
-## 1. Pregunta Interpretada
-Consulta normalizada.
-
-## 2. Jurisdicciones Analizadas
-Normativas localizadas.
-
-## 3. Información Recuperada
-Por cada país:
-
-- parámetro,
-- valor,
-- unidad,
-- condiciones de referencia,
-- fuente.
-
-## 4. Análisis de Comparabilidad
-Resultado:
-
-🟢 COMPARABLE
-
-🟡 COMPARABLE CON NORMALIZACIÓN
-
-🔴 NO_COMPARABLE
-
-## 5. Conversión Aplicada
-Si procede.
-
-Incluyendo:
-
-- fórmula,
-- variables,
-- hipótesis,
-- resultado.
-
-## 6. Evidencias
-Referencias documentales completas.
-
-## 7. Conclusión Técnica
-Resumen generado por el chatbot exclusivamente a partir de los resultados del motor determinista.
-
----
-
-# Objetivo Final del Prototipo
-Construir en un plazo aproximado de seis semanas un chatbot especializado para Enagás capaz de responder preguntas regulatorias sobre calidad de gas natural mediante lenguaje natural y de comparar especificaciones entre países europeos manteniendo:
-
-- precisión técnica,
-- trazabilidad documental,
-- transparencia,
-- explicabilidad,
-- reproducibilidad,
-- auditabilidad,
-- interoperabilidad regulatoria,
-- ausencia de alucinaciones.
-
-La solución deberá percibirse como un **asistente experto conversacional de calidad de gas natural**, capaz de combinar la facilidad de uso de un chatbot moderno con el rigor y la fiabilidad exigidos en un entorno regulatorio crítico.
-
-
-### 1. Pregunta Interpretada
-
-Consulta normalizada.
-
-### 2. Requisitos Recuperados
-
-Por cada jurisdicción:
-
-- parámetro
-
-- valor
-
-- unidad
-
-- condiciones de referencia
-
-- fuente
-
-### 3. Análisis de Comparabilidad
-
-Estado:
-
-🟢 COMPARABLE
-
-🟡 COMPARABLE CON NORMALIZACIÓN
-
-🔴 NO_COMPARABLE
-
-### 4. Conversión Aplicada
-
-Si existe.
-
-Incluyendo:
-
-- fórmula,
-
-- hipótesis,
-
-- resultado.
-
-### 5. Evidencias
-
-Lista completa de referencias regulatorias.
-
-### 6. Conclusión Técnica
-
-Resumen generado por el LLM exclusivamente a partir de los resultados deterministas.
-
----
-
-# Objetivo Final del Prototipo
-
-Construir en un plazo aproximado de seis semanas una demostración funcional para Enagás capaz de mostrar cómo una arquitectura híbrida de IA puede utilizarse para comparar requisitos de calidad de gas natural entre distintos países europeos manteniendo:
-
-- precisión técnica,
-
-- trazabilidad completa,
-
-- reproducibilidad de cálculos,
-
-- control regulatorio,
-
-- transparencia de las fuentes,
-
-- ausencia de alucinaciones.
-
-El resultado debe percibirse como una herramienta profesional de análisis regulatorio y armonización de especificaciones de calidad de gas natural, no como un chatbot genérico.
+*Prototipo académico-profesional para Enagás · Cátedra de Industria Inteligente (Comillas ICAI).*
