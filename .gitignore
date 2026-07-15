@@ -14,6 +14,10 @@ data/raw/NORM_17_06.csv
 # Ficheros temporales de bloqueo de Office (aparecen al abrir un .pptx/.xlsx/.docx)
 ~$*
 
+# La presentacion PPTX NO se versiona: se entrega aparte. El generador
+# (docs/generar_presentacion.py) SI se conserva y puede regenerarla.
+docs/Presentacion_Comparador_Gas.pptx
+
 # Claves locales (usar .env.example como plantilla)
 .env
 
